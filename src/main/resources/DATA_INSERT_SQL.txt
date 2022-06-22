@@ -1,0 +1,30 @@
+INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
+VALUES ('sky834459', 0, 'sky834459@gmail.com', '', '안냥하세요', '김태훈', '판교', '8344');
+
+INSERT INTO categories(name, user_user_id) VALUES ('개발용', 1);
+
+INSERT INTO molds(name, user_user_id) VALUES ('기본 틀', 1);
+
+INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
+VALUES (1, 10.245, 34.349, '레이아웃 설명', 20, 0, 30, 1);
+INSERT INTO contexts(text, layout_id) VALUES ('상세 내용', 1);
+
+INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
+VALUES (CURRENT_TIME, '이것은 테스트용이예요', 1, 1, 1);
+
+INSERT INTO tags(name) VALUES ('딥러닝');
+INSERT INTO tags(name) VALUES ('react');
+INSERT INTO tags(name) VALUES ('typescript');
+
+INSERT INTO posts_and_tags(post_post_id, tag_tag_id) VALUES (1,1);
+INSERT INTO posts_and_tags(post_post_id, tag_tag_id) VALUES (1,2);
+INSERT INTO posts_and_tags(post_post_id, tag_tag_id) VALUES (1,3);
+
+INSERT INTO attachments(extension, name, url, post_post_id) VALUES ('txt', '실험 파일', '', 1);
+INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 1);
+INSERT INTO likes(post_post_id, user_user_id) VALUES (1,1);
+
+INSERT INTO comments(context, time, post_post_id, user_user_id)
+VALUES ('이것은 댓글입니다', CURRENT_TIME, 1, 1);
+INSERT INTO comments(context, time, upper_comment_comment_id, post_post_id, user_user_id)
+VALUES ('요건 대댓글입니다', CURRENT_TIME, 1, 1, 1);
