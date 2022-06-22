@@ -15,7 +15,7 @@ public class Comment {
     @Column(nullable = false)
     private String context;
     @Column(nullable = false)
-    private LocalDateTime written;
+    private LocalDateTime time;
     @Column(nullable = false)
     @ColumnDefault("false")
     private Boolean block;      // false : 삭제X, true : 삭제됨

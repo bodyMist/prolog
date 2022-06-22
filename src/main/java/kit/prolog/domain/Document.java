@@ -4,9 +4,9 @@ import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
-@Entity(name = "VIEWERS")
+@Entity(name = "DOCUMENTS")
 @DiscriminatorValue("7")
-public class Viewer extends Layout{
+public class Document extends Layout{
     @Column(nullable = false)
     private String url;
 }

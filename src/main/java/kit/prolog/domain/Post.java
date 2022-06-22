@@ -13,7 +13,7 @@ public class Post {
     @Column(nullable = false)
     private String title;
     @Column(nullable = false)
-    private LocalDateTime written;
+    private LocalDateTime time;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
