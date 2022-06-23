@@ -2,6 +2,8 @@ package kit.prolog.domain;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "POSTS")
 public class Post {
@@ -21,4 +23,7 @@ public class Post {
     private Category category;
     @ManyToOne(fetch = FetchType.LAZY)
     private Mold mold;
+
+    @OneToMany(mappedBy = "post")
+    private List<Like> likes = new ArrayList<>();
 }

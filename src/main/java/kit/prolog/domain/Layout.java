@@ -1,9 +1,11 @@
 package kit.prolog.domain;
 
+import lombok.Getter;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
 
+@Getter
 @Entity(name = "LAYOUTS")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(discriminatorType = DiscriminatorType.INTEGER)
@@ -24,4 +26,9 @@ public class Layout {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Mold mold;
+
+    @Transient
+    public int getDiscriminatorValue(){
+        return Integer.parseInt(this.getClass().getAnnotation(DiscriminatorValue.class).value());
+    }
 }

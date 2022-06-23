@@ -1,6 +1,8 @@
 package kit.prolog.domain;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "CATEGORIES")
 public class Category {
@@ -14,4 +16,6 @@ public class Category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
+    @OneToMany(mappedBy = "category")
+    private List<Post> posts = new ArrayList<>();
 }

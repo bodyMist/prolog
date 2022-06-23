@@ -3,6 +3,8 @@ package kit.prolog.domain;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity(name = "USERS")
 public class User {
@@ -24,5 +26,10 @@ public class User {
     private String image;
     private String nickname;
     private String introduce;
+
+    @OneToMany(mappedBy = "user")
+    private List<Like> likes = new ArrayList<>();
+    @OneToMany(mappedBy = "user")
+    private List<Post> posts = new ArrayList<>();
 
 }
