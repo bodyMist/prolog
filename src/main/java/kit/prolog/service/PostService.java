@@ -1,6 +1,7 @@
 package kit.prolog.service;
 
 import kit.prolog.dto.LayoutDto;
+import kit.prolog.dto.PostDetailDto;
 import kit.prolog.dto.PostPreviewDto;
 import kit.prolog.dto.SuccessDto;
 import kit.prolog.repository.jpa.PostRepository;
@@ -34,10 +35,33 @@ public class PostService {
 
     /*
     * 특정 카테고리 게시글 조회 API
-    * 매개변수 : userName(사용자 계정), categoryName(카테고리명), cursor(마지막 게시글 pk)
+    * 매개변수 : account(사용자 계정), categoryName(카테고리명), cursor(마지막 게시글 pk)
     * 반환 :
     * */
-    public List<PostPreviewDto> viewPostsByCategory(String userName, String categoryName, int cursor){
+    public List<PostPreviewDto> viewPostsByCategory(String account, String categoryName, int cursor){
+        return postRepository.findPostByCategoryName(account, categoryName, cursor);
+    }
+
+    /*
+    * 게시글 상세조회 API
+    * 매개변수 : postId(게시글 pk)
+    * 반환 : PostDetailDto = 회원정보(작성자 닉네임, 이미지), 게시글정보(pk,제목,작성일자),
+    *                       레이아웃틀 pk, 레이아웃 리스트(pk, type, x/y 좌표, 가로/세로, explanation, content),
+    *                       카테고리(pk, name), 첨부파일 리스트(pk,이름,url), 태그 리스트(이름),
+    *                       조회수, 좋아요(count, exist), 댓글(id, 작성자, 내용, 작성일자, 상위댓글, block 여부)
+    * */
+    public PostDetailDto viewPostDetailById(Long postId){
         return null;
+    }
+
+    /*
+    * 게시글 삭제 API
+    * 매개변수 : postId(게시글 pk)
+    * 반환 : boolean
+    * 예외처리 필요 : IllegalArg, SQL Error(?)
+    * */
+    public boolean deletePost(Long postId){
+        postRepository.deleteById(postId);
+        return true;
     }
 }
