@@ -13,10 +13,19 @@ public class LayoutDto {
     private double coordinateY;
     private double width;
     private double height;
-    private String content;
+    private String context;
 
     public LayoutDto(Long id, int dtype) {
         this.id = id;
         this.dtype = dtype;
+    }
+
+    public LayoutDto(Long id, int dtype, double coordinateX, double coordinateY, double width, double height) {
+        this.id = id;
+        this.dtype = dtype;
+        this.coordinateX = coordinateX;
+        this.coordinateY = coordinateY;
+        this.width = width;
+        this.height = height;
     }
 }
