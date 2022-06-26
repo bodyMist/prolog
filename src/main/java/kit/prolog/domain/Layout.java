@@ -24,11 +24,9 @@ public class Layout {
     @ColumnDefault(value = "false")
     private Boolean main;       // 대표 레이아웃
 
+    @Column(name = "dtype", insertable = false, updatable = false)
+    protected int dtype;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Mold mold;
-
-    @Transient
-    public int getDiscriminatorValue(){
-        return Integer.parseInt(this.getClass().getAnnotation(DiscriminatorValue.class).value());
-    }
 }
