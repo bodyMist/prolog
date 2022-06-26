@@ -1,8 +1,11 @@
 package kit.prolog.domain;
 
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 
 @Entity(name = "LIKES")
+@NoArgsConstructor
 public class Like {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,4 +16,9 @@ public class Like {
     private User user;
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
+
+    public Like(User user, Post post) {
+        this.user = user;
+        this.post = post;
+    }
 }

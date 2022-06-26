@@ -1,11 +1,14 @@
 package kit.prolog.domain;
 
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "POSTS")
+@NoArgsConstructor
 public class Post {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,4 +29,8 @@ public class Post {
 
     @OneToMany(mappedBy = "post")
     private List<Like> likes = new ArrayList<>();
+
+    public Post(Long id) {
+        this.id = id;
+    }
 }
