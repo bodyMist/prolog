@@ -8,9 +8,9 @@ spring:
     ansi:
       enabled: always
   datasource:
-    url: jdbc:mysql://localhost:3306/prolog-dev?serverTimezone=Asia/Seoul
+    url: jdbc:mysql://localhost:3306/prolog?serverTimezone=Asia/Seoul
     username: root
-    password: 8344
+    password: tkd5957!@#
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:

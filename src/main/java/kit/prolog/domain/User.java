@@ -1,5 +1,6 @@
 package kit.prolog.domain;
 
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
@@ -9,6 +10,7 @@ import java.util.List;
 
 @Entity(name = "USERS")
 @NoArgsConstructor
+@Data
 public class User {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "USER_ID", nullable = false)

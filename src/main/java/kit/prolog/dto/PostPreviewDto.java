@@ -16,6 +16,6 @@ public class PostPreviewDto {
         this.postDto = new PostDto(postId, title, time.toLocalDate());
         this.likes = likes.intValue();
         this.userDto = new UserDto(name, image);
-        this.layoutDto = new LayoutDto(layout.getId(), layout.getDiscriminatorValue());
+        this.layoutDto = new LayoutDto(layout.getId(), layout.getDtype());
     }
 }

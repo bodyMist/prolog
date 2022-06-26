@@ -1,9 +1,12 @@
 package kit.prolog.service;
 
-import kit.prolog.dto.LayoutDto;
-import kit.prolog.dto.PostDetailDto;
-import kit.prolog.dto.PostPreviewDto;
-import kit.prolog.dto.SuccessDto;
+import kit.prolog.domain.Like;
+import kit.prolog.domain.Post;
+import kit.prolog.domain.User;
+import kit.prolog.dto.*;
+import kit.prolog.repository.jpa.LayoutRepository;
+import kit.prolog.repository.jpa.LikeRepository;
+import kit.prolog.repository.jpa.MoldRepository;
 import kit.prolog.repository.jpa.PostRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /*
 * 게시글 API 비즈니스 로직
@@ -24,6 +28,9 @@ import java.util.Map;
 @AllArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
+    private final MoldRepository moldRepository;
+    private final LayoutRepository layoutRepository;
 
     // 게시글 작성 API 비즈니스 로직
     // Request Body 데이터를 수정할 필요가 보임
@@ -31,6 +38,23 @@ public class PostService {
                                 List<LayoutDto> layouts, Long categoryId, Map<String, List<Object>>... args){
 
         return true;
+    }
+    /*
+    * 레이아웃 리스트 조회 API
+    * 매개변수 : moldId(레이아웃 틀 pk)
+    * 반환 : List<LayoutDto>
+    * */
+    public List<LayoutDto> viewLayoutsByMold(Long moldId){
+        return layoutRepository.findByMold_Id(moldId);
+    }
+
+    /*
+    * 레이아웃 틀 리스트 조회 API
+    * 매개변수 : userId(회원 pk)
+    * 반환 : List<MoldDto>
+    * */
+    public List<MoldDto> viewMyMolds(Long userId){
+        return moldRepository.findByUser_Id(userId);
     }
 
     /*
@@ -58,10 +82,30 @@ public class PostService {
     * 게시글 삭제 API
     * 매개변수 : postId(게시글 pk)
     * 반환 : boolean
-    * 예외처리 필요 : IllegalArg, SQL Error(?)
+    * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
     public boolean deletePost(Long postId){
         postRepository.deleteById(postId);
         return true;
+    }
+
+    /*
+    * 게시글 좋아요 API
+    * 매개변수 : postId(게시글 pk), userId(사용자 pk)
+    * 반환 : boolean
+    * 발생 가능 에러 : DataIntegrityViolationException(잘못된 데이터가 바인딩 되었을 때 발생)
+    * */
+    public boolean likePost(Long userId, Long postId){
+        Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
+        boolean result = false;
+        if(like.isPresent()){
+            likeRepository.delete(like.get());
+            log.info("좋아요 취소 Service 실행");
+        }else{
+            likeRepository.save(new Like(new User(userId), new Post(postId)));
+            log.info("좋아요 등록 Service 실행");
+            result = true;
+        }
+        return result;
     }
 }
