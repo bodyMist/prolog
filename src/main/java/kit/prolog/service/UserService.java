@@ -17,14 +17,14 @@ public class UserService {
 
     // email 회원가입
     public boolean createUserByEmail(User user){
-        // userRepository.save(user);
+        userRepository.save(user);
         // error catch 추가 예정
         return true;
     }
 
     // 소셜 회원가입
     public boolean createUserBySocial(User user){
-        // userRepository.save(user);
+        userRepository.save(user);
         // error catch 추가 예정
         return true;
     }
@@ -32,45 +32,74 @@ public class UserService {
     // 회원 정보 조회
     public User readUser(Long memberPk){
         User user = new User();
-        // user = userRepository.findOneById(memberPk);
+        try{
+            user = userRepository.findOneById(memberPk);
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+        }
+        return user;
         // user 존재하면 user 반환
         // 비어있는 user 반환
-        return user;
     }
 
     // 회원 정보 수정
-    public User updateUser(Long memberPk, User modifiedUser){
+    public boolean updateUser(Long memberPk, User modifiedUser){
         User user = new User();
-        /*user = userRepository.findOneById(memberPk);
-        user.setName(modifiedUser.getName());
-        user.setImage(modifiedUser.getImage());
-        user.setIntroduce(modifiedUser.getIntroduce());
-        user.setNickname(modifiedUser.getNickname());
-        user.setAlarm(modifiedUser.getAlarm());
-        userRepository.save(user);*/
-        return user;
+        try{
+            user = userRepository.findOneById(memberPk);
+            user.setName(modifiedUser.getName());
+            user.setImage(modifiedUser.getImage());
+            user.setIntroduce(modifiedUser.getIntroduce());
+            user.setNickname(modifiedUser.getNickname());
+            user.setAlarm(modifiedUser.getAlarm());
+            userRepository.save(user);
+            return true;
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+            return false;
+        }
     }
 
     // 회원 탈퇴
     public User deleteUser(Long memberPk){
         User user = new User();
-        /*user = userRepository.findOneById(memberPk);
-        userRepository.deleteById(memberPk);*/
+        try{
+            user = userRepository.findOneById(memberPk);
+            if(user != null)
+                userRepository.deleteById(memberPk);
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+        }
         return user;
     }
 
     // 로그인
     public boolean login(String account, String password){
         User user = new User();
-        /*user = userRepository.findByAccountAndPassword(account, password);*/
-        return true;
+        try{
+            user = userRepository.findByAccountAndPassword(account, password);
+            if(user != null)
+                return true;
+            else
+                return false;
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+            return false;
+        }
     }
 
     // 아이디 찾기
     public String searchAccount(String email){
         User user = new User();
-        user = userRepository.findOneByEmail(email);
-        return user.getAccount();
+        String account = "";
+        try{
+            user = userRepository.findOneByEmail(email);
+            account = user.getAccount();
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+            return account;
+        }
+        return account;
     }
 
     // 비밀번호 변경
@@ -85,7 +114,8 @@ public class UserService {
     }*/
 
     // email 인증
-/*    public void emailAuth(){
+    public boolean emailAuth(int emailAuthNumber){
 
-    }*/
+        return true;
+    }
 }

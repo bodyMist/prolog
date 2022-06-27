@@ -2,6 +2,7 @@ package kit.prolog.repository;
 
 import kit.prolog.domain.User;
 import kit.prolog.repository.jpa.UserRepository;
+import kit.prolog.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -16,14 +17,13 @@ public class UserRepositoryTest {
 
     @Test
     void 유저조회(){
-        User user = userRepository.findOneById(1L);
+        User user = userRepository.findOneById(2L);
         System.out.println(user.getName());
     }
 
     @Test
     void 회원가입(){
         User user = new User();
-
         user.setAccount("asdf111");
         user.setPassword("asdf12!");
         user.setEmail("tkdrms0301@naver.com");
@@ -37,8 +37,8 @@ public class UserRepositoryTest {
 
     @Test
     void 로그인(){
-        String account = "asdf12";
-        String password = "asdf12!";
+        String account = "sky834459";
+        String password = "8344";
         User user = userRepository.findByAccountAndPassword(account, password);
         System.out.println(user.getName());
         System.out.println(user.getAccount());
@@ -66,5 +66,12 @@ public class UserRepositoryTest {
         System.out.println(user.getName());
         userRepository.deleteById(memberpk);
         //return user;
+    }
+
+    @Test
+    void 아이디찾기(){
+        String email = "sky834459@gmail.com";
+        User user = userRepository.findOneByEmail(email);
+        System.out.println(user.getName());
     }
 }
