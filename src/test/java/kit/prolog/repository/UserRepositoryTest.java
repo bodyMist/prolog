@@ -11,13 +11,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 
 @SpringBootTest
-@Transactional
 public class UserRepositoryTest {
     @Autowired UserRepository userRepository;
 
     @Test
     void 유저조회(){
-        User user = userRepository.findOneById(2L);
+        User user = userRepository.findOneById(1L);
         System.out.println(user.getName());
     }
 
@@ -62,10 +61,9 @@ public class UserRepositoryTest {
     @Test
     void 회원탈퇴(){
         Long memberpk = 1L;
-        User user = userRepository.findOneById(memberpk);
-        System.out.println(user.getName());
+        // error 발생 user_id가 FK이기때문에 다른 칼럼에서 먼저 삭제 한 다음 user테이블에서 삭제가 가능하다
         userRepository.deleteById(memberpk);
-        //return user;
+        // return user;
     }
 
     @Test

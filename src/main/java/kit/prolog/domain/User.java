@@ -31,9 +31,9 @@ public class User {
     private String nickname;
     private String introduce;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user") // cascade = CascadeType.ALL,orphanRemoval = true
     private List<Like> likes = new ArrayList<>();
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "user") // cascade = CascadeType.ALL,orphanRemoval = true
     private List<Post> posts = new ArrayList<>();
 
     public User(Long id) {

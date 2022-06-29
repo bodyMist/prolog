@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-@Transactional
 @Service
 @Slf4j
 @AllArgsConstructor
@@ -17,6 +16,7 @@ public class UserService {
 
     // email 회원가입
     public boolean createUserByEmail(User user){
+        // email 중복확인
         userRepository.save(user);
         // error catch 추가 예정
         return true;
@@ -24,6 +24,8 @@ public class UserService {
 
     // 소셜 회원가입
     public boolean createUserBySocial(User user){
+        // email 중복확인
+        // account = email
         userRepository.save(user);
         // error catch 추가 예정
         return true;
@@ -43,7 +45,7 @@ public class UserService {
     }
 
     // 회원 정보 수정
-    public boolean updateUser(Long memberPk, User modifiedUser){
+    public User updateUser(Long memberPk, User modifiedUser){
         User user = new User();
         try{
             user = userRepository.findOneById(memberPk);
@@ -53,11 +55,10 @@ public class UserService {
             user.setNickname(modifiedUser.getNickname());
             user.setAlarm(modifiedUser.getAlarm());
             userRepository.save(user);
-            return true;
         }catch (NullPointerException e){
             System.out.println("Error : no user");
-            return false;
         }
+        return user;
     }
 
     // 회원 탈퇴
@@ -75,7 +76,7 @@ public class UserService {
 
     // 로그인
     public boolean login(String account, String password){
-        User user = new User();
+        User user;
         try{
             user = userRepository.findByAccountAndPassword(account, password);
             if(user != null)
@@ -90,7 +91,7 @@ public class UserService {
 
     // 아이디 찾기
     public String searchAccount(String email){
-        User user = new User();
+        User user;
         String account = "";
         try{
             user = userRepository.findOneByEmail(email);
@@ -102,20 +103,18 @@ public class UserService {
         return account;
     }
 
-    // 비밀번호 변경
-    /*public String changePassword(){
-        String password = "";
-        return password;
-    }*/
-
-    // email 발송
-/*    public void sendEmail(){
-
-    }*/
-
-    // email 인증
-    public boolean emailAuth(int emailAuthNumber){
-
-        return true;
+    // 비밀번호 변경을 위한 user 검색
+    public boolean changePassword(String account, String password){
+        User user;
+        try{
+            user = userRepository.findByAccountAndPassword(account, password);
+            if(user != null)
+                return true;
+            else
+                return false;
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+            return false;
+        }
     }
 }
