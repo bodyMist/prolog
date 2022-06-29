@@ -16,17 +16,19 @@ public class UserService {
 
     // email 회원가입
     public boolean createUserByEmail(User user){
-        // email 중복확인
-        userRepository.save(user);
+        if(userRepository.existsUserByEmail(user.getEmail())){
+            userRepository.save(user);
+        }
         // error catch 추가 예정
         return true;
     }
 
     // 소셜 회원가입
     public boolean createUserBySocial(User user){
-        // email 중복확인
-        // account = email
-        userRepository.save(user);
+        if(userRepository.existsUserByEmail(user.getEmail())){
+            userRepository.save(user);
+            // account = email
+        }
         // error catch 추가 예정
         return true;
     }

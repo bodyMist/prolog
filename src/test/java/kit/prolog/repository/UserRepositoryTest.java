@@ -72,4 +72,10 @@ public class UserRepositoryTest {
         User user = userRepository.findOneByEmail(email);
         System.out.println(user.getName());
     }
+
+    @Test
+    void 중복체크(){
+        String email = "tkdrms0301@naver.com";
+        System.out.println(userRepository.existsUserByEmail(email));
+    }
 }
