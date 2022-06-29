@@ -32,14 +32,20 @@ public class PostService {
     private final MoldRepository moldRepository;
     private final LayoutRepository layoutRepository;
 
-    // 게시글 작성 API 비즈니스 로직
-    // Request Body 데이터를 수정할 필요가 보임
+
+    /**
+     *게시글 작성 API 비즈니스 로직
+     * Request Body 데이터를 수정할 필요가 보임
+     * */
     public boolean writePost(Long userId, Long moldId, String title,
                                 List<LayoutDto> layouts, Long categoryId, Map<String, List<Object>>... args){
 
         return true;
     }
-    /*
+
+
+
+    /**
     * 레이아웃 리스트 조회 API
     * 매개변수 : moldId(레이아웃 틀 pk)
     * 반환 : List<LayoutDto>
@@ -48,7 +54,7 @@ public class PostService {
         return layoutRepository.findByMold_Id(moldId);
     }
 
-    /*
+    /**
     * 레이아웃 틀 리스트 조회 API
     * 매개변수 : userId(회원 pk)
     * 반환 : List<MoldDto>
@@ -57,16 +63,16 @@ public class PostService {
         return moldRepository.findByUser_Id(userId);
     }
 
-    /*
+    /**
     * 특정 카테고리 게시글 조회 API
     * 매개변수 : account(사용자 계정), categoryName(카테고리명), cursor(마지막 게시글 pk)
-    * 반환 :
+    * 반환 : List<PostPreviewDto>
     * */
     public List<PostPreviewDto> viewPostsByCategory(String account, String categoryName, int cursor){
         return postRepository.findPostByCategoryName(account, categoryName, cursor);
     }
 
-    /*
+    /**
     * 게시글 상세조회 API
     * 매개변수 : postId(게시글 pk)
     * 반환 : PostDetailDto = 회원정보(작성자 닉네임, 이미지), 게시글정보(pk,제목,작성일자),
@@ -78,7 +84,7 @@ public class PostService {
         return null;
     }
 
-    /*
+    /**
     * 게시글 삭제 API
     * 매개변수 : postId(게시글 pk)
     * 반환 : boolean
@@ -89,7 +95,7 @@ public class PostService {
         return true;
     }
 
-    /*
+    /**
     * 게시글 좋아요 API
     * 매개변수 : postId(게시글 pk), userId(사용자 pk)
     * 반환 : boolean
