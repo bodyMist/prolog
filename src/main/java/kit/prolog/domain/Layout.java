@@ -1,6 +1,8 @@
 package kit.prolog.domain;
 
+import kit.prolog.dto.LayoutDto;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
 
 import javax.persistence.*;
@@ -9,6 +11,7 @@ import javax.persistence.*;
 @Entity(name = "LAYOUTS")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(discriminatorType = DiscriminatorType.INTEGER)
+@NoArgsConstructor
 public class Layout {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,4 +32,13 @@ public class Layout {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Mold mold;
+
+    public Layout(LayoutDto layoutDto, Mold mold) {
+        this.coordinateX = layoutDto.getCoordinateX();
+        this.coordinateY = layoutDto.getCoordinateY();
+        this.width = layoutDto.getWidth();
+        this.height = layoutDto.getHeight();
+        this.dtype = layoutDto.getDtype();
+        this.mold = mold;
+    }
 }

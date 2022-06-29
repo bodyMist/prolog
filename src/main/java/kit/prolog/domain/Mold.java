@@ -1,10 +1,13 @@
 package kit.prolog.domain;
 
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "MOLDS")
+@NoArgsConstructor
 public class Mold {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,4 +23,12 @@ public class Mold {
     private List<Post> posts = new ArrayList<>();
     @OneToMany(mappedBy = "mold")
     private List<Layout> layouts = new ArrayList<>();
+
+    public Mold(Long id) {
+        this.id = id;
+    }
+    public Mold(String name, User user) {
+        this.name = name;
+        this.user = user;
+    }
 }
