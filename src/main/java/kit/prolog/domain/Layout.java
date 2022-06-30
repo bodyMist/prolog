@@ -41,4 +41,8 @@ public class Layout {
         this.dtype = layoutDto.getDtype();
         this.mold = mold;
     }
+
+    public void setMold(Mold mold) {
+        this.mold = mold;
+    }
 }
