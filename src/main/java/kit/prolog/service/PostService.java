@@ -8,7 +8,6 @@ import kit.prolog.repository.jpa.MoldRepository;
 import kit.prolog.repository.jpa.PostRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,18 +29,6 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final MoldRepository moldRepository;
     private final LayoutRepository layoutRepository;
-
-
-    /**
-     *게시글 작성 API 비즈니스 로직
-     * Request Body 데이터를 수정할 필요가 보임
-     * */
-    public boolean writePost(Long userId, Long moldId, String title,
-                                List<LayoutDto> layouts, Long categoryId, Map<String, List<Object>>... args){
-
-        return true;
-    }
-
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -102,6 +89,35 @@ public class PostService {
         return moldRepository.findByUser_Id(userId);
     }
 
+    /**
+     * 레이아웃 틀 삭제 API
+     * 매개변수 : moldId(레이아웃 틀 pk)
+     * 반환 : boolean
+     * 에러처리 : FK 오류가 다분함
+     * */
+    public boolean deleteMold(Long moldId){
+        List<Layout> layoutList = layoutRepository.findLayoutByMold_Id(moldId);
+        layoutList.forEach(layoutRepository::delete);
+
+        List<Post> postList = postRepository.findByMold_Id(moldId);
+        postList.forEach(post -> {
+            post.setMold(null);
+            postRepository.save(post);
+        });
+
+        moldRepository.deleteById(moldId);
+        return true;
+    }
+
+    /**
+     *게시글 작성 API 비즈니스 로직
+     * Request Body 데이터를 수정할 필요가 보임
+     * */
+    public boolean writePost(Long userId, Long moldId, String title,
+                             List<LayoutDto> layouts, Long categoryId, Map<String, List<Object>>... args){
+
+        return true;
+    }
     /**
     * 특정 카테고리 게시글 조회 API
     * 매개변수 : account(사용자 계정), categoryName(카테고리명), cursor(마지막 게시글 pk)

@@ -33,4 +33,8 @@ public class Post {
     public Post(Long id) {
         this.id = id;
     }
+
+    public void setMold(Mold mold) {
+        this.mold = mold;
+    }
 }

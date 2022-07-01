@@ -1,9 +1,11 @@
 package kit.prolog.repository;
 
 import kit.prolog.domain.Like;
+import kit.prolog.domain.Mold;
 import kit.prolog.domain.Post;
 import kit.prolog.domain.User;
 import kit.prolog.repository.jpa.LikeRepository;
+import kit.prolog.repository.jpa.MoldRepository;
 import kit.prolog.repository.jpa.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,7 @@ import java.util.Optional;
 public class PostRepositoryTest {
     @Autowired private PostRepository postRepository;
     @Autowired private LikeRepository likeRepository;
+    @Autowired private MoldRepository moldRepository;
 
     @Test
     void 카테고리별_게시글_조회(){
@@ -40,5 +43,11 @@ public class PostRepositoryTest {
             likeRepository.save(new Like(new User(userId), new Post(postId)));
             System.out.println("좋아요 등록");
         }
+    }
+
+    @Test
+    void 레이아웃틀_삭제(){
+        Long moldId = 1L;
+        moldRepository.delete(new Mold(moldId));
     }
 }
