@@ -5,4 +5,5 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class SuccessDto {
     private boolean success;
+    private Object data;
 }
