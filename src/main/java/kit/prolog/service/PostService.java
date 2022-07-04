@@ -41,15 +41,15 @@ public class PostService {
      * update문은 spring jpa save로 사용.
      * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
      * */
-    public boolean saveLayouts(Long userId, String moldName, List<LayoutDto> layoutData){
+    public List<LayoutDto> saveLayouts(Long userId, String moldName, List<LayoutDto> layoutData){
         Mold savedMold = moldRepository.save(new Mold(moldName, new User(userId)));
-        List<Integer> result = new ArrayList<>();
+        List<LayoutDto> result = new ArrayList<>();
         layoutData.forEach(layoutDto -> {
             Layout layout = layoutRepository.save(new Layout(layoutDto, savedMold));
-            result.add(layout.getId().intValue());
+            result.add(new LayoutDto(layout));
         });
 
-        return true;
+        return result;
     }
     /**
      * 레이아웃 작성 API - moldId가 있을 때
@@ -96,9 +96,9 @@ public class PostService {
      * 에러처리 : FK 오류가 다분함
      * */
     public boolean deleteMold(Long moldId){
-        List<Layout> layoutList = layoutRepository.findLayoutByMold_Id(moldId);
-        layoutList.forEach(layoutRepository::delete);
-
+//        List<Layout> layoutList = layoutRepository.findLayoutByMold_Id(moldId);
+//        layoutList.forEach(layoutRepository::delete);
+//
         List<Post> postList = postRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
             post.setMold(null);

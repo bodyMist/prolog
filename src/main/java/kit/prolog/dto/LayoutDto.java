@@ -1,5 +1,6 @@
 package kit.prolog.dto;
 
+import kit.prolog.domain.Layout;
 import lombok.Getter;
 import lombok.ToString;
 
@@ -40,5 +41,14 @@ public class LayoutDto {
         this.coordinateY = coordinateY;
         this.width = width;
         this.height = height;
+    }
+    
+    // 레이아웃 작성 service layer
+    public LayoutDto(Layout layout){
+        this.dtype = layout.getDtype();
+        this.coordinateX = layout.getCoordinateX();
+        this.coordinateY = layout.getCoordinateY();
+        this.width = layout.getWidth();
+        this.height = layout.getHeight();
     }
 }

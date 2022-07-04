@@ -25,10 +25,11 @@ public class PostController {
      * 세션 구현 전까지 직접 클라이언트가 매개로 전송
      * */
     @PostMapping("/layout")
-    public boolean createLayout(@RequestHeader(value = "memberpk")Long userId, String moldName, List<LayoutDto> layouts){
+    public SuccessDto createLayout(@RequestHeader(value = "memberpk")Long userId, String moldName, List<LayoutDto> layouts){
         // 세션에서 user 정보 가져와야 함
 
-        return postService.saveLayouts(userId, moldName, layouts);
+        List<LayoutDto> layoutDtos = postService.saveLayouts(userId, moldName, layouts);
+        return new SuccessDto(true, layoutDtos);
     }
     /**
      * 레이아웃 리스트 조회 API
