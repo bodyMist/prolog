@@ -34,7 +34,7 @@ public class PostService {
      * 레이아웃 작성 API - moldId가 없을 때
      * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
      * 매개변수 : userId(사용자 pk), moldName(레이아웃틀 이름), List<LayoutDto> (레이아웃 데이터)
-     * 반환 : boolean?? 게시글 작성 API를 위해 Layout id를 반환??
+     * 반환 : List<LayoutDto> pk를 포함한 저장된 결과 반환
      *
      * !!Warning!!
      * 레이아웃 content는 이후 게시글 작성 API에서 이루어짐
@@ -48,27 +48,26 @@ public class PostService {
             Layout layout = layoutRepository.save(new Layout(layoutDto, savedMold));
             result.add(new LayoutDto(layout));
         });
-
         return result;
     }
     /**
      * 레이아웃 작성 API - moldId가 있을 때
      * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
      * 매개변수 : userId(사용자 pk), moldId(레이아웃 틀 pk), moldName(레이아웃틀 이름), List<LayoutDto> (레이아웃 데이터)
-     * 반환 : boolean
+     * 반환 : List<LayoutDto> pk를 포함한 저장된 결과 반환
      *
      * !!Warning!!
      * 레이아웃 content는 이후 게시글 작성 API에서 이루어짐
      * update문은 spring jpa save로 사용.
      * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
      * */
-    public boolean saveLayouts(Long userId, Long moldId, String moldName, List<LayoutDto> layoutData){
-        List<Integer> result = new ArrayList<>();
+    public List<LayoutDto> saveLayouts(Long userId, Long moldId, String moldName, List<LayoutDto> layoutData){
+        List<LayoutDto> result = new ArrayList<>();
         layoutData.forEach(layoutDto -> {
             Layout layout = layoutRepository.save(new Layout(layoutDto, new Mold(moldId)));
-            result.add(layout.getId().intValue());
+            result.add(new LayoutDto(layout));
         });
-        return true;
+        return result;
     }
 
     /**
