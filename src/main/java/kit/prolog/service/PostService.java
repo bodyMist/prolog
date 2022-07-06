@@ -92,19 +92,16 @@ public class PostService {
      * 레이아웃 틀 삭제 API
      * 매개변수 : moldId(레이아웃 틀 pk)
      * 반환 : boolean
-     * 에러처리 : FK 오류가 다분함
+     * 에러처리 :
      * */
     public boolean deleteMold(Long moldId){
-//        List<Layout> layoutList = layoutRepository.findLayoutByMold_Id(moldId);
-//        layoutList.forEach(layoutRepository::delete);
-//
+        Optional<Mold> mold = moldRepository.findById(moldId);
         List<Post> postList = postRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
             post.setMold(null);
-            postRepository.save(post);
+            postRepository.saveAndFlush(post);
         });
-
-        moldRepository.deleteById(moldId);
+        moldRepository.delete(mold.get());
         return true;
     }
 
