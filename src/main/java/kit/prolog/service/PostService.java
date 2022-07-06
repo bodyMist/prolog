@@ -2,15 +2,13 @@ package kit.prolog.service;
 
 import kit.prolog.domain.*;
 import kit.prolog.dto.*;
-import kit.prolog.repository.jpa.LayoutRepository;
-import kit.prolog.repository.jpa.LikeRepository;
-import kit.prolog.repository.jpa.MoldRepository;
-import kit.prolog.repository.jpa.PostRepository;
+import kit.prolog.repository.jpa.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +27,8 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final MoldRepository moldRepository;
     private final LayoutRepository layoutRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -106,12 +106,56 @@ public class PostService {
     }
 
     /**
-     *게시글 작성 API 비즈니스 로직
-     * Request Body 데이터를 수정할 필요가 보임
+     * 게시글 작성 API 비즈니스 로직
+     * 매개변수 : userId(사용자 pk), moldId(레이아웃 틀 pk),
+     *          title(게시글 제목), layouts(레이아웃 데이터 리스트), categoryid(카테고리 pk)
+     * 반환 : boolean
+     * 에러처리 :
      * */
     public boolean writePost(Long userId, Long moldId, String title,
-                             List<LayoutDto> layouts, Long categoryId, Map<String, List<Object>>... args){
+                             List<LayoutDto> layoutDtos, Long categoryId){
+        Optional<Mold> mold = moldRepository.findById(moldId);
+        Optional<User> user = userRepository.findById(userId);
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        if(!mold.isPresent() || !user.isPresent() || !category.isPresent()){
+            return false;
+        }
 
+        Post post = new Post(title, LocalDateTime.now(),user.get(), category.get(), mold.get());
+        postRepository.save(post);
+
+        layoutDtos.forEach(layoutDto -> {
+            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                Layout input = null;
+                switch (layout.getDtype()){
+                    case 1:
+                        input = new Context(layoutDto.getContext());
+                        break;
+                    case 2:
+                        input = new Image(layoutDto.getContext());
+                        break;
+                    case 3:
+                        input = new Code(layoutDto.getContext());
+                        break;
+                    case 4:
+                        input = new Hyperlink(layoutDto.getContext());
+                        break;
+                    case 5:
+                        input = new Mathematics(layoutDto.getContext());
+                        break;
+                    case 6:
+                        input = new Video(layoutDto.getContext());
+                        break;
+                    case 7:
+                        input = new Document(layoutDto.getContext());
+                        break;
+                    default:
+                        input = new Layout();
+                        break;
+                }
+                layoutRepository.save(input);
+            });
+        });
         return true;
     }
     /**
