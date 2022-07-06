@@ -25,13 +25,17 @@ public class Layout {
     private String explanation;
     @Column(nullable = false)
     @ColumnDefault(value = "false")
-    private Boolean main;       // 대표 레이아웃
+    private Boolean main = false;       // 대표 레이아웃
 
     @Column(name = "dtype", insertable = false, updatable = false)
     protected int dtype;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Mold mold;
+
+    public Layout(Long id) {
+        this.id = id;
+    }
 
     public Layout(LayoutDto layoutDto, Mold mold) {
         this.coordinateX = layoutDto.getCoordinateX();

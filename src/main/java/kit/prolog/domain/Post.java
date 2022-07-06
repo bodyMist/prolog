@@ -39,4 +39,12 @@ public class Post {
     public void setMold(Mold mold) {
         this.mold = mold;
     }
+
+    public Post(String title, LocalDateTime time, User user, Category category, Mold mold) {
+        this.title = title;
+        this.time = time;
+        this.user = user;
+        this.category = category;
+        this.mold = mold;
+    }
 }
