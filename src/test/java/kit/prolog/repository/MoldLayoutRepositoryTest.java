@@ -1,15 +1,19 @@
 package kit.prolog.repository;
 
+import kit.prolog.domain.Mold;
+import kit.prolog.domain.Post;
 import kit.prolog.dto.LayoutDto;
 import kit.prolog.dto.MoldDto;
 import kit.prolog.repository.jpa.LayoutRepository;
 import kit.prolog.repository.jpa.MoldRepository;
+import kit.prolog.repository.jpa.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,6 +22,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MoldLayoutRepositoryTest {
     @Autowired MoldRepository moldRepository;
     @Autowired LayoutRepository layoutRepository;
+    @Autowired PostRepository postRepository;
 
     @Test
     void 레이아웃틀_조회(){
@@ -35,5 +40,17 @@ public class MoldLayoutRepositoryTest {
         System.out.println(layoutList);
         // Projection 확인
         assertThat(layoutList.get(0).getClass()).isEqualTo(LayoutDto.class);
+    }
+
+    @Test
+    void 레이아웃틀_삭제(){
+        Long moldId = 1L;
+        Optional<Mold> mold = moldRepository.findById(moldId);
+        List<Post> postList = postRepository.findByMold_Id(moldId);
+        postList.forEach(post -> {
+            post.setMold(null);
+            postRepository.saveAndFlush(post);
+        });
+        moldRepository.delete(mold.get());
     }
 }
