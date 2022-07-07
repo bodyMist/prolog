@@ -1,9 +1,6 @@
 package kit.prolog.controller;
 
-import kit.prolog.dto.LayoutDto;
-import kit.prolog.dto.MoldDto;
-import kit.prolog.dto.PostPreviewDto;
-import kit.prolog.dto.SuccessDto;
+import kit.prolog.dto.*;
 import kit.prolog.service.PostService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +58,25 @@ public class PostController {
     /**
      * 게시글 작성 API
      * */
+    @PostMapping("/board")
+    public SuccessDto createPost(@RequestHeader(value = "memberpk")Long userId,
+                                 @RequestBody Long moldId,
+                                 @RequestBody String title,
+                                 @RequestBody List<LayoutDto> layoutDtos,
+                                 @RequestBody Long categoryId,
+                                 @RequestBody(required = false) List<AttachmentDto> attachments,
+                                 @RequestBody(required = false) List<String> tags){
+        HashMap<String, Object> params = new HashMap<>();
+        if (attachments != null) {
+            params.put("attachments", attachments);
+        }
+        if (tags != null) {
+            params.put("tags", tags);
+        }
+        postService.writePost(userId, moldId, title, layoutDtos, categoryId, params);
+
+        return new SuccessDto(true);
+    }
 
     /**
      * 특정 카테고리 게시글 조회 API

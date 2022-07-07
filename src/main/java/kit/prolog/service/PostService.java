@@ -9,10 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 /*
 * 게시글 API 비즈니스 로직
@@ -29,6 +26,9 @@ public class PostService {
     private final LayoutRepository layoutRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final AttachmentRepository attachmentRepository;
+    private final TagRepository tagRepository;
+    private final PostTagRepository postTagRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -108,21 +108,23 @@ public class PostService {
     /**
      * 게시글 작성 API 비즈니스 로직
      * 매개변수 : userId(사용자 pk), moldId(레이아웃 틀 pk),
-     *          title(게시글 제목), layouts(레이아웃 데이터 리스트), categoryid(카테고리 pk)
-     * 반환 : boolean
+     *          title(게시글 제목), layouts(레이아웃 데이터 리스트), categoryid(카테고리 pk),
+     *          param(태그 또는 첨부파일)
+     * 반환 : Long(게시글 pk)
      * 에러처리 :
      * */
-    public boolean writePost(Long userId, Long moldId, String title,
-                             List<LayoutDto> layoutDtos, Long categoryId){
+    public Long writePost(Long userId, Long moldId, String title,
+                          List<LayoutDto> layoutDtos, Long categoryId,
+                          HashMap<String, Object> param){
         Optional<Mold> mold = moldRepository.findById(moldId);
         Optional<User> user = userRepository.findById(userId);
         Optional<Category> category = categoryRepository.findById(categoryId);
         if(!mold.isPresent() || !user.isPresent() || !category.isPresent()){
-            return false;
+            throw new IllegalArgumentException("잘못된 접근입니다.");
         }
 
         Post post = new Post(title, LocalDateTime.now(),user.get(), category.get(), mold.get());
-        postRepository.save(post);
+        Post savedPost = postRepository.save(post);
 
         layoutDtos.forEach(layoutDto -> {
             layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
@@ -153,11 +155,32 @@ public class PostService {
                         input = new Layout();
                         break;
                 }
+                input.setMold(mold.get());
                 layoutRepository.save(input);
             });
         });
-        return true;
+        if (!param.isEmpty()){
+            if(param.containsKey("tags")){
+                List<String> tagList = (List<String>) param.get("tags");
+                tagList.forEach(tag -> {
+                    Tag tagEntity = new Tag(tag);
+                    tagRepository.save(tagEntity);
+                    PostTag postTag = new PostTag(savedPost, tagEntity);
+                    postTagRepository.save(postTag);
+                });
+            }
+            if(param.containsKey("attachments")){
+                List<AttachmentDto> attachmentList = (List<AttachmentDto>) param.get("attachments");
+                attachmentList.forEach(attachmentDto -> {
+                    Attachment attachment = new Attachment(attachmentDto, savedPost);
+                    attachmentRepository.save(attachment);
+                });
+            }
+        }
+
+        return savedPost.getId();
     }
+
     /**
     * 특정 카테고리 게시글 조회 API
     * 매개변수 : account(사용자 계정), categoryName(카테고리명), cursor(마지막 게시글 pk)
