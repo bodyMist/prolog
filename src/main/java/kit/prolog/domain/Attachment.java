@@ -1,8 +1,12 @@
 package kit.prolog.domain;
 
+import kit.prolog.dto.AttachmentDto;
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 
 @Entity(name = "ATTACHMENTS")
+@NoArgsConstructor
 public class Attachment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,4 +21,15 @@ public class Attachment {
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Post post;
+
+    // 게시글 작성 api
+    public Attachment(AttachmentDto dto, Post post) {
+        this.id = dto.getId();
+        this.url = dto.getUrl();
+        this.post = post;
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
+    }
 }

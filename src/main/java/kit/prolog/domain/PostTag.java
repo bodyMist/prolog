@@ -1,8 +1,11 @@
 package kit.prolog.domain;
 
+import lombok.NoArgsConstructor;
+
 import javax.persistence.*;
 
 @Entity(name = "POSTS_AND_TAGS")
+@NoArgsConstructor
 public class PostTag {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -13,4 +16,9 @@ public class PostTag {
     private Post post;
     @ManyToOne(fetch = FetchType.LAZY)
     private Tag tag;
+
+    public PostTag(Post post, Tag tag) {
+        this.post = post;
+        this.tag = tag;
+    }
 }
