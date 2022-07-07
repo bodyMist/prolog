@@ -4,9 +4,7 @@ import kit.prolog.domain.User;
 import kit.prolog.repository.jpa.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
@@ -57,16 +55,22 @@ public class UserService {
             user.setNickname(modifiedUser.getNickname());
             user.setAlarm(modifiedUser.getAlarm());
             userRepository.save(user);
+            user = userRepository.findOneById(memberPk);
+            return user;
         }catch (NullPointerException e){
             System.out.println("Error : no user");
+            return null;
         }
-        return user;
     }
 
     // 회원 탈퇴
     public User deleteUser(Long memberPk){
         User user = new User();
         try{
+            //mold 삭제
+            //댓글 삭제
+            //좋아요 삭제
+            //카테고리 삭제
             user = userRepository.findOneById(memberPk);
             if(user != null)
                 userRepository.deleteById(memberPk);
@@ -98,11 +102,11 @@ public class UserService {
         try{
             user = userRepository.findOneByEmail(email);
             account = user.getAccount();
+            return account;
         }catch (NullPointerException e){
             System.out.println("Error : no user");
             return account;
         }
-        return account;
     }
 
     // 비밀번호 변경을 위한 user 검색

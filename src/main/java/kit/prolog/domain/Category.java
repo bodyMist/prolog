@@ -24,5 +24,6 @@ public class Category {
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;
     @OneToMany(mappedBy = "category")
-    private List<Post> posts = new ArrayList<>();
+    //private List<Post> posts = new ArrayList<>();
+    private List<Post> posts;
 }
