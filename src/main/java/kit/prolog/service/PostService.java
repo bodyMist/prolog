@@ -2,19 +2,14 @@ package kit.prolog.service;
 
 import kit.prolog.domain.*;
 import kit.prolog.dto.*;
-import kit.prolog.repository.jpa.LayoutRepository;
-import kit.prolog.repository.jpa.LikeRepository;
-import kit.prolog.repository.jpa.MoldRepository;
-import kit.prolog.repository.jpa.PostRepository;
+import kit.prolog.repository.jpa.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.LocalDateTime;
+import java.util.*;
 
 /*
 * 게시글 API 비즈니스 로직
@@ -29,46 +24,50 @@ public class PostService {
     private final LikeRepository likeRepository;
     private final MoldRepository moldRepository;
     private final LayoutRepository layoutRepository;
+    private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
+    private final AttachmentRepository attachmentRepository;
+    private final TagRepository tagRepository;
+    private final PostTagRepository postTagRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
      * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
      * 매개변수 : userId(사용자 pk), moldName(레이아웃틀 이름), List<LayoutDto> (레이아웃 데이터)
-     * 반환 : boolean?? 게시글 작성 API를 위해 Layout id를 반환??
+     * 반환 : List<LayoutDto> pk를 포함한 저장된 결과 반환
      *
      * !!Warning!!
      * 레이아웃 content는 이후 게시글 작성 API에서 이루어짐
      * update문은 spring jpa save로 사용.
      * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
      * */
-    public boolean saveLayouts(Long userId, String moldName, List<LayoutDto> layoutData){
+    public List<LayoutDto> saveLayouts(Long userId, String moldName, List<LayoutDto> layoutData){
         Mold savedMold = moldRepository.save(new Mold(moldName, new User(userId)));
-        List<Integer> result = new ArrayList<>();
+        List<LayoutDto> result = new ArrayList<>();
         layoutData.forEach(layoutDto -> {
             Layout layout = layoutRepository.save(new Layout(layoutDto, savedMold));
-            result.add(layout.getId().intValue());
+            result.add(new LayoutDto(layout));
         });
-
-        return true;
+        return result;
     }
     /**
      * 레이아웃 작성 API - moldId가 있을 때
      * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
      * 매개변수 : userId(사용자 pk), moldId(레이아웃 틀 pk), moldName(레이아웃틀 이름), List<LayoutDto> (레이아웃 데이터)
-     * 반환 : boolean
+     * 반환 : List<LayoutDto> pk를 포함한 저장된 결과 반환
      *
      * !!Warning!!
      * 레이아웃 content는 이후 게시글 작성 API에서 이루어짐
      * update문은 spring jpa save로 사용.
      * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
      * */
-    public boolean saveLayouts(Long userId, Long moldId, String moldName, List<LayoutDto> layoutData){
-        List<Integer> result = new ArrayList<>();
+    public List<LayoutDto> saveLayouts(Long userId, Long moldId, String moldName, List<LayoutDto> layoutData){
+        List<LayoutDto> result = new ArrayList<>();
         layoutData.forEach(layoutDto -> {
             Layout layout = layoutRepository.save(new Layout(layoutDto, new Mold(moldId)));
-            result.add(layout.getId().intValue());
+            result.add(new LayoutDto(layout));
         });
-        return true;
+        return result;
     }
 
     /**
@@ -93,31 +92,95 @@ public class PostService {
      * 레이아웃 틀 삭제 API
      * 매개변수 : moldId(레이아웃 틀 pk)
      * 반환 : boolean
-     * 에러처리 : FK 오류가 다분함
+     * 에러처리 :
      * */
     public boolean deleteMold(Long moldId){
-        List<Layout> layoutList = layoutRepository.findLayoutByMold_Id(moldId);
-        layoutList.forEach(layoutRepository::delete);
-
+        Optional<Mold> mold = moldRepository.findById(moldId);
         List<Post> postList = postRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
             post.setMold(null);
-            postRepository.save(post);
+            postRepository.saveAndFlush(post);
         });
-
-        moldRepository.deleteById(moldId);
+        moldRepository.delete(mold.get());
         return true;
     }
 
     /**
-     *게시글 작성 API 비즈니스 로직
-     * Request Body 데이터를 수정할 필요가 보임
+     * 게시글 작성 API 비즈니스 로직
+     * 매개변수 : userId(사용자 pk), moldId(레이아웃 틀 pk),
+     *          title(게시글 제목), layouts(레이아웃 데이터 리스트), categoryid(카테고리 pk),
+     *          param(태그 또는 첨부파일)
+     * 반환 : Long(게시글 pk)
+     * 에러처리 :
      * */
-    public boolean writePost(Long userId, Long moldId, String title,
-                             List<LayoutDto> layouts, Long categoryId, Map<String, List<Object>>... args){
+    public Long writePost(Long userId, Long moldId, String title,
+                          List<LayoutDto> layoutDtos, Long categoryId,
+                          HashMap<String, Object> param){
+        Optional<Mold> mold = moldRepository.findById(moldId);
+        Optional<User> user = userRepository.findById(userId);
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        if(!mold.isPresent() || !user.isPresent() || !category.isPresent()){
+            throw new IllegalArgumentException("잘못된 접근입니다.");
+        }
 
-        return true;
+        Post post = new Post(title, LocalDateTime.now(),user.get(), category.get(), mold.get());
+        Post savedPost = postRepository.save(post);
+
+        layoutDtos.forEach(layoutDto -> {
+            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                Layout input = null;
+                switch (layout.getDtype()){
+                    case 1:
+                        input = new Context(layoutDto.getContext());
+                        break;
+                    case 2:
+                        input = new Image(layoutDto.getContext());
+                        break;
+                    case 3:
+                        input = new Code(layoutDto.getContext());
+                        break;
+                    case 4:
+                        input = new Hyperlink(layoutDto.getContext());
+                        break;
+                    case 5:
+                        input = new Mathematics(layoutDto.getContext());
+                        break;
+                    case 6:
+                        input = new Video(layoutDto.getContext());
+                        break;
+                    case 7:
+                        input = new Document(layoutDto.getContext());
+                        break;
+                    default:
+                        input = new Layout();
+                        break;
+                }
+                input.setMold(mold.get());
+                layoutRepository.save(input);
+            });
+        });
+        if (!param.isEmpty()){
+            if(param.containsKey("tags")){
+                List<String> tagList = (List<String>) param.get("tags");
+                tagList.forEach(tag -> {
+                    Tag tagEntity = new Tag(tag);
+                    tagRepository.save(tagEntity);
+                    PostTag postTag = new PostTag(savedPost, tagEntity);
+                    postTagRepository.save(postTag);
+                });
+            }
+            if(param.containsKey("attachments")){
+                List<AttachmentDto> attachmentList = (List<AttachmentDto>) param.get("attachments");
+                attachmentList.forEach(attachmentDto -> {
+                    Attachment attachment = new Attachment(attachmentDto, savedPost);
+                    attachmentRepository.save(attachment);
+                });
+            }
+        }
+
+        return savedPost.getId();
     }
+
     /**
     * 특정 카테고리 게시글 조회 API
     * 매개변수 : account(사용자 계정), categoryName(카테고리명), cursor(마지막 게시글 pk)

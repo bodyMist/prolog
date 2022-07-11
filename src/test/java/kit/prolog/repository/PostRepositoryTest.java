@@ -1,7 +1,6 @@
 package kit.prolog.repository;
 
 import kit.prolog.domain.Like;
-import kit.prolog.domain.Mold;
 import kit.prolog.domain.Post;
 import kit.prolog.domain.User;
 import kit.prolog.repository.jpa.LikeRepository;
@@ -12,7 +11,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 @Transactional
@@ -46,8 +48,19 @@ public class PostRepositoryTest {
     }
 
     @Test
-    void 레이아웃틀_삭제(){
+    void 게시글_레이아웃틀_비우기(){
+        //given
         Long moldId = 1L;
-        moldRepository.delete(new Mold(moldId));
+        List<Post> posts = postRepository.findByMold_Id(moldId);
+        //when
+        posts.forEach(post -> {
+            post.setMold(null);
+            postRepository.saveAndFlush(post);
+        });
+        posts.forEach(post -> System.out.println(post.getMold()));
+
+        assertThat(posts)
+                .filteredOn(post -> post.getMold() == null)
+                .hasSize(posts.size());
     }
 }

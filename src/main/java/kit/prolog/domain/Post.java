@@ -1,5 +1,6 @@
 package kit.prolog.domain;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
@@ -7,6 +8,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Getter
 @Entity(name = "POSTS")
 @NoArgsConstructor
 public class Post {
@@ -35,6 +37,14 @@ public class Post {
     }
 
     public void setMold(Mold mold) {
+        this.mold = mold;
+    }
+
+    public Post(String title, LocalDateTime time, User user, Category category, Mold mold) {
+        this.title = title;
+        this.time = time;
+        this.user = user;
+        this.category = category;
         this.mold = mold;
     }
 }

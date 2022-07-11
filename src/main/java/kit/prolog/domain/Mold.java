@@ -21,7 +21,7 @@ public class Mold {
     private User user;
     @OneToMany(mappedBy = "mold")
     private List<Post> posts = new ArrayList<>();
-    @OneToMany(mappedBy = "mold")
+    @OneToMany(mappedBy = "mold", cascade = CascadeType.REMOVE)
     private List<Layout> layouts = new ArrayList<>();
 
     public Mold(Long id) {
