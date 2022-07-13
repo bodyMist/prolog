@@ -5,6 +5,9 @@ import kit.prolog.dto.*;
 import kit.prolog.repository.jpa.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,6 +32,7 @@ public class PostService {
     private final AttachmentRepository attachmentRepository;
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
+    private final CommentRepository commentRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -197,9 +201,37 @@ public class PostService {
     *                       레이아웃틀 pk, 레이아웃 리스트(pk, type, x/y 좌표, 가로/세로, explanation, content),
     *                       카테고리(pk, name), 첨부파일 리스트(pk,이름,url), 태그 리스트(이름),
     *                       조회수, 좋아요(count, exist), 댓글(id, 작성자, 내용, 작성일자, 상위댓글, block 여부)
+    * 에러처리 :
+    * QueryDSL : 게시글을 기준으로 카테고리, 회원, 레이아웃 틀, 조회수 데이터를 조회
+    * Spring JPA : 댓글, 좋아요 , 첨부파일(리스트), 태그(리스트), 레이아웃(리스트)는 별도 쿼리로 조회하여 전달
     * */
-    public PostDetailDto viewPostDetailById(Long postId){
-        return null;
+    public PostDetailDto viewPostDetailById(Long userId, Long postId){
+        PostDetailDto postDetailDto = postRepository.findPostById(postId);
+
+        boolean exist = likeRepository.existsByUser_IdAndPost_Id(userId, postId);
+        int likeCount = likeRepository.countByPost_Id(postId);
+
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "time"));
+        List<CommentLv1Dto> commentList = commentRepository.findByPostId(postId, userId, pageable);
+
+        List<AttachmentDto> attachmentList = attachmentRepository.findByPost_Id(postId);
+        List<String> tagList = new ArrayList<>();
+
+        postTagRepository.findByPost_Id(postId).forEach(postTag -> {
+            tagRepository.findById(postTag.getId()).ifPresent(
+                    tag -> tagList.add(tag.getName())
+            );
+        });
+        //레이아웃 가져오기
+        List<LayoutDto> layoutList = layoutRepository.findLayoutDetailByMold_Id(postDetailDto.getMoldId());
+
+        postDetailDto.setLikeDto(new LikeDto(likeCount, exist));
+        postDetailDto.setComments(commentList);
+        postDetailDto.setAttachmentDto(attachmentList);
+        postDetailDto.setTags(tagList);
+        postDetailDto.setLayoutDto(layoutList);
+
+        return postDetailDto;
     }
 
     /**
