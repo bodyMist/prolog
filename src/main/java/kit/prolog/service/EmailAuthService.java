@@ -1,6 +1,5 @@
 package kit.prolog.service;
 
-import kit.prolog.repository.jpa.UserRepository;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,13 +16,11 @@ import java.util.Random;
 @AllArgsConstructor
 @PropertySource("classpath:mail/email.properties")
 public class EmailAuthService {
-    private final int EMAIL_AUTH_NUMBER_SIZE = 6;
     @Autowired
     private JavaMailSender mailSender;
-    private final UserRepository userRepository;
 
     // email 발송
-    public boolean sendMail(String email){
+    public int sendMail(String email){
         int emailAuthNumber = makeEmailAuthNumber();
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setFrom("ansang01234@gmail.com");
@@ -31,15 +28,20 @@ public class EmailAuthService {
         simpleMailMessage.setSubject("이메일 인증");
         simpleMailMessage.setText(String.valueOf(emailAuthNumber));
         mailSender.send(simpleMailMessage);
-        return true;
+        return emailAuthNumber;
     }
 
     // email 인증
-    public boolean emailAuth(int emailAuthNumber){
-        // 이메일 인증 번호 비교 로직
-        return true;
+    // inputEmailAuthNumber 사용자 입력, emailAuthNumber 시스템 생성
+    public boolean emailAuth(int inputEmailAuthNumber, int emailAuthNumber){
+        if(inputEmailAuthNumber == emailAuthNumber){
+            return true;
+        }else{
+            return false;
+        }
     }
 
+    // 랜덤한 숫자 시스템 생성
     public int makeEmailAuthNumber(){
         Random random = new Random(System.currentTimeMillis());
         int num = random.nextInt(999999) + 100000;
