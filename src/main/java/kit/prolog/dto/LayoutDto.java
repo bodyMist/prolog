@@ -2,12 +2,14 @@ package kit.prolog.dto;
 
 import kit.prolog.domain.Layout;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 /*
  * PostDetailDto를 위한 부분 DTO
  * */
 @Getter
+@Setter
 @ToString
 public class LayoutDto {
     private Long id;
