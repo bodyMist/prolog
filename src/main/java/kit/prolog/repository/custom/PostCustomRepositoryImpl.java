@@ -16,18 +16,35 @@ public class PostCustomRepositoryImpl implements PostCustomRepository{
     EntityManager em;
 
     @Override
-    public PostDetailDto findPostById(Long id) {
+    public PostDetailDto findPostById(Long postId) {
         JPAQueryFactory query = new JPAQueryFactory(em);
+        QUser user = QUser.user;
         QPost post = QPost.post;
-        QComment comment = QComment.comment;
         QMold mold = QMold.mold;
-        QLayout layout = QLayout.layout;
         QCategory category = QCategory.category;
-        QAttachment attachment = QAttachment.attachment;
-        QLike like = QLike.like;
-        QTag tag = QTag.tag;
+        QHit hit = QHit.hit;
 
-        return null;
+        return query.select(
+                Projections.constructor(PostDetailDto.class,
+                        user.name,
+                        user.image,
+                        post.id,
+                        post.title,
+                        post.time,
+                        mold.id,
+                        category.id,
+                        category.name,
+                        hit.count()
+                )
+        )
+                .from(post)
+                .leftJoin(user).on(post.user.id.eq(user.id))
+                .leftJoin(mold).on(post.mold.id.eq(mold.id))
+                .leftJoin(category).on(post.category.id.eq(category.id))
+                .leftJoin(hit).on(post.id.eq(hit.post.id))
+                .where(post.id.eq(postId))
+                .groupBy(hit.post.id)
+                .fetchOne();
     }
 
     @Override
