@@ -40,11 +40,14 @@ class CategoryServiceTest {
     private UserRepository userRepository;
 
     @BeforeEach
-    void setup() {
+    void setUp() {
+        when(userRepository.findById(1L))
+                .thenReturn(Optional.of(new User(1L)));
+
         Category category = Category.builder()
                 .id(1L)
                 .name("백엔드")
-                .user(new User(1L))
+                .user(userRepository.findById(1L).get())
                 .build();
 
         when(categoryRepository.findById(1L))
@@ -57,9 +60,6 @@ class CategoryServiceTest {
 
         when(categoryRepository.findInfoByUserId(1L))
                 .thenReturn(categoryInfoDtos);
-
-        when(userRepository.findById(1L))
-                .thenReturn(Optional.of(new User(1L)));
     }
 
     @Test
@@ -73,7 +73,7 @@ class CategoryServiceTest {
 
         Category category = Category.builder()
                 .name(categoryDto.getName())
-                .user(new User(userId))
+                .user(userRepository.findById(userId).get())
                 .build();
         verify(categoryRepository, times(1))
                 .save(eq(category));
@@ -92,7 +92,7 @@ class CategoryServiceTest {
         Category category = Category.builder()
                 .id(categoryDto.getId())
                 .name(categoryDto.getName())
-                .user(new User(userId))
+                .user(userRepository.findById(userId).get())
                 .build();
         verify(categoryRepository, times(1))
                 .save(eq(category));
@@ -132,7 +132,7 @@ class CategoryServiceTest {
         Category category = Category.builder()
                 .id(categoryId)
                 .name("백엔드")
-                .user(new User(userId))
+                .user(userRepository.findById(userId).get())
                 .build();
         verify(categoryRepository, times(1))
                 .delete(eq(category));

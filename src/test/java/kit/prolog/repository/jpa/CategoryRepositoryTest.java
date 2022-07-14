@@ -1,6 +1,7 @@
 package kit.prolog.repository.jpa;
 
 import kit.prolog.config.QuerydslConfig;
+import kit.prolog.domain.Category;
 import kit.prolog.dto.CategoryInfoDto;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,21 @@ class CategoryRepositoryTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Test
+    void 카테고리_등록() {
+        Category category = Category.builder()
+                .name("백엔드")
+                .user(userRepository.findById(1L).get())
+                .build();
+        Category savedCategory = categoryRepository.save(category);
+
+        assertThat(savedCategory.getId()).isNotNull();
+        assertThat(savedCategory.getName()).isEqualTo(category.getName());
+    }
 
     @Test
     void 카테고리_정보_조회() {

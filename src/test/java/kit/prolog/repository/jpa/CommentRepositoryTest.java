@@ -1,6 +1,8 @@
 package kit.prolog.repository.jpa;
 
+import kit.prolog.config.AppConfig;
 import kit.prolog.config.QuerydslConfig;
+import kit.prolog.domain.*;
 import kit.prolog.dto.CommentLv1Dto;
 import kit.prolog.dto.CommentLv2Dto;
 import org.junit.jupiter.api.Test;
@@ -20,13 +22,35 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
-@Import(QuerydslConfig.class)
+@Import({QuerydslConfig.class, AppConfig.class})
 @ActiveProfiles("test")
 @Sql(scripts = {"classpath:test.sql"})
 class CommentRepositoryTest {
 
     @Autowired
     private CommentRepository commentRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
+    @Autowired
+    private PostRepository postRepository;
+
+    @Test
+    void 댓글_등록() {
+        Comment comment = Comment.builder()
+                .user(userRepository.findById(1L).get())
+                .post(postRepository.findById(1L).get())
+                .upperComment(null)
+                .context("댓글")
+                .build();
+        Comment savedComment = commentRepository.save(comment);
+
+        assertThat(savedComment.getId()).isNotNull();
+        assertThat(savedComment.getContext()).isEqualTo(comment.getContext());
+        assertThat(savedComment.getBlock()).isEqualTo(false);
+        assertThat(savedComment.getTime()).isNotNull();
+    }
 
     @Test
     void 게시글_댓글_조회() {
@@ -41,17 +65,6 @@ class CommentRepositoryTest {
                         .isCommentWriter(true)
                         .context("요건 대댓글입니다3")
                         .time(LocalDateTime.of(2022, 7, 2, 14, 19, 28, 4000))
-                        .build());
-        commentLv2Dtos.add(
-                CommentLv2Dto.builder()
-                        .id(4L)
-                        .userId(1L)
-                        .nickname("판교")
-                        .userImage("https://1")
-                        .isPostWriter(true)
-                        .isCommentWriter(false)
-                        .context("요건 대댓글입니다2")
-                        .time(LocalDateTime.of(2022, 7, 2, 14, 19, 28, 3000))
                         .build());
         commentLv2Dtos.add(
                 CommentLv2Dto.builder()
@@ -74,7 +87,7 @@ class CommentRepositoryTest {
                         .userImage("https://1")
                         .isPostWriter(true)
                         .isCommentWriter(false)
-                        .context("이것은 댓글입니다2")
+                        .context("삭제된 댓글입니다.")
                         .time(LocalDateTime.of(2022, 7, 2, 14, 19, 28, 1000))
                         .lowerComments(commentLv2Dtos)
                         .build());
