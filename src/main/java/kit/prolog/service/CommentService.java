@@ -53,7 +53,8 @@ public class CommentService {
         if (comment.getUser().getId() != userId)
             throw new AccessDeniedException("");
 
-        commentRepository.delete(comment);
+        comment.setBlock(true);
+        commentRepository.save(comment);
     }
 
     public List<CommentLv1Dto> findCommentsInPost(Long postId, Long userId, Pageable pageable) {

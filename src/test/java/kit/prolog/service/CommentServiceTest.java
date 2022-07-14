@@ -161,8 +161,9 @@ class CommentServiceTest {
         Comment comment = new Comment();
         comment.setId(commentId);
         comment.setUser(userRepository.findById(1L).get());
+        comment.setBlock(true);
         verify(commentRepository, times(1))
-                .delete(eq(comment));
+                .save(eq(comment));
     }
 
     @Test
