@@ -87,4 +87,11 @@ public class MoldLayoutRepositoryTest {
         });
         moldRepository.delete(mold.get());
     }
+
+    @Test
+    void 게시글_레이아웃_조회(){
+        Long moldId = 1L;
+        layoutRepository.findLayoutDetailByMold_Id(moldId)
+                .forEach(System.out::println);
+    }
 }

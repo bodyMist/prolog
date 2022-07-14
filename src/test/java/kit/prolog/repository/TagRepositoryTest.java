@@ -1,14 +1,17 @@
 package kit.prolog.repository;
 
 import kit.prolog.domain.Post;
+import kit.prolog.domain.PostTag;
 import kit.prolog.domain.Tag;
 import kit.prolog.repository.jpa.PostRepository;
+import kit.prolog.repository.jpa.PostTagRepository;
 import kit.prolog.repository.jpa.TagRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,6 +21,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class TagRepositoryTest {
     @Autowired TagRepository tagRepository;
     @Autowired PostRepository postRepository;
+    @Autowired PostTagRepository postTagRepository;
 
     @Test
     void 중복태그_저장_테스트(){
@@ -30,5 +34,11 @@ public class TagRepositoryTest {
     @Test
     void 태그_검색_없음(){
         assertThat(tagRepository.findByName("아가야").isPresent()).isEqualTo(false);
+    }
+
+    @Test
+    void 게시글_태그_조회(){
+        List<PostTag> tags = postTagRepository.findByPost_Id(1L);
+        assertThat(tags.size()).isEqualTo(3);
     }
 }

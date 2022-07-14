@@ -1,9 +1,11 @@
 package kit.prolog.domain;
 
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@Getter
 @Entity(name = "TAGS")
 @NoArgsConstructor
 public class Tag {

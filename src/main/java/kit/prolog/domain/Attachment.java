@@ -1,10 +1,12 @@
 package kit.prolog.domain;
 
 import kit.prolog.dto.AttachmentDto;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
+@Getter
 @Entity(name = "ATTACHMENTS")
 @NoArgsConstructor
 public class Attachment {
