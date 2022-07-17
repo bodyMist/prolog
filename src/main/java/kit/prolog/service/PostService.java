@@ -33,6 +33,7 @@ public class PostService {
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
     private final CommentRepository commentRepository;
+    private final HitRepository hitRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -241,6 +242,16 @@ public class PostService {
     * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
     public boolean deletePost(Long postId){
+        // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 레이아웃 -> 게시글
+        likeRepository.deleteAllByPost_Id(postId);
+        commentRepository.deleteAllByPost_Id(postId);
+        hitRepository.deleteAllByPost_Id(postId);
+        attachmentRepository.deleteAllByPost_Id(postId);
+        postTagRepository.deleteAllByPost_Id(postId);
+
+        Long moldId = postRepository.findMoldIdByPostId(postId);
+        layoutRepository.deleteAllByMold_Id(moldId);
+
         postRepository.deleteById(postId);
         return true;
     }

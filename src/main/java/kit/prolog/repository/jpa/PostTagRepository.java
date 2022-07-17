@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface PostTagRepository extends JpaRepository<PostTag, Long> {
     List<PostTag> findByPost_Id(Long postId);
+    boolean deleteAllByPost_Id(Long postId);
 }

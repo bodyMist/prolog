@@ -14,7 +14,8 @@ public interface LayoutRepository extends JpaRepository<Layout, Long>, LayoutCus
     @Query("SELECT new kit.prolog.dto.LayoutDto(l.id, l.dtype, l.coordinateX, l.coordinateY, l.width, l.height) " +
             "FROM LAYOUTS l WHERE l.mold.id = :moldId")
     List<LayoutDto> findByMold_Id(Long moldId);
-    List<Layout> findLayoutByMold_Id(Long moldId);
+
+    boolean deleteAllByMold_Id(Long moldId);
 
     @Query("SELECT l FROM LAYOUTS l WHERE l.id = :id")
     Optional<Layout> findLayoutById(Long id);
