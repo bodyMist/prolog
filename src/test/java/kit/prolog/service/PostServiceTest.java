@@ -2,14 +2,20 @@ package kit.prolog.service;
 
 import kit.prolog.domain.*;
 import kit.prolog.dto.AttachmentDto;
+import kit.prolog.dto.CommentLv1Dto;
 import kit.prolog.dto.LayoutDto;
+import kit.prolog.dto.PostDetailDto;
 import kit.prolog.repository.jpa.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -24,24 +30,19 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class PostServiceTest {
-    @InjectMocks
-    private PostService postService;
-    @Mock
-    private PostRepository postRepository;
-    @Mock
-    private MoldRepository moldRepository;
-    @Mock
-    private LayoutRepository layoutRepository;
-    @Mock
-    private UserRepository userRepository;
-    @Mock
-    private CategoryRepository categoryRepository;
-    @Mock
-    private AttachmentRepository attachmentRepository;
-    @Mock
-    private TagRepository tagRepository;
-    @Mock
-    private PostTagRepository postTagRepository;
+    @InjectMocks private PostService postService;
+
+    @Mock private PostRepository postRepository;
+    @Mock private MoldRepository moldRepository;
+    @Mock private LayoutRepository layoutRepository;
+    @Mock private UserRepository userRepository;
+    @Mock private CategoryRepository categoryRepository;
+    @Mock private AttachmentRepository attachmentRepository;
+    @Mock private TagRepository tagRepository;
+    @Mock private PostTagRepository postTagRepository;
+    @Mock private LikeRepository likeRepository;
+    @Mock private CommentRepository commentRepository;
+    @Mock private HitRepository hitRepository;
 
 
     @Test
@@ -69,5 +70,39 @@ public class PostServiceTest {
         assertThat(writePost).isEqualTo(post.getId());
         verify(tagRepository, times(2)).save(any(Tag.class));
         verify(attachmentRepository, times(1)).save(any(Attachment.class));
+    }
+
+    @Test
+    void 게시글_조회(){
+        //given
+        Long userId = 1L, postId = 1L;
+        Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "time"));
+
+        when(postRepository.findPostById(postId)).thenReturn(any(PostDetailDto.class));
+        when(likeRepository.existsByUser_IdAndPost_Id(any(), any())).thenReturn(true);
+        when(likeRepository.countByPost_Id(postId)).thenReturn(any(int.class));
+        when(commentRepository.findByPostId(postId, userId, pageable)).thenReturn(List.of(new CommentLv1Dto()));
+
+        PostDetailDto postDetailDto = postService.viewPostDetailById(userId, postId);
+        assertThat(postDetailDto).isNotNull();
+    }
+
+    @Test
+    void 게시글_삭제_연쇄작용(){
+        Long postId = 1L;
+
+        when(likeRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+        when(commentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+        when(hitRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+        when(postTagRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+        when(attachmentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+
+        when(postRepository.findMoldIdByPostId(postId)).thenReturn(1L);
+        when(layoutRepository.deleteAllByMold_Id(postId)).thenReturn(true);
+        Mockito.doNothing().when(postRepository).deleteById(postId);
+
+        boolean deletePost = postService.deletePost(postId);
+
+        assertThat(deletePost).isTrue();
     }
 }

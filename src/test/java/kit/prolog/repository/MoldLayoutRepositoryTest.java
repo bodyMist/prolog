@@ -94,4 +94,11 @@ public class MoldLayoutRepositoryTest {
         layoutRepository.findLayoutDetailByMold_Id(moldId)
                 .forEach(System.out::println);
     }
+
+    @Test
+    void 레이아웃_연쇄삭제(){
+        Long layoutId = 1L;
+        layoutRepository.deleteById(layoutId);
+        layoutRepository.flush();
+    }
 }
