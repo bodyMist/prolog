@@ -133,27 +133,28 @@ public class PostService {
 
         layoutDtos.forEach(layoutDto -> {
             layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
                 Layout input = null;
-                switch (layout.getDtype()){
-                    case 1:
+                switch (layoutType){
+                    case CONTEXT:
                         input = new Context(layoutDto.getContext());
                         break;
-                    case 2:
+                    case IMAGE:
                         input = new Image(layoutDto.getContext());
                         break;
-                    case 3:
+                    case CODES:
                         input = new Code(layoutDto.getContext());
                         break;
-                    case 4:
+                    case HYPERLINK:
                         input = new Hyperlink(layoutDto.getContext());
                         break;
-                    case 5:
+                    case MATHEMATICS:
                         input = new Mathematics(layoutDto.getContext());
                         break;
-                    case 6:
+                    case VIDEOS:
                         input = new Video(layoutDto.getContext());
                         break;
-                    case 7:
+                    case DOCUMENTS:
                         input = new Document(layoutDto.getContext());
                         break;
                     default:
