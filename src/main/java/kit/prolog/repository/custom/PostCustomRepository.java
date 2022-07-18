@@ -7,8 +7,8 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 public interface PostCustomRepository {
-    int PAGE_SIZE = 12;
+    int PAGE_SIZE = 3;
     PostDetailDto findPostById(Long id);
     List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor);
-    List<PostPreviewDto> findPostByUserId(Long userId, int cursor);
+    List<PostPreviewDto> findMyPostByUserId(Long userId, int cursor);
 }

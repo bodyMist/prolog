@@ -276,4 +276,13 @@ public class PostService {
         }
         return result;
     }
+
+    /**
+     * 내가 쓴 글 목록 조회 API
+     * 매개변수 : userId(사용자 pk), cursor(페이지 번호)
+     * 반환 : List<PostPreviewDto>
+     * */
+    public List<PostPreviewDto> getMyPostList(Long userId, int cursor){
+        return postRepository.findMyPostByUserId(userId, cursor);
+    }
 }
