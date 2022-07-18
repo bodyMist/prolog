@@ -6,24 +6,28 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
 import kit.prolog.dto.PostDetailDto;
 import kit.prolog.dto.PostPreviewDto;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 
+@Repository
+@RequiredArgsConstructor
 public class PostCustomRepositoryImpl implements PostCustomRepository{
-    @PersistenceContext
-    EntityManager em;
+    private final JPAQueryFactory query;
+
+    private final QPost post = QPost.post;
+    private final QMold mold = QMold.mold;
+    private final QUser user = QUser.user;
+    private final QCategory category = QCategory.category;
+    private final QLayout layout = QLayout.layout;
+    private final QHit hit = QHit.hit;
+    private final QLike like = QLike.like;
 
     @Override
     public PostDetailDto findPostById(Long postId) {
-        JPAQueryFactory query = new JPAQueryFactory(em);
-        QUser user = QUser.user;
-        QPost post = QPost.post;
-        QMold mold = QMold.mold;
-        QCategory category = QCategory.category;
-        QHit hit = QHit.hit;
-
         return query.select(
                 Projections.constructor(PostDetailDto.class,
                         user.name,
@@ -49,14 +53,6 @@ public class PostCustomRepositoryImpl implements PostCustomRepository{
 
     @Override
     public List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor) {
-        JPAQueryFactory query = new JPAQueryFactory(em);
-        QUser user = QUser.user;
-        QPost post = QPost.post;
-        QMold mold = QMold.mold;
-        QLayout layout = QLayout.layout;
-        QCategory category = QCategory.category;
-        QLike like = QLike.like;
-
         return query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
@@ -73,6 +69,11 @@ public class PostCustomRepositoryImpl implements PostCustomRepository{
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
+    }
+
+    @Override
+    public List<PostPreviewDto> findPostByUserId(Long userId, int cursor) {
+        return null;
     }
 
     private BooleanExpression greaterThanCursor(int cursor){
