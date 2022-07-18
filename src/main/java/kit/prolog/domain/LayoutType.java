@@ -1,6 +1,7 @@
 package kit.prolog.domain;
 
 public enum LayoutType {
+    NONE(0),
     CONTEXT(1),
     IMAGE(2),
     CODES(3),

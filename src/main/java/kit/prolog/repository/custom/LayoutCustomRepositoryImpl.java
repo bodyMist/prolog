@@ -46,13 +46,12 @@ public class LayoutCustomRepositoryImpl implements LayoutCustomRepository {
         layoutList.forEach(layoutDto -> {
             layoutDto.setContext(
                     selectLayout(layoutDto.getDtype(), layoutDto.getId())
-                    .fetchOne()
             );
         });
         return layoutList;
     }
 
-    private JPQLQuery<String> selectLayout(int layoutType, Long layoutId){
+    public String selectLayout(int layoutType, Long layoutId){
         JPQLQuery<String> result;
         LayoutType type = LayoutType.values()[layoutType];
         switch (type) {
@@ -81,6 +80,6 @@ public class LayoutCustomRepositoryImpl implements LayoutCustomRepository {
                 result = null;
                 break;
         }
-        return result;
+        return result.fetchOne();
     }
 }

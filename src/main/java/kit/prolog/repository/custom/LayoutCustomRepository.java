@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface LayoutCustomRepository {
     List<LayoutDto> findLayoutDetailByMold_Id(Long moldId);
+    String selectLayout(int layoutType, Long layoutId);
 }
