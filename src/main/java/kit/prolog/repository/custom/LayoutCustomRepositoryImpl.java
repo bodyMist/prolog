@@ -46,40 +46,40 @@ public class LayoutCustomRepositoryImpl implements LayoutCustomRepository {
         layoutList.forEach(layoutDto -> {
             layoutDto.setContext(
                     selectLayout(layoutDto.getDtype(), layoutDto.getId())
-                    .fetchOne()
             );
         });
         return layoutList;
     }
 
-    private JPQLQuery<String> selectLayout(int layoutType, Long layoutId){
+    public String selectLayout(int layoutType, Long layoutId){
         JPQLQuery<String> result;
-        switch (layoutType) {
-            case 1:
+        LayoutType type = LayoutType.values()[layoutType];
+        switch (type) {
+            case CONTEXT:
                 result = query.select(context.text).from(context).where(context.id.eq(layoutId));
                 break;
-            case 2:
+            case IMAGE:
                 result = query.select(image.url).from(image).where(image.id.eq(layoutId));
                 break;
-            case 3:
+            case CODES:
                 result = query.select(code.code).from(code).where(code.id.eq(layoutId));
                 break;
-            case 4:
+            case HYPERLINK:
                 result = query.select(hyperlink.url).from(hyperlink).where(hyperlink.id.eq(layoutId));
                 break;
-            case 5:
+            case MATHEMATICS:
                 result = query.select(mathematics.context).from(mathematics).where(mathematics.id.eq(layoutId));
                 break;
-            case 6:
+            case VIDEOS:
                 result = query.select(video.url).from(video).where(video.id.eq(layoutId));
                 break;
-            case 7:
+            case DOCUMENTS:
                 result = query.select(document.url).from(document).where(document.id.eq(layoutId));
                 break;
             default:
                 result = null;
                 break;
         }
-        return result;
+        return result.fetchOne();
     }
 }

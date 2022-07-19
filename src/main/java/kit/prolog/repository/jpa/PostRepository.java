@@ -12,4 +12,7 @@ import java.util.List;
 public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRepository {
     @Query("SELECT p, m FROM POSTS p INNER JOIN MOLDS m ON p.mold.id = m.id WHERE m.id = :moldId")
     List<Post> findByMold_Id(Long moldId);
+
+    @Query("SELECT p.mold.id FROM POSTS p WHERE p.id = :id")
+    Long findMoldIdByPostId(Long id);
 }

@@ -4,6 +4,8 @@ import kit.prolog.dto.LayoutDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
@@ -12,6 +14,7 @@ import javax.persistence.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(discriminatorType = DiscriminatorType.INTEGER)
 @NoArgsConstructor
+@OnDelete(action = OnDeleteAction.CASCADE)
 public class Layout {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

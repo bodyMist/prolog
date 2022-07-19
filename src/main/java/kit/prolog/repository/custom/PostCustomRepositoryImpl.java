@@ -1,29 +1,38 @@
 package kit.prolog.repository.custom;
 
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
 import kit.prolog.dto.PostDetailDto;
 import kit.prolog.dto.PostPreviewDto;
+import kit.prolog.repository.jpa.LayoutRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Repository;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import java.util.List;
 
-public class PostCustomRepositoryImpl implements PostCustomRepository{
-    @PersistenceContext
-    EntityManager em;
+@Repository
+@RequiredArgsConstructor
+public class PostCustomRepositoryImpl implements PostCustomRepository {
+    private final JPAQueryFactory query;
+    private final LayoutRepository layoutRepository;
+
+    private final QPost post = QPost.post;
+    private final QMold mold = QMold.mold;
+    private final QUser user = QUser.user;
+    private final QCategory category = QCategory.category;
+    private final QLayout layout = QLayout.layout;
+    private final QHit hit = QHit.hit;
+    private final QLike like = QLike.like;
 
     @Override
     public PostDetailDto findPostById(Long postId) {
-        JPAQueryFactory query = new JPAQueryFactory(em);
-        QUser user = QUser.user;
-        QPost post = QPost.post;
-        QMold mold = QMold.mold;
-        QCategory category = QCategory.category;
-        QHit hit = QHit.hit;
-
         return query.select(
                 Projections.constructor(PostDetailDto.class,
                         user.name,
@@ -49,18 +58,10 @@ public class PostCustomRepositoryImpl implements PostCustomRepository{
 
     @Override
     public List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor) {
-        JPAQueryFactory query = new JPAQueryFactory(em);
-        QUser user = QUser.user;
-        QPost post = QPost.post;
-        QMold mold = QMold.mold;
-        QLayout layout = QLayout.layout;
-        QCategory category = QCategory.category;
-        QLike like = QLike.like;
-
         return query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
-                        user.name, user.image, layout, like.count())
+                        user.name, user.image, layout.id, layout.dtype, like.count())
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user).and(user.account.eq(account)))
@@ -68,14 +69,41 @@ public class PostCustomRepositoryImpl implements PostCustomRepository{
                 .innerJoin(like).on(post.eq(like.post))
                 .innerJoin(mold).on(mold.eq(post.mold))
                 .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
-                .where(greaterThanCursor(cursor))
+                .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
     }
 
-    private BooleanExpression greaterThanCursor(int cursor){
-        return cursor == 0 ? null : QPost.post.id.gt(cursor);
+    @Override
+    public List<PostPreviewDto> findMyPostByUserId(Long userId, int cursor) {
+        List<PostPreviewDto> posts = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image, layout.id, layout.dtype, like.count())
+        )
+                .from(post)
+                .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
+                .leftJoin(like).on(post.eq(like.post))
+                .innerJoin(mold).on(mold.eq(post.mold))
+                .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
+                .where(lowerThanCursor(cursor))
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .limit(PAGE_SIZE)
+                .fetch();
+
+        posts.forEach(post -> {
+            post.setLayoutDto(
+                    layoutRepository
+                            .selectLayout(post.getLayoutDto().getDtype(), post.getLayoutDto().getId()
+                            ));
+        });
+        return posts;
+    }
+
+    private BooleanExpression lowerThanCursor(int cursor){
+        return cursor == 0 ? null : post.id.lt( cursor);
     }
 }

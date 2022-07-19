@@ -33,6 +33,7 @@ public class PostService {
     private final TagRepository tagRepository;
     private final PostTagRepository postTagRepository;
     private final CommentRepository commentRepository;
+    private final HitRepository hitRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -132,27 +133,28 @@ public class PostService {
 
         layoutDtos.forEach(layoutDto -> {
             layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
                 Layout input = null;
-                switch (layout.getDtype()){
-                    case 1:
+                switch (layoutType){
+                    case CONTEXT:
                         input = new Context(layoutDto.getContext());
                         break;
-                    case 2:
+                    case IMAGE:
                         input = new Image(layoutDto.getContext());
                         break;
-                    case 3:
+                    case CODES:
                         input = new Code(layoutDto.getContext());
                         break;
-                    case 4:
+                    case HYPERLINK:
                         input = new Hyperlink(layoutDto.getContext());
                         break;
-                    case 5:
+                    case MATHEMATICS:
                         input = new Mathematics(layoutDto.getContext());
                         break;
-                    case 6:
+                    case VIDEOS:
                         input = new Video(layoutDto.getContext());
                         break;
-                    case 7:
+                    case DOCUMENTS:
                         input = new Document(layoutDto.getContext());
                         break;
                     default:
@@ -241,6 +243,16 @@ public class PostService {
     * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
     public boolean deletePost(Long postId){
+        // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 레이아웃 -> 게시글
+        likeRepository.deleteAllByPost_Id(postId);
+        commentRepository.deleteAllByPost_Id(postId);
+        hitRepository.deleteAllByPost_Id(postId);
+        attachmentRepository.deleteAllByPost_Id(postId);
+        postTagRepository.deleteAllByPost_Id(postId);
+
+        Long moldId = postRepository.findMoldIdByPostId(postId);
+        layoutRepository.deleteAllByMold_Id(moldId);
+
         postRepository.deleteById(postId);
         return true;
     }
@@ -263,5 +275,14 @@ public class PostService {
             result = true;
         }
         return result;
+    }
+
+    /**
+     * 내가 쓴 글 목록 조회 API
+     * 매개변수 : userId(사용자 pk), cursor(페이지 번호)
+     * 반환 : List<PostPreviewDto>
+     * */
+    public List<PostPreviewDto> getMyPostList(Long userId, int cursor){
+        return postRepository.findMyPostByUserId(userId, cursor);
     }
 }

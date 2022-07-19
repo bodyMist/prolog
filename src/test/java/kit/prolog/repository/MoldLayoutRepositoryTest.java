@@ -27,34 +27,35 @@ public class MoldLayoutRepositoryTest {
     void 레이아웃_상속클래스_저장(){
         Layout layout = layoutRepository.findById(1L).get();
         String test = "test";
-        Layout testLayout;
-        switch (layout.getDtype()){
-            case 1:
-                testLayout = new Context(test);
+        LayoutType layoutType = LayoutType.values()[layout.getDtype()];
+        Layout input = null;
+        switch (layoutType){
+            case CONTEXT:
+                input = new Context(test);
                 break;
-            case 2:
-                testLayout = new Image(test);
+            case IMAGE:
+                input = new Image(test);
                 break;
-            case 3:
-                testLayout = new Code(test);
+            case CODES:
+                input = new Code(test);
                 break;
-            case 4:
-                testLayout = new Hyperlink(test);
+            case HYPERLINK:
+                input = new Hyperlink(test);
                 break;
-            case 5:
-                testLayout = new Mathematics(test);
+            case MATHEMATICS:
+                input = new Mathematics(test);
                 break;
-            case 6:
-                testLayout = new Video(test);
+            case VIDEOS:
+                input = new Video(test);
                 break;
-            case 7:
-                testLayout = new Document(test);
+            case DOCUMENTS:
+                input = new Document(test);
                 break;
             default:
-                testLayout = new Layout();
+                input = new Layout();
                 break;
         }
-        layoutRepository.save(testLayout);
+        layoutRepository.save(input);
         layoutRepository.flush();
     }
 
@@ -93,5 +94,12 @@ public class MoldLayoutRepositoryTest {
         Long moldId = 1L;
         layoutRepository.findLayoutDetailByMold_Id(moldId)
                 .forEach(System.out::println);
+    }
+
+    @Test
+    void 레이아웃_연쇄삭제(){
+        Long layoutId = 1L;
+        layoutRepository.deleteById(layoutId);
+        layoutRepository.flush();
     }
 }
