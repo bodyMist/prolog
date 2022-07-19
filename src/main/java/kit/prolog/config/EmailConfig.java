@@ -1,4 +1,4 @@
-package kit.prolog.service;
+package kit.prolog.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
