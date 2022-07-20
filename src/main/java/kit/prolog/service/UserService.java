@@ -1,16 +1,29 @@
 package kit.prolog.service;
 
 import kit.prolog.domain.User;
-import kit.prolog.repository.jpa.UserRepository;
+import kit.prolog.repository.jpa.*;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+@Transactional
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class UserService {
     private final UserRepository userRepository;
+
+    private final PostRepository postRepository;
+    private final LikeRepository likeRepository;
+    private final MoldRepository moldRepository;
+    private final LayoutRepository layoutRepository;
+    private final CategoryRepository categoryRepository;
+    private final AttachmentRepository attachmentRepository;
+    private final PostTagRepository postTagRepository;
+    private final CommentRepository commentRepository;
+    private final HitRepository hitRepository;
 
     // email 회원가입
     public boolean createUserByEmail(User user){
@@ -64,13 +77,28 @@ public class UserService {
     }
 
     // 회원 탈퇴
+    // 댓글,좋아요,조회,첨부파일,게시글태그,레이아웃->태그,레이아웃틀,게시글->카테고리->회원
     public User deleteUser(Long memberPk){
         User user = new User();
         try{
-            //mold 삭제
-            //댓글 삭제
-            //좋아요 삭제
-            //카테고리 삭제
+
+            likeRepository.deleteAllByUser_Id(memberPk);
+            postRepository.findByUser_Id(memberPk).forEach(post -> {
+                commentRepository.deleteAllByPost_Id(post.getId());
+                hitRepository.deleteAllByPost_Id(post.getId());
+                // 파일서버에 삭제 요청 필요
+                attachmentRepository.deleteAllByPost_Id(post.getId());
+                postTagRepository.deleteAllByPost_Id(post.getId());
+                Long moldId = postRepository.findMoldIdByPostId(post.getId());
+                postRepository.deleteById(post.getId());
+                layoutRepository.deleteAllByMold_Id(moldId);
+                moldRepository.deleteById(moldId);
+            });
+            // 유저가 작성한 게시글에 대해 모든 댓글들을 삭제한 후,
+            // 유저의 남은 comment를 block처리 후 userFK를 null로 변경
+            commentRepository.blockCommentsByUserId(memberPk);
+            categoryRepository.deleteAllByUser_Id(memberPk);
+
             user = userRepository.findOneById(memberPk);
             if(user != null)
                 userRepository.deleteById(memberPk);

@@ -15,4 +15,6 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
 
     @Query("SELECT p.mold.id FROM POSTS p WHERE p.id = :id")
     Long findMoldIdByPostId(Long id);
+
+    List<Post> findByUser_Id(Long userId);
 }

@@ -12,4 +12,5 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     int countByPost_Id(Long postId);
 
     boolean deleteAllByPost_Id(Long postId);
+    boolean deleteAllByUser_Id(Long userId);
 }
