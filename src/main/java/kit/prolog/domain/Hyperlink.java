@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("4")
 @NoArgsConstructor
 public class Hyperlink extends Layout{
-    @Column(nullable = false)
+    @Column(length = 2000)
     private String url;
 
     public Hyperlink(String url) {

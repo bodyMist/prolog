@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("1")
 @NoArgsConstructor
 public class Context extends Layout{
-    @Column(nullable = false)
+    @Column(length = 2000)
     private String text;
 
     public Context(String text) {

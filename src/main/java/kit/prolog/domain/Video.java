@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("6")
 @NoArgsConstructor
 public class Video extends Layout{
-    @Column(nullable = false)
+    @Column(length = 2000)
     private String url;
 
     public Video(String url) {

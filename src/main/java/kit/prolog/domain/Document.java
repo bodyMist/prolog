@@ -10,7 +10,7 @@ import javax.persistence.Entity;
 @DiscriminatorValue("7")
 @NoArgsConstructor
 public class Document extends Layout{
-    @Column(nullable = false)
+    @Column(length = 2000)
     private String url;
 
     public Document(String url) {

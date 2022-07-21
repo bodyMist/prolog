@@ -19,7 +19,7 @@ public class Layout {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "LAYOUT_ID", nullable = false)
-    private Long id;
+    protected Long id;
 
     private Double coordinateX;
     private Double coordinateY;

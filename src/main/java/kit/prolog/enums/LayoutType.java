@@ -1,4 +1,4 @@
-package kit.prolog.domain;
+package kit.prolog.enums;
 
 public enum LayoutType {
     NONE(0),
