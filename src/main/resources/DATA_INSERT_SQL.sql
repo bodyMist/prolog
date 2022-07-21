@@ -19,11 +19,15 @@ INSERT INTO contexts(text, layout_id) VALUES ('상세 내용', 1);
 
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
 VALUES (2, 20.121, 34.349, '레이아웃 설명2', 20, 0, 30, 1);
-INSERT INTO images(url, layout_id) VALUES ('상세 내용', 2);
+INSERT INTO images(layout_id, sequence, url) VALUES (2, 1, 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+INSERT INTO images(layout_id, sequence, url) VALUES (2, 2, 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
+INSERT INTO images(layout_id, sequence, url) VALUES (2, 3, 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
 
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
 VALUES (3, 33.245, 34.349, '레이아웃 설명3', 20, 1, 30, 2);
-INSERT INTO codes(code, layout_id) VALUES ('상세 내용', 3);
+INSERT INTO codes(layout_id, sequence, code, code_explanation, code_type) VALUES (3, 1, 'Generic is cool', '자바 제네릭 쵝오', 1);
+INSERT INTO codes(layout_id, sequence, code, code_explanation, code_type) VALUES (3, 2, 'C Struct is old', 'c언어의 구조체에 대한 설명', 2);
+INSERT INTO codes(layout_id, sequence, code, code_explanation, code_type) VALUES (3, 3, 'Cpp support Class', '개쩌는 cpp는 개쩌는 클래스 기반 프로그래밍이 가능하다', 1);
 
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
 VALUES (4, 49.245, 34.349, '레이아웃 설명4', 20, 0, 30, 2);
