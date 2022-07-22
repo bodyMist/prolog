@@ -5,6 +5,7 @@ import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
 import kit.prolog.dto.LayoutDto;
+import kit.prolog.enums.LayoutType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -44,7 +45,7 @@ public class LayoutCustomRepositoryImpl implements LayoutCustomRepository {
                 .fetch();
 
         layoutList.forEach(layoutDto -> {
-            layoutDto.setContext(
+            layoutDto.setContent(
                     selectLayout(layoutDto.getDtype(), layoutDto.getId())
             );
         });
@@ -58,12 +59,12 @@ public class LayoutCustomRepositoryImpl implements LayoutCustomRepository {
             case CONTEXT:
                 result = query.select(context.text).from(context).where(context.id.eq(layoutId));
                 break;
-            case IMAGE:
-                result = query.select(image.url).from(image).where(image.id.eq(layoutId));
-                break;
-            case CODES:
-                result = query.select(code.code).from(code).where(code.id.eq(layoutId));
-                break;
+//            case IMAGE:
+//                result = query.select(image.url).from(image).where(image.id.eq(layoutId));
+//                break;
+//            case CODES:
+//                result = query.select(code.code).from(code).where(code.id.eq(layoutId));
+//                break;
             case HYPERLINK:
                 result = query.select(hyperlink.url).from(hyperlink).where(hyperlink.id.eq(layoutId));
                 break;

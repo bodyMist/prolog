@@ -2,6 +2,7 @@ package kit.prolog.service;
 
 import kit.prolog.domain.*;
 import kit.prolog.dto.*;
+import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /*
 * 게시글 API 비즈니스 로직
@@ -34,6 +36,7 @@ public class PostService {
     private final PostTagRepository postTagRepository;
     private final CommentRepository commentRepository;
     private final HitRepository hitRepository;
+    private final ImageRepository imageRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -137,25 +140,30 @@ public class PostService {
                 Layout input = null;
                 switch (layoutType){
                     case CONTEXT:
-                        input = new Context(layoutDto.getContext());
+                        input = new Context(layoutDto.getContent());
                         break;
                     case IMAGE:
-                        input = new Image(layoutDto.getContext());
+                        List<Image> imageList = layoutDto.getImages()
+                                .stream().map(Image::new).collect(Collectors.toList());
+                        imageList.forEach(image -> {
+                            image.setLayout(layout, Integer.toUnsignedLong(imageList.indexOf(image)));
+                            imageRepository.save(image);
+                        });
                         break;
-                    case CODES:
-                        input = new Code(layoutDto.getContext());
-                        break;
+//                    case CODES:
+//                        input = new Code(layoutDto.getContext());
+//                        break;
                     case HYPERLINK:
-                        input = new Hyperlink(layoutDto.getContext());
+                        input = new Hyperlink(layoutDto.getContent());
                         break;
                     case MATHEMATICS:
-                        input = new Mathematics(layoutDto.getContext());
+                        input = new Mathematics(layoutDto.getContent());
                         break;
                     case VIDEOS:
-                        input = new Video(layoutDto.getContext());
+                        input = new Video(layoutDto.getContent());
                         break;
                     case DOCUMENTS:
-                        input = new Document(layoutDto.getContext());
+                        input = new Document(layoutDto.getContent());
                         break;
                     default:
                         input = new Layout();

@@ -1,8 +1,6 @@
 package kit.prolog.dto;
 
-import kit.prolog.domain.Layout;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
@@ -23,6 +21,6 @@ public class PostPreviewDto {
     }
 
     public void setLayoutDto(String context) {
-        this.layoutDto.setContext(context);
+        this.layoutDto.setContent(context);
     }
 }

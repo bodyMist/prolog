@@ -3,6 +3,7 @@ package kit.prolog.repository;
 import kit.prolog.domain.*;
 import kit.prolog.dto.LayoutDto;
 import kit.prolog.dto.MoldDto;
+import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.LayoutRepository;
 import kit.prolog.repository.jpa.MoldRepository;
 import kit.prolog.repository.jpa.PostRepository;
@@ -33,12 +34,12 @@ public class MoldLayoutRepositoryTest {
             case CONTEXT:
                 input = new Context(test);
                 break;
-            case IMAGE:
-                input = new Image(test);
-                break;
-            case CODES:
-                input = new Code(test);
-                break;
+//            case IMAGE:
+//                input = new Image(test);
+//                break;
+//            case CODES:
+//                input = new Code(test);
+//                break;
             case HYPERLINK:
                 input = new Hyperlink(test);
                 break;

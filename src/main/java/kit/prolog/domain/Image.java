@@ -21,6 +21,10 @@ public class Image{
     @Column(nullable = false, length = 2000)
     private String url;
 
+    public void setLayout(Layout layout, Long sequence) {
+        this.layout = layout;
+        this.sequence = sequence;
+    }
     public Image(String url) {
         this.url = url;
     }

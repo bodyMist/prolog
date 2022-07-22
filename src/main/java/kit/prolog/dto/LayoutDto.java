@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.List;
+
 /*
  * PostDetailDto를 위한 부분 DTO
  * */
@@ -18,7 +20,11 @@ public class LayoutDto {
     private double coordinateY;
     private double width;
     private double height;
-    private String context;
+    private String explanation;
+    private String content;
+
+    private List<String> images;
+    private List<List<String>> codes;
 
     // PostPreviewDto 하위 DTO
     public LayoutDto(Long id, int dtype) {
@@ -27,9 +33,9 @@ public class LayoutDto {
     }
 
     // 게시글 작성 API
-    public LayoutDto(Long id, String context) {
+    public LayoutDto(Long id, String content) {
         this.id = id;
-        this.context = context;
+        this.content = content;
     }
 
     // 레이아웃 틀 하위 레이아웃 리스트 조회 API
