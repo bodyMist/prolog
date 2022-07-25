@@ -5,6 +5,7 @@ import kit.prolog.dto.*;
 import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,7 @@ import java.util.stream.Collectors;
 @Transactional
 @Service
 @Slf4j
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
@@ -37,6 +38,7 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final HitRepository hitRepository;
     private final ImageRepository imageRepository;
+    private final CodeRepository codeRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -147,12 +149,20 @@ public class PostService {
                                 .stream().map(Image::new).collect(Collectors.toList());
                         imageList.forEach(image -> {
                             image.setLayout(layout, Integer.toUnsignedLong(imageList.indexOf(image)));
-                            imageRepository.save(image);
+                            imageRepository.saveImage(image.getLayout().getId(), image.getSequence(), image.getUrl());
                         });
+                        input = new Layout();
                         break;
-//                    case CODES:
-//                        input = new Code(layoutDto.getContext());
-//                        break;
+                    case CODES:
+                        List<Code> codeList = layoutDto.getCodes()
+                                .stream().map(Code::new).collect(Collectors.toList());
+                        codeList.forEach(code -> {
+                            code.setLayout(layout);
+                            code.setSequence(Integer.toUnsignedLong(codeList.indexOf(code)));
+                            codeRepository.saveCode(code.getLayout().getId(), code.getSequence(), code.getCode(), code.getCodeExplanation());
+                        });
+                        input = new Layout();
+                        break;
                     case HYPERLINK:
                         input = new Hyperlink(layoutDto.getContent());
                         break;
@@ -170,6 +180,7 @@ public class PostService {
                         break;
                 }
                 input.setMold(mold.get());
+                input.setExplanation(layoutDto.getExplanation());
                 layoutRepository.save(input);
             });
         });

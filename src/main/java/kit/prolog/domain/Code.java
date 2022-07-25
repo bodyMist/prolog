@@ -1,14 +1,17 @@
 package kit.prolog.domain;
 
 import kit.prolog.enums.CodeType;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity(name = "CODES")
 @DiscriminatorValue("3")
 @IdClass(CompositeKey.class)
 @NoArgsConstructor
+@Getter
 public class Code {
     @Id
     @ManyToOne
@@ -28,7 +31,16 @@ public class Code {
     @Enumerated(EnumType.ORDINAL)
     private CodeType codeType;
 
-    public Code(String code) {
-        this.code = code;
+    public void setLayout(Layout layout) {
+        this.layout = layout;
+    }
+
+    public void setSequence(Long sequence) {
+        this.sequence = sequence;
+    }
+
+    public Code(List<String> content) {
+        this.code = content.get(0);
+        this.codeExplanation = content.get(1);
     }
 }
