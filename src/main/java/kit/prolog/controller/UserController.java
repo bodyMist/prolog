@@ -109,7 +109,9 @@ public class UserController {
 
     @PostMapping("/updatepw")
     public SuccessDto changePassword(@RequestBody String account,
-                                     @RequestBody String password){
+                                     @RequestBody String password,
+                                     @RequestBody String email){
+        // 세부적인 email 인증 설정 필요함
         if(userService.changePassword(account, password)){
 
             return new SuccessDto(true, null);

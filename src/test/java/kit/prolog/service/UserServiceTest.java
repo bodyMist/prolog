@@ -69,4 +69,119 @@ public class UserServiceTest {
         User result = userService.deleteUser(userId);
         assertThat(result).isEqualTo(user);
     }
+
+    @Test
+    void 이메일회원가입(){
+        User user = new User();
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        System.out.println(userService.createUserByEmail(user));
+    }
+
+    @Test
+    void 소셜회원가입(){
+        User user = new User();
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        System.out.println(userService.createUserBySocial(user));
+    }
+
+    @Test
+    void 회원조회(){
+        User user = new User(1L);
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        when(userService.readUser(1L)).thenReturn(user);
+        System.out.println(userService.readUser(1L).getName());
+    }
+
+    @Test
+    void 로그인(){
+        String account = "asdf111";
+        String password = "asdf12!";
+        User user = new User(1L);
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        when(userRepository.findByAccountAndPassword(account, password)).thenReturn(user);
+        System.out.println(userService.login("asdf111", "asdf12!"));
+    }
+
+    @Test
+    void 아이디찾기(){
+        String email = "tkdrms0301@naver.com";
+        User user = new User(1L);
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        when(userRepository.findOneByEmail(email)).thenReturn(user);
+        System.out.println(userService.searchAccount(email));
+    }
+
+    @Test
+    void 회원정보수정(){
+        User user = new User(1L);
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        when(userService.updateUser(1L, user)).thenReturn(user);
+        System.out.println(userService.updateUser(1L, user));
+    }
+
+    @Test
+    void 비밀번호변경(){
+        String account = "asdf111";
+        String password = "asdf12!";
+        User user = new User(1L);
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        when(userRepository.findByAccountAndPassword(account, password)).thenReturn(user);
+        System.out.println(userService.changePassword(account, password));
+    }
 }
