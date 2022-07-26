@@ -26,12 +26,13 @@ public class UserRepositoryTest {
         user.setAccount("asdf111");
         user.setPassword("asdf12!");
         user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
         user.setName("안상근");
         user.setImage("");
         user.setNickname("An");
         user.setIntroduce("hello world!");
         user.setAlarm(true);
-        userRepository.save(user);
+        System.out.println(userRepository.save(user));;
     }
 
     @Test

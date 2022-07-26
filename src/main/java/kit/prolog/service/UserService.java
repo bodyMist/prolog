@@ -49,12 +49,13 @@ public class UserService {
         User user = new User();
         try{
             user = userRepository.findOneById(memberPk);
+            return user;
         }catch (NullPointerException e){
             System.out.println("Error : no user");
         }
-        return user;
         // user 존재하면 user 반환
         // 비어있는 user 반환
+        return user;
     }
 
     // 회원 정보 수정
