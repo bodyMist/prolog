@@ -38,7 +38,6 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final HitRepository hitRepository;
     private final ImageRepository imageRepository;
-    private final CodeRepository codeRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -145,7 +144,7 @@ public class PostService {
                         input = new Context(layoutDto.getContent());
                         break;
                     case IMAGE:
-                        List<Image> imageList = layoutDto.getImages()
+                        List<Image> imageList = layoutDto.getUrl()
                                 .stream().map(Image::new).collect(Collectors.toList());
                         imageList.forEach(image -> {
                             image.setLayout(layout, Integer.toUnsignedLong(imageList.indexOf(image)));
@@ -154,14 +153,7 @@ public class PostService {
                         input = new Layout();
                         break;
                     case CODES:
-                        List<Code> codeList = layoutDto.getCodes()
-                                .stream().map(Code::new).collect(Collectors.toList());
-                        codeList.forEach(code -> {
-                            code.setLayout(layout);
-                            code.setSequence(Integer.toUnsignedLong(codeList.indexOf(code)));
-                            codeRepository.saveCode(code.getLayout().getId(), code.getSequence(), code.getCode(), code.getCodeExplanation());
-                        });
-                        input = new Layout();
+                        input = new Code(layoutDto.getCodes());
                         break;
                     case HYPERLINK:
                         input = new Hyperlink(layoutDto.getContent());

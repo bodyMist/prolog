@@ -2,6 +2,7 @@ package kit.prolog.repository.custom;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.JPQLQuery;
+import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
 import kit.prolog.dto.LayoutDto;
@@ -45,42 +46,78 @@ public class LayoutCustomRepositoryImpl implements LayoutCustomRepository {
                 .fetch();
 
         layoutList.forEach(layoutDto -> {
-            layoutDto.setContent(
-                    selectLayout(layoutDto.getDtype(), layoutDto.getId())
-            );
+            layoutDto.addContent(selectLayout(layoutDto.getDtype(), layoutDto.getId()));
         });
         return layoutList;
     }
 
-    public String selectLayout(int layoutType, Long layoutId){
-        JPQLQuery<String> result;
+    public LayoutDto selectLayout(int layoutType, Long layoutId){
+        LayoutDto layoutDto = null;
         LayoutType type = LayoutType.values()[layoutType];
         switch (type) {
             case CONTEXT:
-                result = query.select(context.text).from(context).where(context.id.eq(layoutId));
+                layoutDto = new LayoutDto(
+                        query
+                                .select(context.text)
+                                .from(context)
+                                .where(context.id.eq(layoutId))
+                                .fetchOne()
+                );
                 break;
-//            case IMAGE:
-//                result = query.select(image.url).from(image).where(image.id.eq(layoutId));
-//                break;
-//            case CODES:
-//                result = query.select(code.code).from(code).where(code.id.eq(layoutId));
-//                break;
+            case IMAGE:
+                layoutDto = new LayoutDto(
+                        query
+                                .select(image.url)
+                                .from(image)
+                                .where(image.layout.id.eq(layoutId))
+                        .fetch()
+                );
+                break;
+            case CODES:
+                layoutDto = new LayoutDto(
+                        query
+                                .selectFrom(code)
+                                .where(code.id.eq(layoutId))
+                                .fetchOne()
+                );
+                break;
             case HYPERLINK:
-                result = query.select(hyperlink.url).from(hyperlink).where(hyperlink.id.eq(layoutId));
+                layoutDto = new LayoutDto(
+                        query
+                                .select(hyperlink.url)
+                                .from(hyperlink)
+                                .where(hyperlink.id.eq(layoutId))
+                        .fetchOne()
+                );
                 break;
             case MATHEMATICS:
-                result = query.select(mathematics.context).from(mathematics).where(mathematics.id.eq(layoutId));
+                layoutDto = new LayoutDto(
+                        query
+                                .select(mathematics.context)
+                                .from(mathematics)
+                                .where(mathematics.id.eq(layoutId))
+                        .fetchOne()
+                );
                 break;
             case VIDEOS:
-                result = query.select(video.url).from(video).where(video.id.eq(layoutId));
+                layoutDto = new LayoutDto(
+                        query
+                                .select(video.url)
+                                .from(video)
+                                .where(video.id.eq(layoutId))
+                        .fetchOne()
+                );
                 break;
             case DOCUMENTS:
-                result = query.select(document.url).from(document).where(document.id.eq(layoutId));
-                break;
-            default:
-                result = null;
+                layoutDto = new LayoutDto(
+                        query
+                                .select(document.url)
+                                .from(document)
+                                .where(document.id.eq(layoutId))
+                        .fetchOne()
+                );
                 break;
         }
-        return result.fetchOne();
+        return layoutDto;
     }
 }

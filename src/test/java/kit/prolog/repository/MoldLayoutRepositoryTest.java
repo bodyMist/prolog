@@ -26,7 +26,6 @@ public class MoldLayoutRepositoryTest {
     @Autowired PostRepository postRepository;
 
     @Autowired ImageRepository imageRepository;
-    @Autowired CodeRepository codeRepository;
 
     @Test
     void 이미지_레이아웃_저장(){
@@ -46,30 +45,10 @@ public class MoldLayoutRepositoryTest {
     }
 
     @Test
-    void 코드_레이아웃_저장(){
-        Layout layout = layoutRepository.findById(2L).get();
-        String[][] rawCodes = {
-                {
-                    "code1", "explanation1"
-                },{
-                "code2", "explanation2"
-        }};
-        List<List<String>> codes = Arrays.stream(rawCodes).map(Arrays::asList).collect(Collectors.toList());
-
-        List<Code> codeList = codes
-                .stream().map(Code::new).collect(Collectors.toList());
-        codeList.forEach(code -> {
-            code.setLayout(layout);
-            code.setSequence(Integer.toUnsignedLong(codeList.indexOf(code)));
-            codeRepository.saveCode(code.getLayout().getId(), code.getSequence(), code.getCode(), code.getCodeExplanation());
-        });
-    }
-
-    @Test
     void 레이아웃_상속클래스_저장(){
         Layout layout = layoutRepository.findById(2L).get();
         String test = "test";
-        String[][] rawCode = {{"코드코드1","설명설명1"},{"코드코드2","설명설명2"},{"코드코드3","설명설명3"}};
+        String[] rawCode = {"코드", "코드설명", "코드종류"};
         String[] rawImages = {
                 "https://i.natgeofe.com/n/f7732389-a045-402c-bf39-cb4eda39e786/scotland_travel_4x3.jpg",
                 "https://www.tusktravel.com/blog/wp-content/uploads/2020/07/Best-Time-to-Visit-Darjeeling-for-Honeymoon.jpg"
@@ -92,15 +71,7 @@ public class MoldLayoutRepositoryTest {
                 input = new Layout();
                 break;
             case CODES:
-                List<List<String>> codes = Arrays.stream(rawCode).map(Arrays::asList).collect(Collectors.toList());
-                List<Code> codeList = codes.stream()
-                        .map(Code::new).collect(Collectors.toList());
-                codeList.forEach(code -> {
-                    code.setLayout(layout);
-                    code.setSequence(Integer.toUnsignedLong(codeList.indexOf(code)));
-                    codeRepository.saveCode(code.getLayout().getId(), code.getSequence(), code.getCode(), code.getCodeExplanation());
-                });
-                input = new Layout();
+                input = new Code(Arrays.asList(rawCode));
                 break;
             case HYPERLINK:
                 input = new Hyperlink(test);
