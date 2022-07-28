@@ -1,13 +1,18 @@
 package kit.prolog.domain;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 import javax.persistence.*;
 
 @Entity(name = "IMAGES")
-@DiscriminatorValue("2")
+//@DiscriminatorValue("2")
 @IdClass(CompositeKey.class)
 @NoArgsConstructor
+@ToString
+@Getter
 public class Image{
     @Id
     @ManyToOne

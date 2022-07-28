@@ -1,6 +1,7 @@
 package kit.prolog.domain;
 
 import kit.prolog.dto.LayoutDto;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -14,6 +15,7 @@ import javax.persistence.*;
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(discriminatorType = DiscriminatorType.INTEGER)
 @NoArgsConstructor
+@AllArgsConstructor
 @OnDelete(action = OnDeleteAction.CASCADE)
 public class Layout {
     @Id
@@ -49,7 +51,22 @@ public class Layout {
         this.mold = mold;
     }
 
+    public Layout(Long id, Double coordinateX, Double coordinateY, Double width, Double height, String explanation, Boolean main, int dtype) {
+        this.id = id;
+        this.coordinateX = coordinateX;
+        this.coordinateY = coordinateY;
+        this.width = width;
+        this.height = height;
+        this.explanation = explanation;
+        this.main = main;
+        this.dtype = dtype;
+    }
+
     public void setMold(Mold mold) {
         this.mold = mold;
+    }
+
+    public void setExplanation(String explanation) {
+        this.explanation = explanation;
     }
 }

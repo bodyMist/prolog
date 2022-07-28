@@ -1,34 +1,29 @@
 package kit.prolog.domain;
 
 import kit.prolog.enums.CodeType;
+import kit.prolog.enums.LayoutType;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.util.List;
 
 @Entity(name = "CODES")
 @DiscriminatorValue("3")
-@IdClass(CompositeKey.class)
 @NoArgsConstructor
-public class Code {
-    @Id
-    @ManyToOne
-    @JoinColumn(name = "LAYOUT_ID", nullable = false)
-    private Layout layout;
-
-    @Id
-    @Column(name = "SEQUENCE", nullable = false)
-    private Long sequence;
-
-
+@Getter
+public class Code extends Layout{
     @Column(length = 2000)
     private String code;
     @Column(length = 2000)
     private String codeExplanation;
 
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private CodeType codeType;
 
-    public Code(String code) {
-        this.code = code;
+    public Code(List<String> codes) {
+        this.code = codes.get(0);
+        this.codeExplanation = codes.get(1);
+        this.codeType = CodeType.valueOf(codes.get(2));
     }
 }

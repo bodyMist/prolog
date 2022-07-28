@@ -95,9 +95,10 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .fetch();
 
         posts.forEach(post -> {
-            post.setLayoutDto(
+            post.getLayoutDto().addContent(
                     layoutRepository
-                            .selectLayout(post.getLayoutDto().getDtype(), post.getLayoutDto().getId()
+                            .selectLayout(
+                                    post.getLayoutDto().getDtype(), post.getLayoutDto().getId()
                             ));
         });
         return posts;
