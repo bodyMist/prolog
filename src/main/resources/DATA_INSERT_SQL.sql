@@ -25,9 +25,9 @@ INSERT INTO images(layout_id, sequence, url) VALUES (2, 3, 'https://www.google.c
 
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
 VALUES (3, 33.245, 34.349, '레이아웃 설명3', 20, 1, 30, 2);
-INSERT INTO codes(layout_id, sequence, code, code_explanation, code_type) VALUES (3, 1, 'Generic is cool', '자바 제네릭 쵝오', 1);
-INSERT INTO codes(layout_id, sequence, code, code_explanation, code_type) VALUES (3, 2, 'C Struct is old', 'c언어의 구조체에 대한 설명', 2);
-INSERT INTO codes(layout_id, sequence, code, code_explanation, code_type) VALUES (3, 3, 'Cpp support Class', '개쩌는 cpp는 개쩌는 클래스 기반 프로그래밍이 가능하다', 1);
+INSERT INTO codes(layout_id, code, code_explanation, code_type) VALUES (3, 'Generic is cool', '자바 제네릭 쵝오', 'JAVA');
+INSERT INTO codes(layout_id, code, code_explanation, code_type) VALUES (1, 'C Struct is old', 'c언어의 구조체에 대한 설명', 'C');
+INSERT INTO codes(layout_id, code, code_explanation, code_type) VALUES (2, 'Cpp support Class', '개쩌는 cpp는 개쩌는 클래스 기반 프로그래밍이 가능하다', 'CPP');
 
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
 VALUES (4, 49.245, 34.349, '레이아웃 설명4', 20, 0, 30, 2);
