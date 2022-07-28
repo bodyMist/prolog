@@ -2,7 +2,6 @@ package kit.prolog.service;
 
 import kit.prolog.domain.User;
 import kit.prolog.repository.jpa.*;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
