@@ -104,6 +104,62 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         return posts;
     }
 
+    @Override
+    public List<PostPreviewDto> findLikePostByUserId(Long userId, int cursor) {
+        List<PostPreviewDto> posts = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image, layout.id, layout.dtype, like.count())
+        )
+                .from(post)
+                .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
+                .innerJoin(like).on(post.eq(like.post))
+                .innerJoin(mold).on(mold.eq(post.mold))
+                .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
+                .where(lowerThanCursor(cursor))
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .limit(PAGE_SIZE)
+                .fetch();
+
+        posts.forEach(post -> {
+            post.getLayoutDto().addContent(
+                    layoutRepository
+                            .selectLayout(
+                                    post.getLayoutDto().getDtype(), post.getLayoutDto().getId()
+                            ));
+        });
+        return posts;
+    }
+
+    @Override
+    public List<PostPreviewDto> findAllPost(int cursor) {
+        List<PostPreviewDto> posts = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image, layout.id, layout.dtype, like.count())
+        )
+                .from(post)
+                .innerJoin(user).on(post.user.eq(user))
+                .leftJoin(like).on(post.eq(like.post))
+                .innerJoin(mold).on(mold.eq(post.mold))
+                .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
+                .where(lowerThanCursor(cursor))
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .limit(PAGE_SIZE)
+                .fetch();
+
+        posts.forEach(post -> {
+            post.getLayoutDto().addContent(
+                    layoutRepository
+                            .selectLayout(
+                                    post.getLayoutDto().getDtype(), post.getLayoutDto().getId()
+                            ));
+        });
+        return posts;
+    }
+
     private BooleanExpression lowerThanCursor(int cursor){
         return cursor == 0 ? null : post.id.lt( cursor);
     }

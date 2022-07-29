@@ -296,4 +296,22 @@ public class PostService {
     public List<PostPreviewDto> getMyPostList(Long userId, int cursor){
         return postRepository.findMyPostByUserId(userId, cursor);
     }
+
+    /**
+     * 좋아요 한 글 목록 조회 API
+     * 매개변수 : userId(사용자 pk), cursor(페이지 번호)
+     * 반환 : List<PostPreviewDto>
+     * */
+    public List<PostPreviewDto> getLikePostList(Long userId, int cursor){
+        return postRepository.findLikePostByUserId(userId, cursor);
+    }
+
+    /**
+     * 전체 게시글 목록 조회 API
+     * 매개변수 : cursor(페이지 번호)
+     * 반환 : List<PostPreviewDto>
+     * */
+    public List<PostPreviewDto> getAllPostList(int cursor){
+        return postRepository.findAllPost(cursor);
+    }
 }
