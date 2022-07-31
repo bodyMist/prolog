@@ -8,9 +8,16 @@ import kit.prolog.config.JwtConfig;
 import kit.prolog.enums.JwtTokenValidType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
 import java.util.Date;
 
 @RequiredArgsConstructor
@@ -83,5 +90,13 @@ public class JwtService {
         Date expiration = extractAllClaims(token).getExpiration();
         Date now = new Date();
         return (expiration.getTime() - now.getTime()) / 1000L;
+    }
+
+    public Authentication getAuthentication(String token) {
+        String userId = getUserPk(token);
+        Collection<GrantedAuthority> authorities = AuthorityUtils.createAuthorityList("ROLE_USER");
+
+        UserDetails principal = new User(userId, "", authorities);
+        return new UsernamePasswordAuthenticationToken(principal, null, authorities);
     }
 }
