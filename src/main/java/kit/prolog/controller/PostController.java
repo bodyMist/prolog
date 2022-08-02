@@ -18,11 +18,9 @@ public class PostController {
 
     /**
      * 레이아웃 작성 API
-     * userId의 경우 세션에서 가져와야 함.
-     * 세션 구현 전까지 직접 클라이언트가 매개로 전송
      * */
     @PostMapping("/layout")
-    public SuccessDto createLayout(@RequestHeader(value = "memberpk")Long userId, String moldName, List<LayoutDto> layouts){
+    public SuccessDto createLayout(Long userId, String moldName, List<LayoutDto> layouts){
         // 세션에서 user 정보 가져와야 함
 
         List<LayoutDto> layoutDtos = postService.saveLayouts(userId, moldName, layouts);
@@ -30,7 +28,6 @@ public class PostController {
     }
     /**
      * 레이아웃 리스트 조회 API
-     * 반환 타입 방법 강구 필요
      * */
     @GetMapping("/layouts/{id}")
     public SuccessDto readLayouts(@PathVariable Long id){
@@ -42,7 +39,7 @@ public class PostController {
      * 레이아웃 틀 목록 조회 API
      * */
     @GetMapping("/layouts")
-    public SuccessDto readLayoutMolds(@RequestHeader Long userId){
+    public SuccessDto readLayoutMolds(@RequestBody Long userId){
         List<MoldDto> myMolds = postService.viewMyMolds(userId);
         return new SuccessDto(true, myMolds);
     }
@@ -59,7 +56,7 @@ public class PostController {
      * 게시글 작성 API
      * */
     @PostMapping("/board")
-    public SuccessDto createPost(@RequestHeader(value = "memberpk")Long userId,
+    public SuccessDto createPost(@RequestBody Long userId,
                                  @RequestBody Long moldId,
                                  @RequestBody String title,
                                  @RequestBody List<LayoutDto> layoutDtos,
@@ -88,4 +85,78 @@ public class PostController {
         List<PostPreviewDto> posts = postService.viewPostsByCategory(user, category, last);
         return new SuccessDto(true, posts);
     }
+
+    /**
+     * 게시글 상세 조회 API
+     * 로그인 상태와 비로그인 상태에서 차이 있음  --> 구현 필요
+     * 로그인 상태일 때, 좋아요 exist 정보를 포함하여 조회
+     * */
+    @GetMapping("/board/{id}")
+    public SuccessDto readPost(@PathVariable Long id){
+        PostDetailDto post = postService.viewPostDetailById(null, id);
+        return new SuccessDto(true, post);
+    }
+
+    /**
+     * 게시글 수정 API
+     * */
+
+
+    /**
+     * 게시글 삭제 API
+     * deletePost 에서 post 작성자와 Request 주체의 id 비교 필요(Authentication)
+     * */
+    @DeleteMapping("/board/{id}")
+    public SuccessDto deletePost(@PathVariable Long id){
+        postService.deletePost(id);
+        return new SuccessDto(true);
+    }
+
+    /**
+     * 태그 조회 API
+     * */
+
+    /**
+     * 파일 업로드 API
+     * */
+
+
+    /**
+     * 파일 삭제 API
+     * */
+
+    /**
+     * 게시글 좋아요/취소 API
+     * */
+    @PostMapping("/board/{id}")
+    public SuccessDto likePost(@PathVariable Long id, @RequestBody Long userId){
+        boolean like = postService.likePost(id, userId);
+        return new SuccessDto(like);
+    }
+
+    /**
+     * 내가 쓴 글 목록 조회 API
+     * */
+    @GetMapping("{userId}/")
+    public SuccessDto readMyPosts(@PathVariable Long userId, @RequestParam int last){
+        List<PostPreviewDto> myPosts = postService.getMyPostList(userId, last);
+        return new SuccessDto(true, myPosts);
+    }
+
+    /**
+     * 좋아요 한 글 목록 조회 API
+     * */
+    @GetMapping("{userId}/likes")
+    public SuccessDto readLikedPosts(@PathVariable Long userId, @RequestParam int last){
+        List<PostPreviewDto> likedPosts = postService.getLikePostList(userId, last);
+        return new SuccessDto(true, likedPosts);
+    }
+
+    /**
+     * 전체 게시글 목록 조회 API
+     * */
+
+    /**
+     * 최근 게시글 목록 조회 API
+     * */
 }
