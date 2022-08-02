@@ -88,12 +88,16 @@ public class PostController {
 
     /**
      * 게시글 상세 조회 API
-     * 로그인 상태와 비로그인 상태에서 차이 있음  --> 구현 필요
+     * 로그인 상태와 비로그인 상태에서 차이 있음  --> 세션 구현 필요
      * 로그인 상태일 때, 좋아요 exist 정보를 포함하여 조회
      * */
     @GetMapping("/board/{id}")
     public SuccessDto readPost(@PathVariable Long id){
-        PostDetailDto post = postService.viewPostDetailById(null, id);
+        PostDetailDto post;
+        // 로그인 상태
+        post = postService.viewPostDetailById(null, id);
+        // 비로그인 상태
+        post = postService.viewPostDetailById(null, id);
         return new SuccessDto(true, post);
     }
 

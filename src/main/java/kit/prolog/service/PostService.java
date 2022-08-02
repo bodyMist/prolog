@@ -220,8 +220,7 @@ public class PostService {
     * */
     public PostDetailDto viewPostDetailById(Long userId, Long postId){
         PostDetailDto postDetailDto = postRepository.findPostById(postId);
-
-        boolean exist = likeRepository.existsByUser_IdAndPost_Id(userId, postId);
+        boolean exist;
         int likeCount = likeRepository.countByPost_Id(postId);
 
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "time"));
@@ -237,8 +236,12 @@ public class PostService {
         });
         //레이아웃 가져오기
         List<LayoutDto> layoutList = layoutRepository.findLayoutDetailByMold_Id(postDetailDto.getMoldId());
-
-        postDetailDto.setLikeDto(new LikeDto(likeCount, exist));
+        LikeDto like = new LikeDto(likeCount);
+        if (userId != null) {
+            exist = likeRepository.existsByUser_IdAndPost_Id(userId, postId);
+            like.setExist(exist);
+        }
+        postDetailDto.setLikeDto(like);
         postDetailDto.setComments(commentList);
         postDetailDto.setAttachmentDto(attachmentList);
         postDetailDto.setTags(tagList);
