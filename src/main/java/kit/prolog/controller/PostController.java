@@ -119,6 +119,11 @@ public class PostController {
     /**
      * 태그 조회 API
      * */
+    @GetMapping("/tags")
+    public SuccessDto getTags(@RequestParam String keyword){
+        List<String> tags = postService.findTagByName(keyword);
+        return new SuccessDto(true, tags);
+    }
 
     /**
      * 파일 업로드 API

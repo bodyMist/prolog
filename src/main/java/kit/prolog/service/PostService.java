@@ -272,6 +272,17 @@ public class PostService {
     }
 
     /**
+     * 태그 조회 API
+     * 매개변수 : tagName(태그 이름)
+     * 반환 : List<String>
+     * 발생 가능 에러 :
+     * */
+    public List<String> findTagByName(String tagName){
+        return tagRepository.findAllByNameLike(tagName)
+                .stream().map(Tag::getName).collect(Collectors.toList());
+    }
+
+    /**
     * 게시글 좋아요 API
     * 매개변수 : postId(게시글 pk), userId(사용자 pk)
     * 반환 : boolean
