@@ -20,6 +20,6 @@ public interface LayoutRepository extends JpaRepository<Layout, Long>, LayoutCus
     @Query("SELECT l FROM LAYOUTS l WHERE l.id = :id")
     Optional<Layout> findLayoutById(Long id);
 
-    @Query("SELECT new kit.prolog.domain.Layout(l.id, l.coordinateX, l.coordinateY, l.width, l.height, l.explanation, l.main, l.dtype) FROM LAYOUTS l WHERE l.id = :id")
+    @Query("SELECT new kit.prolog.domain.Layout(l.id, l.coordinateX, l.coordinateY, l.width, l.height, l.explanation, l.dtype) FROM LAYOUTS l WHERE l.id = :id")
     Optional<Layout> findById(Long id);
 }

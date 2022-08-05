@@ -3,6 +3,7 @@ package kit.prolog.domain;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity(name = "LIKES")
 @NoArgsConstructor
@@ -11,6 +12,9 @@ public class Like {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "LIKE_ID", nullable = false)
     private Long id;
+
+    private LocalDateTime time;
+
 
     @ManyToOne(fetch = FetchType.LAZY)
     private User user;

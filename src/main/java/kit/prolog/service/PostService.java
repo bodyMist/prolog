@@ -2,6 +2,7 @@ package kit.prolog.service;
 
 import kit.prolog.domain.*;
 import kit.prolog.dto.*;
+import kit.prolog.enums.CodeType;
 import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
 import lombok.AllArgsConstructor;
@@ -37,7 +38,7 @@ public class PostService {
     private final PostTagRepository postTagRepository;
     private final CommentRepository commentRepository;
     private final HitRepository hitRepository;
-    private final ImageRepository imageRepository;
+    private final ContextRepository contextRepository;
 
     /**
      * 레이아웃 작성 API - moldId가 없을 때
@@ -138,42 +139,37 @@ public class PostService {
         layoutDtos.forEach(layoutDto -> {
             layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
                 LayoutType layoutType = LayoutType.values()[layout.getDtype()];
-                Layout input = null;
+
+                List<Context> contextList = new ArrayList<>();
+                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
                 switch (layoutType){
                     case CONTEXT:
-                        input = new Context(layoutDto.getContent());
+                    case MATHEMATICS:
+                        context.setContext(layoutDto.getContent());
                         break;
                     case IMAGE:
-                        List<Image> imageList = layoutDto.getUrl()
-                                .stream().map(Image::new).collect(Collectors.toList());
-                        imageList.forEach(image -> {
-                            image.setLayout(layout, Integer.toUnsignedLong(imageList.indexOf(image)));
-                            imageRepository.saveImage(image.getLayout().getId(), image.getSequence(), image.getUrl());
+                        layoutDto.getUrl().forEach(url -> {
+                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
                         });
-                        input = new Layout();
                         break;
                     case CODES:
-                        input = new Code(layoutDto.getCodes());
+                        List<String> codes = layoutDto.getCodes();
+                        context.setCode(codes.get(0));
+                        context.setCodeExplanation(codes.get(1));
+                        context.setCodeType(CodeType.valueOf(codes.get(2)));
                         break;
                     case HYPERLINK:
-                        input = new Hyperlink(layoutDto.getContent());
-                        break;
-                    case MATHEMATICS:
-                        input = new Mathematics(layoutDto.getContent());
-                        break;
                     case VIDEOS:
-                        input = new Video(layoutDto.getContent());
-                        break;
                     case DOCUMENTS:
-                        input = new Document(layoutDto.getContent());
-                        break;
-                    default:
-                        input = new Layout();
+                        context.setUrl(layoutDto.getContent());
                         break;
                 }
-                input.setMold(mold.get());
-                input.setExplanation(layoutDto.getExplanation());
-                layoutRepository.save(input);
+
+                if(contextList.isEmpty()){
+                    contextRepository.save(context);
+                }else{
+                    contextList.forEach(contextRepository::save);
+                }
             });
         });
         if (!param.isEmpty()){

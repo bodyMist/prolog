@@ -12,11 +12,8 @@ import javax.persistence.*;
 
 @Getter
 @Entity(name = "LAYOUTS")
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(discriminatorType = DiscriminatorType.INTEGER)
 @NoArgsConstructor
 @AllArgsConstructor
-@OnDelete(action = OnDeleteAction.CASCADE)
 public class Layout {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -28,9 +25,6 @@ public class Layout {
     private Double width;
     private Double height;
     private String explanation;
-    @Column(nullable = false)
-    @ColumnDefault(value = "false")
-    private Boolean main = false;       // 대표 레이아웃
 
     @Column(name = "dtype", insertable = false, updatable = false)
     protected int dtype;
@@ -51,14 +45,13 @@ public class Layout {
         this.mold = mold;
     }
 
-    public Layout(Long id, Double coordinateX, Double coordinateY, Double width, Double height, String explanation, Boolean main, int dtype) {
+    public Layout(Long id, Double coordinateX, Double coordinateY, Double width, Double height, String explanation, int dtype) {
         this.id = id;
         this.coordinateX = coordinateX;
         this.coordinateY = coordinateY;
         this.width = width;
         this.height = height;
         this.explanation = explanation;
-        this.main = main;
         this.dtype = dtype;
     }
 

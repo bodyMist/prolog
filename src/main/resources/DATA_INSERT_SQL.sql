@@ -10,36 +10,6 @@ INSERT INTO categories(name, user_user_id) VALUES ('전시용', 1);
 # 레이아웃틀 3
 INSERT INTO molds(name, user_user_id) VALUES ('기본 틀', 1);
 INSERT INTO molds(name, user_user_id) VALUES ('복합 틀', 1);
-INSERT INTO molds(name, user_user_id) VALUES ('연관 틀', 1);
-
-# 레이아웃 6
-INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
-VALUES (1, 10.245, 34.349, '레이아웃 설명1', 20, 1, 30, 1);
-INSERT INTO contexts(text, layout_id) VALUES ('상세 내용', 1);
-
-INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
-VALUES (2, 20.121, 34.349, '레이아웃 설명2', 20, 0, 30, 1);
-INSERT INTO images(layout_id, sequence, url) VALUES (2, 1, 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
-INSERT INTO images(layout_id, sequence, url) VALUES (2, 2, 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
-INSERT INTO images(layout_id, sequence, url) VALUES (2, 3, 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png');
-
-INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
-VALUES (3, 33.245, 34.349, '레이아웃 설명3', 20, 1, 30, 2);
-INSERT INTO codes(layout_id, code, code_explanation, code_type) VALUES (3, 'Generic is cool', '자바 제네릭 쵝오', 'JAVA');
-INSERT INTO codes(layout_id, code, code_explanation, code_type) VALUES (1, 'C Struct is old', 'c언어의 구조체에 대한 설명', 'C');
-INSERT INTO codes(layout_id, code, code_explanation, code_type) VALUES (2, 'Cpp support Class', '개쩌는 cpp는 개쩌는 클래스 기반 프로그래밍이 가능하다', 'CPP');
-
-INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
-VALUES (4, 49.245, 34.349, '레이아웃 설명4', 20, 0, 30, 2);
-INSERT INTO hyperlinks(url, layout_id) VALUES ('상세 내용', 4);
-
-INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
-VALUES (5, 53.245, 34.349, '레이아웃 설명5', 20, 1, 30, 3);
-INSERT INTO mathematics(context, layout_id) VALUES ('상세 내용', 5);
-
-INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, main, width, mold_mold_id)
-VALUES (6, 65.245, 34.349, '레이아웃 설명6', 20, 0, 30, 3);
-INSERT INTO videos(url, layout_id) VALUES ('상세 내용', 6);
 
 # 게시글 6
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
@@ -50,10 +20,28 @@ INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '3이것은 테스트용이예요', 2, 2, 1);
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '4이것은 테스트용이예요', 2, 2, 1);
-INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
-VALUES (CURRENT_TIME, '5이것은 테스트용이예요', 3, 3, 1);
-INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
-VALUES (CURRENT_TIME, '6이것은 테스트용이예요', 3, 3, 1);
+
+# 레이아웃 6
+INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width, mold_mold_id)
+VALUES (1, 10.245, 34.349, '레이아웃 설명1', 20, 30, 1);
+INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width, mold_mold_id)
+VALUES (2, 20.121, 34.349, '레이아웃 설명2', 20, 30, 1);
+INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width, mold_mold_id)
+VALUES (3, 33.245, 34.349, '레이아웃 설명3', 20, 30, 2);
+INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width)
+VALUES (4, 49.245, 34.349, '레이아웃 설명4', 20, 30);
+INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width)
+VALUES (5, 53.245, 34.349, '레이아웃 설명5', 20, 30);
+INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width)
+VALUES (6, 65.245, 34.349, '레이아웃 설명6', 20, 30);
+
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (1, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (1, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (1, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, code, code_explanation, code_type, main) values (2, 3, '코드내용', '코드설명', 'CPP', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (2, 4, 'https://www.erdcloud.com/d/c6EcfX5rhWDrvNi7i', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (3, 5, '수학공식', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (3, 6, 'https://www.youtube.com/watch?v=i2jWju6cUvk', false);
 
 # 태그 6
 INSERT INTO tags(name) VALUES ('딥러닝');

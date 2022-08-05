@@ -30,6 +30,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     private final QLayout layout = QLayout.layout;
     private final QHit hit = QHit.hit;
     private final QLike like = QLike.like;
+    private final QContext context = QContext.context1;
 
     @Override
     public PostDetailDto findPostById(Long postId) {
@@ -68,7 +69,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .innerJoin(category).on(category.eq(post.category).and(category.name.eq(categoryName)))
                 .innerJoin(like).on(post.eq(like.post))
                 .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
+                .innerJoin(layout).on(mold.eq(layout.mold))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
@@ -87,7 +88,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
                 .leftJoin(like).on(post.eq(like.post))
                 .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
+                .innerJoin(layout).on(mold.eq(layout.mold))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
@@ -115,7 +116,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
                 .innerJoin(like).on(post.eq(like.post))
                 .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
+                .innerJoin(layout).on(mold.eq(layout.mold))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
@@ -143,7 +144,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .innerJoin(user).on(post.user.eq(user))
                 .leftJoin(like).on(post.eq(like.post))
                 .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold).and(layout.main.eq(true)))
+                .innerJoin(layout).on(mold.eq(layout.mold))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())

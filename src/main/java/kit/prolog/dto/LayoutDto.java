@@ -1,15 +1,11 @@
 package kit.prolog.dto;
 
-import com.querydsl.jpa.impl.JPAQuery;
-import kit.prolog.domain.Code;
-import kit.prolog.domain.Image;
 import kit.prolog.domain.Layout;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /*
  * PostDetailDto를 위한 부분 DTO
@@ -26,6 +22,7 @@ public class LayoutDto {
     private double height;
     private String explanation;
     private String content;
+    private boolean leader;
 
     private List<String> url;
     private List<String> codes;
@@ -74,9 +71,7 @@ public class LayoutDto {
     public LayoutDto(String content) {
         this.content = content;
     }
-    public LayoutDto(Code code) {
-        this.codes = List.of(code.getCode(), code.getCodeExplanation(), code.getCodeType().toString());
-    }
+
     public LayoutDto(List<String> url) {
         this.url = url;
     }
@@ -84,5 +79,9 @@ public class LayoutDto {
         this.content = layoutDto.getContent() == null ? null : layoutDto.getContent();
         this.codes = layoutDto.getCodes() == null ? null : layoutDto.getCodes();
         this.url = layoutDto.getUrl() == null ? null : layoutDto.getUrl();
+    }
+
+    public boolean getLeader() {
+        return leader;
     }
 }

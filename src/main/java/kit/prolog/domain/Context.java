@@ -1,19 +1,48 @@
 package kit.prolog.domain;
 
+import kit.prolog.enums.CodeType;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.DiscriminatorValue;
-import javax.persistence.Entity;
+import javax.persistence.*;
 
 @Entity(name = "CONTEXTS")
-@DiscriminatorValue("1")
+@Setter
 @NoArgsConstructor
-public class Context extends Layout{
-    @Column(length = 2000)
-    private String text;
+public class Context{
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "CONTEXT_ID", nullable = false)
+    private Long id;
 
-    public Context(String text) {
-        this.text = text;
+    @Column(length = 2000)
+    private String context;
+    @Column(length = 2000)
+    private String url;
+    @Column(length = 2000)
+    private String code;
+    @Enumerated(EnumType.STRING)
+    private CodeType codeType;
+    @Column(length = 2000)
+    private String codeExplanation;
+    @Column(nullable = false)
+    private boolean main = false;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Post post;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Layout layout;
+
+    public Context(boolean main, Post post, Layout layout) {
+        this.main = main;
+        this.post = post;
+        this.layout = layout;
+    }
+
+    public Context(String url, boolean main, Post post, Layout layout) {
+        this.url = url;
+        this.main = main;
+        this.post = post;
+        this.layout = layout;
     }
 }
