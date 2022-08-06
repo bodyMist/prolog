@@ -2,6 +2,7 @@ package kit.prolog.repository.custom;
 
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
 import kit.prolog.dto.LayoutDto;
@@ -69,18 +70,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
-        previewDtos.forEach(post ->{
-            List<LayoutDto> layoutContext = query.select(
-                                    Projections.constructor(LayoutDto.class,
-                                            layout.dtype, layout.width, layout.height,
-                                            context.context, context.code, context.codeExplanation, context.codeType, context.url
-                                    ))
-                    .from(context)
-                    .innerJoin(layout).on(context.layout.id.eq(layout.id))
-                    .where(context.post.id.eq(post.getPostDto().getId())
-                            .and(context.main.eq(true))
-                    )
-                    .fetch();
+        previewDtos.forEach(post -> {
+            List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
             post.setLayoutDto(layoutContext);
                 }
         );
@@ -170,7 +161,18 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         });
         return posts;
     }
-
+    private <T extends LayoutDto> JPQLQuery<T> selectMainContext(Class<T> dtoType, Long postId){
+        return query.select(
+                        Projections.constructor(dtoType,
+                                layout.dtype, layout.width, layout.height,
+                                context.context, context.code, context.codeExplanation, context.codeType, context.url
+                        ))
+                .from(context)
+                .innerJoin(layout).on(context.layout.id.eq(layout.id))
+                .where(context.post.id.eq(postId)
+                        .and(context.main.eq(true))
+                );
+    }
     private BooleanExpression lowerThanCursor(int cursor){
         return cursor == 0 ? null : post.id.lt( cursor);
     }
