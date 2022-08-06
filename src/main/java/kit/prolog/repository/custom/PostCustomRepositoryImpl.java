@@ -1,20 +1,16 @@
 package kit.prolog.repository.custom;
 
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
-import com.querydsl.jpa.JPQLQuery;
-import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
+import kit.prolog.dto.LayoutDto;
 import kit.prolog.dto.PostDetailDto;
 import kit.prolog.dto.PostPreviewDto;
 import kit.prolog.repository.jpa.LayoutRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
 @Repository
@@ -59,22 +55,36 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     @Override
     public List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor) {
-        return query.select(
-                Projections.constructor(PostPreviewDto.class,
-                        post.id, post.title, post.time,
-                        user.name, user.image, layout.id, layout.dtype, like.count())
-        )
+        List<PostPreviewDto> previewDtos = query.select(
+                        Projections.constructor(PostPreviewDto.class,
+                                post.id, post.title, post.time,
+                                user.name, user.image, like.count())
+                )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user).and(user.account.eq(account)))
                 .innerJoin(category).on(category.eq(post.category).and(category.name.eq(categoryName)))
                 .innerJoin(like).on(post.eq(like.post))
-                .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
+        previewDtos.forEach(post ->{
+            List<LayoutDto> layoutContext = query.select(
+                                    Projections.constructor(LayoutDto.class,
+                                            layout.dtype, layout.width, layout.height,
+                                            context.context, context.code, context.codeExplanation, context.codeType, context.url
+                                    ))
+                    .from(context)
+                    .innerJoin(layout).on(context.layout.id.eq(layout.id))
+                    .where(context.post.id.eq(post.getPostDto().getId())
+                            .and(context.main.eq(true))
+                    )
+                    .fetch();
+            post.setLayoutDto(layoutContext);
+                }
+        );
+        return previewDtos;
     }
 
     @Override

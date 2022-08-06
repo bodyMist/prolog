@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @ToString
 @Getter
@@ -13,14 +14,18 @@ public class PostPreviewDto {
     private UserDto userDto;
     private LayoutDto layoutDto;
     public PostPreviewDto(Long postId, String title, LocalDateTime time, String name,
-                          String image, Long layoutId, int layoutType, Long likes) {
+                          String image, Long likes) {
         this.postDto = new PostDto(postId, title, time.toLocalDate());
         this.likes = likes.intValue();
         this.userDto = new UserDto(name, image);
-        this.layoutDto = new LayoutDto(layoutId, layoutType);
     }
 
-    public void setLayoutDto(String context) {
-        this.layoutDto.setContent(context);
+    public void setLayoutDto(List<LayoutDto> context) {
+        context.forEach(node->{
+            if (layoutDto == null) {
+                layoutDto = new LayoutDto(node);
+            }
+            layoutDto.addUrl(node);
+        });
     }
 }

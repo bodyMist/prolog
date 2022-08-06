@@ -27,10 +27,34 @@ public class LayoutDto {
     private List<String> url;
     private List<String> codes;
 
+    public void addUrl(LayoutDto n){
+        url.addAll(n.getUrl());
+    }
+
     // PostPreviewDto 하위 DTO
     public LayoutDto(Long id, int dtype) {
         this.id = id;
         this.dtype = dtype;
+    }
+
+    // 카테고리 하위 게시글 조회 - QueryDSL
+    public LayoutDto(int dtype, double width, double height, String content,
+                     String code, String codeExplanation, String codeType, String url1){
+        this.dtype = dtype;
+        this.width = width;
+        this.height = height;
+        this.content = content;
+        if (code != null) {
+            codes = List.of(code, codeExplanation, codeType);
+        }
+        if (url == null) {
+            this.url = List.of(url1);
+        }
+    }
+    public LayoutDto(LayoutDto node){
+        this.dtype = node.getDtype();
+        this.width = node.getWidth();
+        this.height = node.getHeight();
     }
 
     // 게시글 작성 API
