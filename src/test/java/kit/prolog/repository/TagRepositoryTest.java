@@ -35,10 +35,4 @@ public class TagRepositoryTest {
     void 태그_검색_없음(){
         assertThat(tagRepository.findByName("아가야").isPresent()).isEqualTo(false);
     }
-
-    @Test
-    void 게시글_태그_조회(){
-        List<PostTag> tags = postTagRepository.findByPost_Id(1L);
-        assertThat(tags.size()).isEqualTo(3);
-    }
 }

@@ -224,14 +224,12 @@ public class PostService {
 
         List<AttachmentDto> attachmentList = attachmentRepository.findByPost_Id(postId);
         List<String> tagList = new ArrayList<>();
+        List<String> optionalTagName = postTagRepository.findTagNameByPost_Id(postId);
+        if(!optionalTagName.isEmpty())
+            tagList.addAll(optionalTagName);
 
-        postTagRepository.findByPost_Id(postId).forEach(postTag -> {
-            tagRepository.findById(postTag.getId()).ifPresent(
-                    tag -> tagList.add(tag.getName())
-            );
-        });
         //레이아웃 가져오기
-        List<LayoutDto> layoutList = layoutRepository.findLayoutDetailByMold_Id(postDetailDto.getMoldId());
+        List<LayoutDto> layoutList = null;
         LikeDto like = new LikeDto(likeCount);
         if (userId != null) {
             exist = likeRepository.existsByUser_IdAndPost_Id(userId, postId);

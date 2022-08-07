@@ -1,12 +1,13 @@
 package kit.prolog.repository.jpa;
 
 import kit.prolog.domain.PostTag;
-import kit.prolog.domain.Tag;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
 
 public interface PostTagRepository extends JpaRepository<PostTag, Long> {
-    List<PostTag> findByPost_Id(Long postId);
+    @Query("SELECT t.name FROM POSTS_AND_TAGS pt INNER JOIN TAGS t ON pt.tag.id = t.id WHERE pt.post.id = :postId")
+    List<String> findTagNameByPost_Id(Long postId);
     boolean deleteAllByPost_Id(Long postId);
 }
