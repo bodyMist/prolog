@@ -229,7 +229,18 @@ public class PostService {
             tagList.addAll(optionalTagName);
 
         //레이아웃 가져오기
-        List<LayoutDto> layoutList = null;
+        List<LayoutDto> layoutList = postRepository.selectDetailLayout(postId);
+        Map<Long, LayoutDto> layoutId = new HashMap<>();
+        layoutList.forEach(layout -> {
+            if(layout.getDtype() == LayoutType.IMAGE.getValue()){
+                if(layoutId.containsKey(layout.getId())){
+                    layoutId.get(layout.getId()).addUrl(layout);
+                }else {
+                    layoutId.put(layout.getId(), layout);
+                }
+            }
+        });
+
         LikeDto like = new LikeDto(likeCount);
         if (userId != null) {
             exist = likeRepository.existsByUser_IdAndPost_Id(userId, postId);
@@ -239,7 +250,7 @@ public class PostService {
         postDetailDto.setComments(commentList);
         postDetailDto.setAttachmentDto(attachmentList);
         postDetailDto.setTags(tagList);
-        postDetailDto.setLayoutDto(layoutList);
+        postDetailDto.setLayoutDto(new ArrayList<>(layoutId.values()));
 
         return postDetailDto;
     }

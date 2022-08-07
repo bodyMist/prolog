@@ -55,6 +55,19 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     @Override
+    public List<LayoutDto> selectDetailLayout(Long postId){
+        return query.select(
+                Projections.constructor(LayoutDto.class,
+                        layout, context.context, context.code, context.codeExplanation
+                        ,context.codeType, context.url, context.main
+                ))
+                .from(context)
+                .innerJoin(layout).on(context.layout.id.eq(layout.id))
+                .where(context.post.id.eq(postId))
+                .fetch();
+    }
+
+    @Override
     public List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor) {
         List<PostPreviewDto> previewDtos = query.select(
                         Projections.constructor(PostPreviewDto.class,
@@ -151,17 +164,6 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .where(context.post.id.eq(postId)
                         .and(context.main.eq(true))
                 );
-    }
-    private LayoutDto selectDetailLayout(Long postId){
-        return query.select(
-                Projections.constructor(LayoutDto.class,
-                    layout, context.context, context.code, context.codeExplanation
-                        ,context.codeType, context.url, context.main
-                        ))
-                .from(context)
-                .innerJoin(layout).on(context.layout.id.eq(layout.id))
-                .where(context.post.id.eq(postId))
-                .fetchOne();
     }
     private BooleanExpression lowerThanCursor(int cursor){
         return cursor == 0 ? null : post.id.lt( cursor);
