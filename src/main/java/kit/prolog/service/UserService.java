@@ -1,6 +1,7 @@
 package kit.prolog.service;
 
 import kit.prolog.domain.User;
+import kit.prolog.dto.UserInfoDto;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,22 +26,25 @@ public class UserService {
     private final HitRepository hitRepository;
 
     // email 회원가입
-    public boolean createUserByEmail(User user){
-        if(userRepository.existsUserByEmail(user.getEmail())){
-            userRepository.save(user);
+    public boolean createUserByEmail(User newUser){
+        User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
+        if(user == null){
+            userRepository.save(newUser);
+            return true;
+        }else{
+            return false;
         }
-        // error catch 추가 예정
-        return true;
     }
 
     // 소셜 회원가입
-    public boolean createUserBySocial(User user){
-        if(userRepository.existsUserByEmail(user.getEmail())){
-            userRepository.save(user);
-            // account = email
+    public boolean createUserBySocial(User newUser){
+        User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
+        if(user != null){
+            userRepository.save(newUser);
+            return true;
+        }else{
+            return false;
         }
-        // error catch 추가 예정
-        return true;
     }
 
     // 회원 정보 조회
@@ -58,21 +62,23 @@ public class UserService {
     }
 
     // 회원 정보 수정
-    public User updateUser(Long memberPk, User modifiedUser){
-        User user = new User();
+    public boolean updateUser(Long memberPk, UserInfoDto modifiedUser){
+        User user = userRepository.findOneById(memberPk);
         try{
-            user = userRepository.findOneById(memberPk);
-            user.setName(modifiedUser.getName());
-            user.setImage(modifiedUser.getImage());
-            user.setIntroduce(modifiedUser.getIntroduce());
-            user.setNickname(modifiedUser.getNickname());
-            user.setAlarm(modifiedUser.getAlarm());
-            userRepository.save(user);
-            user = userRepository.findOneById(memberPk);
-            return user;
+            if(user != null){
+                user.setName(modifiedUser.getName());
+                user.setImage(modifiedUser.getImage());
+                user.setIntroduce(modifiedUser.getIntroduction());
+                user.setNickname(modifiedUser.getNickname());
+                user.setAlarm(modifiedUser.isAlarm());
+                userRepository.save(user);
+                return true;
+            }else{
+                return false;
+            }
         }catch (NullPointerException e){
             System.out.println("Error : no user");
-            return null;
+            return false;
         }
     }
 
@@ -109,17 +115,17 @@ public class UserService {
     }
 
     // 로그인
-    public boolean login(String account, String password){
+    public User login(String account, String password){
         User user;
         try{
-            user = userRepository.findByAccountAndPassword(account, password);
+            user = userRepository.findOneByAccountAndPassword(account, password);
             if(user != null)
-                return true;
+                return user;
             else
-                return false;
+                return null;
         }catch (NullPointerException e){
             System.out.println("Error : no user");
-            return false;
+            return null;
         }
     }
 
@@ -129,21 +135,26 @@ public class UserService {
         String account = "";
         try{
             user = userRepository.findOneByEmail(email);
-            account = user.getAccount();
-            return account;
+            if(user != null){
+                return user.getAccount();
+            }else{
+                return null;
+            }
         }catch (NullPointerException e){
             System.out.println("Error : no user");
             return account;
         }
     }
 
-    // 비밀번호 변경을 위한 user 검색
-    public boolean changePassword(String account, String password){
+    // 비밀번호 변경
+    public boolean changePassword(String email, String account, String password){
         User user;
         try{
-            user = userRepository.findByAccountAndPassword(account, password);
-            if(user != null)
+            user = userRepository.findOneByAccountAndEmail(account, email);
+            if(user != null){
+                user.setPassword(password);
                 return true;
+            }
             else
                 return false;
         }catch (NullPointerException e){

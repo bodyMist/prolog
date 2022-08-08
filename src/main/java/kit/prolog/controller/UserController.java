@@ -1,7 +1,7 @@
 package kit.prolog.controller;
 
 import kit.prolog.domain.User;
-import kit.prolog.dto.SuccessDto;
+import kit.prolog.dto.*;
 import kit.prolog.service.EmailAuthService;
 import kit.prolog.service.UserService;
 import lombok.AllArgsConstructor;
@@ -15,24 +15,18 @@ public class UserController {
     private final UserService userService;
     private final EmailAuthService emailAuthService;
 
+
     @PostMapping("/signup/email")
-    public SuccessDto createUserByEmail(@RequestBody String name,
-                                        @RequestBody String account,
-                                        @RequestBody String password,
-                                        @RequestBody String email,
-                                        @RequestBody boolean alarm,
-                                        @RequestBody String image,
-                                        @RequestBody String nickname,
-                                        @RequestBody String introduction){
+    public SuccessDto createUserByEmail(@RequestBody UserInfoDto userInfoDto){
         User user = new User();
-        user.setName(name);
-        user.setAccount(account);
-        user.setPassword(password);
-        user.setEmail(email);
-        user.setAlarm(alarm);
-        user.setImage(image);
-        user.setNickname(nickname);
-        user.setIntroduce(introduction);
+        user.setName(userInfoDto.getName());
+        user.setAccount(userInfoDto.getAccount());
+        user.setPassword(userInfoDto.getPassword());
+        user.setEmail(userInfoDto.getEmail());
+        user.setAlarm(userInfoDto.isAlarm());
+        user.setImage(userInfoDto.getImage());
+        user.setNickname(userInfoDto.getNickname());
+        user.setIntroduce(userInfoDto.getIntroduction());
 
         if(userService.createUserByEmail(user)){
             return new SuccessDto(true, null);
@@ -41,53 +35,40 @@ public class UserController {
         }
     }
 
-    @GetMapping("/signup/:social")
-    public SuccessDto createUserBySocial(@RequestBody String name,
-                                         @RequestBody String account,
-                                         @RequestBody String password,
-                                         @RequestBody String email,
-                                         @RequestBody boolean alarm,
-                                         @RequestBody String image,
-                                         @RequestBody String nickname,
-                                         @RequestBody String introduction){
-        User user = new User();
-        user.setName(name);
-        user.setAccount(account);
-        user.setPassword(password);
-        user.setEmail(email);
-        user.setAlarm(alarm);
-        user.setImage(image);
-        user.setNickname(nickname);
-        user.setIntroduce(introduction);
-
-        if(userService.createUserBySocial(user)){
-            return new SuccessDto(true, null);
-        }else{
-            return new SuccessDto(false, null);
-        }
+    @GetMapping("/signup/{social}")
+    public SuccessDto createUserBySocial(@PathVariable String social){
+        return new SuccessDto(true, social);
     }
 
      //memberpk로 유저 정보 검색
      //readUser()
      //검색된 유저 정보 반환
-    @GetMapping("/my-info")
-    public SuccessDto readUser(@RequestHeader(value = "memberpk")Long userId){
+    @GetMapping("/my-info/{userId}")
+    public SuccessDto readUser(@PathVariable Long userId){
         User user = userService.readUser(userId);
         if(user.getId() != 0){
-            return new SuccessDto(true, user);
+            return new SuccessDto(true,
+                    new UserInfoDto(
+                            user.getName(),
+                            user.getAccount(),
+                            user.getPassword(),
+                            user.getEmail(),
+                            user.getAlarm(),
+                            user.getImage(),
+                            user.getNickname(),
+                            user.getIntroduce()));
         }else{
             return new SuccessDto(false, null);
         }
 
     }
 
+
     //memberpk로 유저 정보 검색
     //deleteUser()
     //삭제된 유저 정보 반환
-
-
-    @GetMapping("/memberout")
-    public SuccessDto deleteUser(@RequestHeader(value = "memberpk")Long userId){
+    @GetMapping("/memberout/{userId}")
+    public SuccessDto deleteUser(@PathVariable Long userId){
         User user = userService.deleteUser(userId);
         if(user.getId() != 0){
             return new SuccessDto(true, user);
@@ -96,11 +77,11 @@ public class UserController {
         }
     }
 
-    @PutMapping("/my-info")
-    public SuccessDto updateUser(@RequestHeader(value = "memberpk")Long userId, @RequestBody User user){
-        User modifiedUser = userService.updateUser(userId, user);
-        if(modifiedUser != null){
-            return new SuccessDto(true, modifiedUser);
+
+    @PutMapping("/my-info-update/{userId}")
+    public SuccessDto updateUser(@PathVariable Long userId, @RequestBody UserInfoDto userInfoDto){
+        if(userService.updateUser(userId, userInfoDto)){
+            return new SuccessDto(true, null);
         }else{
             return new SuccessDto(false, null);
         }
@@ -108,12 +89,8 @@ public class UserController {
     }
 
     @PostMapping("/updatepw")
-    public SuccessDto changePassword(@RequestBody String account,
-                                     @RequestBody String password,
-                                     @RequestBody String email){
-        // 세부적인 email 인증 설정 필요함
-        if(userService.changePassword(account, password)){
-
+    public SuccessDto changePassword(@RequestBody UserPwChangeDto userPwChangeDto){
+        if(userService.changePassword(userPwChangeDto.getEmail(), userPwChangeDto.getAccount(), userPwChangeDto.getPassword())){
             return new SuccessDto(true, null);
         }else {
             return new SuccessDto(false, null);
@@ -122,18 +99,18 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public SuccessDto login(@RequestBody String account,
-                            @RequestBody String password){
-        if(userService.changePassword(account, password)){
-            return new SuccessDto(true, null); // memberpk 추가 필요
+    public SuccessDto login(@RequestBody UserLoginDto userLoginDto){
+        User user = userService.login(userLoginDto.getAccount(), userLoginDto.getPassword());
+        if(user != null){
+            return new SuccessDto(true, user.getId());
         }else {
             return new SuccessDto(false, null);
         }
     }
 
     @PostMapping("/idauth")
-    public SuccessDto searchAccount(@RequestBody String email){
-        String account = userService.searchAccount(email);
+    public SuccessDto searchAccount(@RequestBody UserEmailDto userEmailDto){
+        String account = userService.searchAccount(userEmailDto.getEmail());
         if(account != null){
             return new SuccessDto(true, account);
         }else{
@@ -142,19 +119,19 @@ public class UserController {
     }
 
     @PostMapping("/email")
-    public SuccessDto sendMail(@RequestBody String email){
-        if(userService.searchAccount(email) != null){
-            int emailAuthNumber = emailAuthService.sendMail(email);
-            return new SuccessDto(true, null);
+    public SuccessDto sendMail(@RequestBody UserEmailDto userEmailDto){
+        if(userService.searchAccount(userEmailDto.getEmail()) != null){
+            int emailAuthNumber = emailAuthService.sendMail(userEmailDto.getEmail());
+            return new SuccessDto(true, emailAuthNumber);
         }else{
             return new SuccessDto(false, null);
         }
     }
 
     @PostMapping("/email/auth")
-    public SuccessDto emailAuth(int emailAuthNumber){
+    public SuccessDto emailAuth(@RequestBody UserEmailAuthNumber userEmailAuthNumber){
         int makeAuthNumber = 0; // 받아와야함
-        if(emailAuthService.emailAuth(emailAuthNumber, makeAuthNumber)){
+        if(emailAuthService.emailAuth(userEmailAuthNumber.getEmailAuthNumber(), makeAuthNumber)){
             return new SuccessDto(true, null);
         }else{
             return new SuccessDto(false, null);
@@ -167,5 +144,5 @@ public class UserController {
     // 저장된 데이터에 +3분 한 시간 인증번호 발송과 함께 프론트에 전달
     // 프론트는 해당 시간까지 전송이 가능하도록 함
     // 백엔드는 해당 시간까지 데이터를 받을 수 있음
-    // 받아야하는 데이터 인증번호만, 현재 시간을 기준으로 판단함
+    // 받아야하는 데이터 인증번호만, 현재 시간을 기준으로 판단함*/
 }

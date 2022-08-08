@@ -2,13 +2,9 @@ package kit.prolog.repository;
 
 import kit.prolog.domain.User;
 import kit.prolog.repository.jpa.UserRepository;
-import kit.prolog.service.UserService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @SpringBootTest
 public class UserRepositoryTest {
@@ -39,7 +35,7 @@ public class UserRepositoryTest {
     void 로그인(){
         String account = "sky834459";
         String password = "8344";
-        User user = userRepository.findByAccountAndPassword(account, password);
+        User user = userRepository.findOneByAccountAndPassword(account, password);
         System.out.println(user.getName());
         System.out.println(user.getAccount());
     }
@@ -72,11 +68,5 @@ public class UserRepositoryTest {
         String email = "sky834459@gmail.com";
         User user = userRepository.findOneByEmail(email);
         System.out.println(user.getName());
-    }
-
-    @Test
-    void 중복체크(){
-        String email = "tkdrms0301@naver.com";
-        System.out.println(userRepository.existsUserByEmail(email));
     }
 }
