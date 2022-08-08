@@ -262,15 +262,15 @@ public class PostService {
     * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
     public boolean deletePost(Long postId){
-        // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 레이아웃 -> 게시글
+        // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 내용 -> 게시글
         likeRepository.deleteAllByPost_Id(postId);
         commentRepository.deleteAllByPost_Id(postId);
         hitRepository.deleteAllByPost_Id(postId);
+        // 파일서버에 삭제 요청 필요
         attachmentRepository.deleteAllByPost_Id(postId);
         postTagRepository.deleteAllByPost_Id(postId);
 
-        Long moldId = postRepository.findMoldIdByPostId(postId);
-        layoutRepository.deleteAllByMold_Id(moldId);
+        contextRepository.deleteAllByPost_Id(postId);
 
         postRepository.deleteById(postId);
         return true;
