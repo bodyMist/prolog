@@ -1,3 +1,4 @@
+/*
 package kit.prolog.config.security;
 
 import lombok.RequiredArgsConstructor;
@@ -66,3 +67,4 @@ public class SecurityConfiguration {
         return source;
     }
 }
+*/

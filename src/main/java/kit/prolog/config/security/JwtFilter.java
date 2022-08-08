@@ -1,3 +1,4 @@
+/*
 package kit.prolog.config.security;
 
 import kit.prolog.service.JwtService;
@@ -45,3 +46,4 @@ public class JwtFilter extends OncePerRequestFilter {
         return null;
     }
 }
+*/
