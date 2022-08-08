@@ -1,20 +1,19 @@
 package kit.prolog.repository;
 
-import kit.prolog.domain.*;
+import kit.prolog.domain.Mold;
+import kit.prolog.domain.Post;
 import kit.prolog.dto.LayoutDto;
 import kit.prolog.dto.MoldDto;
-import kit.prolog.enums.LayoutType;
-import kit.prolog.repository.jpa.*;
+import kit.prolog.repository.jpa.LayoutRepository;
+import kit.prolog.repository.jpa.MoldRepository;
+import kit.prolog.repository.jpa.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -55,12 +54,12 @@ public class MoldLayoutRepositoryTest {
         moldRepository.delete(mold.get());
     }
 
-    @Test
+/*    @Test
     void 게시글_레이아웃_조회(){
         Long moldId = 1L;
         layoutRepository.findLayoutDetailByMold_Id(moldId)
                 .forEach(System.out::println);
-    }
+    }*/
 
     @Test
     void 레이아웃_연쇄삭제(){

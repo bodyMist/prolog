@@ -4,14 +4,12 @@ package kit.prolog.service;
 import kit.prolog.domain.Post;
 import kit.prolog.domain.User;
 import kit.prolog.repository.jpa.*;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 
@@ -130,7 +128,7 @@ public class UserServiceTest {
         user.setNickname("An");
         user.setIntroduce("hello world!");
         user.setAlarm(true);
-        when(userRepository.findByAccountAndPassword(account, password)).thenReturn(user);
+        when(userRepository.findOneByAccountAndPassword(account, password)).thenReturn(user);
         System.out.println(userService.login("asdf111", "asdf12!"));
     }
 
@@ -152,23 +150,8 @@ public class UserServiceTest {
     }
 
     @Test
-    void 회원정보수정(){
-        User user = new User(1L);
-        user.setAccount("asdf111");
-        user.setPassword("asdf12!");
-        user.setEmail("tkdrms0301@naver.com");
-        user.setSns(0);
-        user.setName("안상근");
-        user.setImage("");
-        user.setNickname("An");
-        user.setIntroduce("hello world!");
-        user.setAlarm(true);
-        when(userService.updateUser(1L, user)).thenReturn(user);
-        System.out.println(userService.updateUser(1L, user));
-    }
-
-    @Test
     void 비밀번호변경(){
+        String email = "school@gmail.com";
         String account = "asdf111";
         String password = "asdf12!";
         User user = new User(1L);
@@ -181,7 +164,7 @@ public class UserServiceTest {
         user.setNickname("An");
         user.setIntroduce("hello world!");
         user.setAlarm(true);
-        when(userRepository.findByAccountAndPassword(account, password)).thenReturn(user);
-        System.out.println(userService.changePassword(account, password));
+        when(userRepository.findOneByAccountAndPassword(account, password)).thenReturn(user);
+        System.out.println(userService.changePassword(email, account, password));
     }
 }
