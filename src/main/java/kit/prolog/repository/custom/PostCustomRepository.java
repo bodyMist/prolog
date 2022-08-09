@@ -14,5 +14,6 @@ public interface PostCustomRepository {
     List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor);
     List<PostPreviewDto> findMyPostByUserId(Long userId, int cursor);
     List<PostPreviewDto> findLikePostByUserId(Long userId, int cursor);
-    List<PostPreviewDto> findAllPost(int cursor);
+    List<PostPreviewDto> findHottestPosts(int cursor);
+    List<PostPreviewDto> findRecentPosts(int cursor);
 }

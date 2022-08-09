@@ -163,9 +163,21 @@ public class PostController {
 
     /**
      * 전체 게시글 목록 조회 API
+     * 최근 좋아요 많이 받은 게시글 리스트 조회
+     * 메인화면
      * */
+    @GetMapping("/")
+    public SuccessDto readHottestPosts(@RequestParam int page, @RequestParam int size){
+        List<PostPreviewDto> hottestPosts = postService.getHottestPostList(page, size);
+        return new SuccessDto(true, hottestPosts);
+    }
 
     /**
      * 최근 게시글 목록 조회 API
      * */
+    @GetMapping("/recent")
+    public SuccessDto readRecentPosts(@RequestParam int cursor){
+        List<PostPreviewDto> hottestPosts = postService.getRecentPostList(cursor);
+        return new SuccessDto(true, hottestPosts);
+    }
 }

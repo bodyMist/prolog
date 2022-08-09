@@ -327,10 +327,20 @@ public class PostService {
 
     /**
      * 전체 게시글 목록 조회 API
+     * 최근 날짜동안의 좋아요 상승률 내림차순으로 게시글 검색
      * 매개변수 : cursor(페이지 번호)
      * 반환 : List<PostPreviewDto>
      * */
-    public List<PostPreviewDto> getAllPostList(int cursor){
-        return postRepository.findAllPost(cursor);
+    public List<PostPreviewDto> getHottestPostList(int page, int size){
+        return postRepository.findHottestPosts(page);
+    }
+
+    /**
+     * 최근 게시글 목록 조회 API
+     * 매개변수 : cursor(페이지 번호)
+     * 반환 : List<PostPreviewDto>
+     * */
+    public List<PostPreviewDto> getRecentPostList(int cursor){
+        return postRepository.findRecentPosts(cursor);
     }
 }

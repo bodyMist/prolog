@@ -12,6 +12,7 @@ import kit.prolog.repository.jpa.LayoutRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
@@ -138,7 +139,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     @Override
-    public List<PostPreviewDto> findAllPost(int cursor) {
+    public List<PostPreviewDto> findHottestPosts(int page) {
         List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
@@ -147,6 +148,30 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user))
                 .leftJoin(like).on(post.eq(like.post))
+                .where(like.time.after(LocalDateTime.now().minusDays(7)).or(like.time.isNull()))
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .offset(page)
+                .limit(PAGE_SIZE)
+                .fetch();
+        previewDtos.forEach(post -> {
+                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    post.setLayoutDto(layoutContext);
+                }
+        );
+        return previewDtos;
+    }
+
+    @Override
+    public List<PostPreviewDto> findRecentPosts(int cursor) {
+        List<PostPreviewDto> previewDtos = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image, like.count())
+        )
+                .from(post)
+                .innerJoin(user).on(post.user.eq(user))
+                .innerJoin(like).on(post.eq(like.post))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
@@ -159,6 +184,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         );
         return previewDtos;
     }
+
     private <T extends LayoutDto> JPQLQuery<T> selectMainContext(Class<T> dtoType, Long postId){
         return query.select(
                         Projections.constructor(dtoType,
