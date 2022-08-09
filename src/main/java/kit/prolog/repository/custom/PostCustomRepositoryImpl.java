@@ -77,7 +77,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user).and(user.account.eq(account)))
                 .innerJoin(category).on(category.eq(post.category).and(category.name.eq(categoryName)))
-                .innerJoin(like).on(post.eq(like.post))
+                .leftJoin(like).on(post.eq(like.post))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
@@ -93,65 +93,71 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     @Override
     public List<PostPreviewDto> findMyPostByUserId(Long userId, int cursor) {
-        List<PostPreviewDto> posts = query.select(
+        List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
-                        user.name, user.image, layout.id, layout.dtype, like.count())
+                        user.name, user.image, like.count())
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
                 .leftJoin(like).on(post.eq(like.post))
-                .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
-
-        return posts;
+        previewDtos.forEach(post -> {
+                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    post.setLayoutDto(layoutContext);
+                }
+        );
+        return previewDtos;
     }
 
     @Override
     public List<PostPreviewDto> findLikePostByUserId(Long userId, int cursor) {
-        List<PostPreviewDto> posts = query.select(
+        List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
-                        user.name, user.image, layout.id, layout.dtype, like.count())
+                        user.name, user.image, like.count())
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
                 .innerJoin(like).on(post.eq(like.post))
-                .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold))
-                .where(lowerThanCursor(cursor))
+                .where(lowerThanCursor(cursor).and(like.user.id.eq(userId)))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
-
-        return posts;
+        previewDtos.forEach(post -> {
+                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    post.setLayoutDto(layoutContext);
+                }
+        );
+        return previewDtos;
     }
 
     @Override
     public List<PostPreviewDto> findAllPost(int cursor) {
-        List<PostPreviewDto> posts = query.select(
+        List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
-                        user.name, user.image, layout.id, layout.dtype, like.count())
+                        user.name, user.image, like.count())
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user))
                 .leftJoin(like).on(post.eq(like.post))
-                .innerJoin(mold).on(mold.eq(post.mold))
-                .innerJoin(layout).on(mold.eq(layout.mold))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
-
-        return posts;
+        previewDtos.forEach(post -> {
+                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    post.setLayoutDto(layoutContext);
+                }
+        );
+        return previewDtos;
     }
     private <T extends LayoutDto> JPQLQuery<T> selectMainContext(Class<T> dtoType, Long postId){
         return query.select(
