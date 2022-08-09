@@ -1,6 +1,11 @@
 # 사용자 1
 INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
 VALUES ('sky834459', 0, 'sky834459@gmail.com', '', '안냥하세요', '김태훈', '판교', '8344');
+INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
+VALUES ('IntegerIsNullable', 0, 'IntegerIsNullable@naver.com', '', '안냥하세요', '김정수', 'int', '0000');
+INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
+VALUES ('javaJesus', 0, 'javaJesus@gmail.com', '', '안냥하세요', '이자바', '객체지향만세', '1234');
+
 
 # 카테고리 3
 INSERT INTO categories(name, user_user_id) VALUES ('개발용', 1);
@@ -77,7 +82,12 @@ INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 2);
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 3);
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 3);
 # 좋아요 1
-INSERT INTO likes(post_post_id, user_user_id) VALUES (1,1);
+INSERT INTO likes(post_post_id, user_user_id, time) VALUES (1,1, CURRENT_TIME);
+INSERT INTO likes(post_post_id, user_user_id, time) VALUES (2,1, CURRENT_TIME);
+INSERT INTO likes(post_post_id, user_user_id, time) VALUES (3,1, CURRENT_TIME);
+INSERT INTO likes(post_post_id, user_user_id, time) VALUES (2,2, CURRENT_TIME);
+INSERT INTO likes(post_post_id, user_user_id, time) VALUES (3,2, CURRENT_TIME);
+INSERT INTO likes(post_post_id, user_user_id, time) VALUES (3,3, CURRENT_TIME);
 
 INSERT INTO comments(context, time, post_post_id, user_user_id)
 VALUES ('이것은 댓글입니다', CURRENT_TIME, 1, 1);
