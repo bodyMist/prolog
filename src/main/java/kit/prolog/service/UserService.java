@@ -24,6 +24,7 @@ public class UserService {
     private final PostTagRepository postTagRepository;
     private final CommentRepository commentRepository;
     private final HitRepository hitRepository;
+    private final ContextRepository contextRepository;
 
     // email 회원가입
     public boolean createUserByEmail(User newUser){
@@ -95,6 +96,7 @@ public class UserService {
                 // 파일서버에 삭제 요청 필요
                 attachmentRepository.deleteAllByPost_Id(post.getId());
                 postTagRepository.deleteAllByPost_Id(post.getId());
+                contextRepository.deleteAllByPost_Id(post.getId());
                 Long moldId = postRepository.findMoldIdByPostId(post.getId());
                 postRepository.deleteById(post.getId());
                 layoutRepository.deleteAllByMold_Id(moldId);
