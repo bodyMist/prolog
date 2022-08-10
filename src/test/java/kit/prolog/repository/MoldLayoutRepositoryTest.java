@@ -1,5 +1,6 @@
 package kit.prolog.repository;
 
+import kit.prolog.domain.Layout;
 import kit.prolog.domain.Mold;
 import kit.prolog.domain.Post;
 import kit.prolog.dto.LayoutDto;
@@ -36,7 +37,7 @@ public class MoldLayoutRepositoryTest {
     @Test
     void 레이아웃_리스트_조회(){
         Long moldId = 1L;
-        List<LayoutDto> layoutList = layoutRepository.findByMold_Id(moldId);
+        List<LayoutDto> layoutList = layoutRepository.findLayoutDtoByMold_Id(moldId);
         System.out.println(layoutList);
         // Projection 확인
         assertThat(layoutList.get(0).getClass()).isEqualTo(LayoutDto.class);
@@ -47,10 +48,16 @@ public class MoldLayoutRepositoryTest {
         Long moldId = 1L;
         Optional<Mold> mold = moldRepository.findById(moldId);
         List<Post> postList = postRepository.findByMold_Id(moldId);
+        List<Layout> layoutList = layoutRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
             post.setMold(null);
-            postRepository.saveAndFlush(post);
         });
+        layoutList.forEach(layout -> {
+            layout.setMold(null);
+        });
+        postRepository.saveAllAndFlush(postList);
+        layoutRepository.saveAllAndFlush(layoutList);
+
         moldRepository.delete(mold.get());
     }
 

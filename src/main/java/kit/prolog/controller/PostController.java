@@ -39,8 +39,8 @@ public class PostController {
      * 레이아웃 틀 목록 조회 API
      * */
     @GetMapping("/layouts")
-    public SuccessDto readLayoutMolds(@RequestBody Long userId){
-        List<MoldDto> myMolds = postService.viewMyMolds(userId);
+    public SuccessDto readLayoutMolds(@RequestHeader Long memberPk){
+        List<MoldDto> myMolds = postService.viewMyMolds(memberPk);
         return new SuccessDto(true, myMolds);
     }
 

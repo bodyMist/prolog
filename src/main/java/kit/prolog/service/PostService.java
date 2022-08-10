@@ -5,7 +5,6 @@ import kit.prolog.dto.*;
 import kit.prolog.enums.CodeType;
 import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -86,7 +85,7 @@ public class PostService {
     * 반환 : List<LayoutDto>
     * */
     public List<LayoutDto> viewLayoutsByMold(Long moldId){
-        return layoutRepository.findByMold_Id(moldId);
+        return layoutRepository.findLayoutDtoByMold_Id(moldId);
     }
 
     /**
@@ -107,10 +106,16 @@ public class PostService {
     public boolean deleteMold(Long moldId){
         Optional<Mold> mold = moldRepository.findById(moldId);
         List<Post> postList = postRepository.findByMold_Id(moldId);
+        List<Layout> layoutList = layoutRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
             post.setMold(null);
-            postRepository.saveAndFlush(post);
         });
+        layoutList.forEach(layout -> {
+            layout.setMold(null);
+        });
+        postRepository.saveAllAndFlush(postList);
+        layoutRepository.saveAllAndFlush(layoutList);
+
         moldRepository.delete(mold.get());
         return true;
     }
