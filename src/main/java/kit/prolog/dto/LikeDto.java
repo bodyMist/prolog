@@ -1,6 +1,7 @@
 package kit.prolog.dto;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.Setter;
 
 /*
@@ -8,6 +9,7 @@ import lombok.Setter;
  * */
 @AllArgsConstructor
 @Setter
+@Getter
 public class LikeDto {
     private int count;
     private boolean exist;

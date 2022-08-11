@@ -50,7 +50,7 @@ public class LayoutDto {
             this.codes = List.of(code, codeExplanation, codeType.toString());
         }
         if (url1 != null) {
-            this.url = List.of(url1);
+            this.url.add(url1);
         }
     }
     public LayoutDto(LayoutDto node){
@@ -65,6 +65,27 @@ public class LayoutDto {
     public LayoutDto(Long id, String content) {
         this.id = id;
         this.content = content;
+    }
+
+    // 게시글 상세조회 API
+    public LayoutDto(Layout layout, String context, String code,
+                     String codeExplanation, CodeType codeType, String url, Boolean main){
+        this.id = layout.getId();
+        this.dtype = layout.getDtype();
+        this.coordinateX = layout.getCoordinateX();
+        this.coordinateY = layout.getCoordinateY();
+        this.width = layout.getWidth();
+        this.height = layout.getHeight();
+        this.explanation = layout.getExplanation();
+        this.content = context;
+        this.leader = main;
+
+        if (code != null) {
+            this.codes = List.of(code, codeExplanation, codeType.toString());
+        }
+        if (url != null) {
+            this.url.add(url);
+        }
     }
 
     // 레이아웃 틀 하위 레이아웃 리스트 조회 API

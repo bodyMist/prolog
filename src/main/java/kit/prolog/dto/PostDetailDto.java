@@ -21,11 +21,11 @@ public class PostDetailDto {
     private List<AttachmentDto> attachmentDto;
     private List<LayoutDto> layoutDto;
     private List<String> tags;
-    private int hits;
+    private Long hits;
     private List<CommentLv1Dto> comments;
 
     public PostDetailDto(String userName, String userImage, Long postId, String postTitle,
-                         LocalDateTime postTime, Long moldId, Long categoryId, String categoryName, int hits) {
+                         LocalDateTime postTime, Long moldId, Long categoryId, String categoryName, Long hits) {
         this.userDto = new UserDto(userName, userImage);
         this.postDto = new PostDto(postId, postTitle, LocalDate.from(postTime));
         this.categoryDto = new CategoryDto(categoryId, categoryName);
