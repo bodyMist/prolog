@@ -4,6 +4,7 @@ import kit.prolog.dto.*;
 import kit.prolog.service.PostService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -98,13 +99,14 @@ public class PostController {
      * 로그인 상태일 때, 좋아요 exist 정보를 포함하여 조회
      * */
     @GetMapping("/board/{id}")
-    public SuccessDto readPost(@PathVariable Long id){
+    public SuccessDto readPost(@RequestHeader Long memberPk,@PathVariable Long id){
         PostDetailDto post;
         // 로그인 상태
-        post = postService.viewPostDetailById(null, id);
+        post = postService.viewPostDetailById(memberPk, id);
         // 비로그인 상태
-        post = postService.viewPostDetailById(null, id);
-        return new SuccessDto(true, post);
+
+        PostDetail postDetail = new PostDetail(post);
+        return new SuccessDto(true, postDetail);
     }
 
     /**
@@ -197,7 +199,6 @@ public class PostController {
         String url;
     }
     @Data
-    @RequiredArgsConstructor
     class MainLayout{
         private int type;
         private Double width;
@@ -218,7 +219,6 @@ public class PostController {
         }
     }
     @Data
-    @RequiredArgsConstructor
     class PostPreview{
         private Long id;
         private String title;
@@ -236,6 +236,47 @@ public class PostController {
             this.memberImage = dto.getUserDto().getImage();
             this.likes = dto.getLikes();
             this.mainLayout = new MainLayout(dto.getLayoutDto());
+        }
+    }
+
+    @Data
+    class PostDetail{
+        private UserDto user;
+        private PostDto post;
+        private Long layoutId;  // moldId
+        private List<LayoutDetail> layouts;
+        private CategoryDto category;
+        private List<AttachmentDto> attachment;
+        private List<String> tag;
+        private Long hits;
+        private LikeDto likes;
+        private List<CommentDto> comments;
+
+        PostDetail(PostDetailDto dto){
+            this.user = dto.getUserDto();
+            this.post = dto.getPostDto();
+            this.layoutId = dto.getMoldId();
+            this.layouts = dto.getLayoutDto().stream().map(LayoutDetail::new).collect(Collectors.toList());
+            this.category = dto.getCategoryDto();
+            this.attachment = dto.getAttachmentDto();
+            this.tag = dto.getTags();
+            this.hits = dto.getHits();
+            this.likes = dto.getLikeDto();
+        }
+    }
+    @Getter
+    class LayoutDetail extends MainLayout{
+        private Long id;
+        private double coordinateX;
+        private double coordinateY;
+        private boolean leader;
+
+        LayoutDetail(LayoutDto dto) {
+            super(dto);
+            this.id = dto.getId();
+            this.coordinateX = dto.getCoordinateX();
+            this.coordinateY = dto.getCoordinateY();
+            this.leader = dto.getLeader();
         }
     }
 }
