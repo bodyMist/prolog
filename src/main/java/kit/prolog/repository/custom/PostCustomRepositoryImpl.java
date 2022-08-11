@@ -19,7 +19,6 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PostCustomRepositoryImpl implements PostCustomRepository {
     private final JPAQueryFactory query;
-    private final LayoutRepository layoutRepository;
 
     private final QPost post = QPost.post;
     private final QMold mold = QMold.mold;
@@ -85,7 +84,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .limit(PAGE_SIZE)
                 .fetch();
         previewDtos.forEach(post -> {
-            List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+            List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
             post.setLayoutDto(layoutContext);
                 }
         );
@@ -108,7 +107,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .limit(PAGE_SIZE)
                 .fetch();
         previewDtos.forEach(post -> {
-                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
                     post.setLayoutDto(layoutContext);
                 }
         );
@@ -131,7 +130,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .limit(PAGE_SIZE)
                 .fetch();
         previewDtos.forEach(post -> {
-                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
                     post.setLayoutDto(layoutContext);
                 }
         );
@@ -155,7 +154,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .limit(PAGE_SIZE)
                 .fetch();
         previewDtos.forEach(post -> {
-                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
                     post.setLayoutDto(layoutContext);
                 }
         );
@@ -178,16 +177,16 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .limit(PAGE_SIZE)
                 .fetch();
         previewDtos.forEach(post -> {
-                    List<LayoutDto> layoutContext = selectMainContext(LayoutDto.class, post.getPostDto().getId()).fetch();
+                    List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
                     post.setLayoutDto(layoutContext);
                 }
         );
         return previewDtos;
     }
 
-    private <T extends LayoutDto> JPQLQuery<T> selectMainContext(Class<T> dtoType, Long postId){
+    private JPQLQuery<LayoutDto> selectMainContext(Long postId){
         return query.select(
-                        Projections.constructor(dtoType,
+                        Projections.constructor(LayoutDto.class,
                                 layout.dtype, layout.width, layout.height,
                                 context.context, context.code, context.codeExplanation, context.codeType, context.url
                         ))

@@ -22,10 +22,11 @@ public class PostPreviewDto {
 
     public void setLayoutDto(List<LayoutDto> context) {
         context.forEach(node->{
-            if (layoutDto == null) {
-                layoutDto = new LayoutDto(node);
+            if (this.layoutDto == null) {
+                this.layoutDto = new LayoutDto(node);
+            }else {
+                this.layoutDto.addUrl(node);
             }
-            layoutDto.addUrl(node);
         });
     }
 }

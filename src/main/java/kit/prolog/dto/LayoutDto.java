@@ -1,10 +1,12 @@
 package kit.prolog.dto;
 
 import kit.prolog.domain.Layout;
+import kit.prolog.enums.CodeType;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /*
@@ -24,11 +26,11 @@ public class LayoutDto {
     private String content;
     private boolean leader;
 
-    private List<String> url;
+    private List<String> url = new ArrayList<>();
     private List<String> codes;
 
     public void addUrl(LayoutDto n){
-        url.addAll(n.getUrl());
+        this.url.addAll(n.getUrl());
     }
 
     // PostPreviewDto 하위 DTO
@@ -38,16 +40,16 @@ public class LayoutDto {
     }
 
     // 카테고리 하위 게시글 조회 - QueryDSL
-    public LayoutDto(int dtype, double width, double height, String content,
-                     String code, String codeExplanation, String codeType, String url1){
+    public LayoutDto(Integer dtype, Double width, Double height, String content,
+                     String code, String codeExplanation, CodeType codeType, String url1){
         this.dtype = dtype;
         this.width = width;
         this.height = height;
         this.content = content;
         if (code != null) {
-            codes = List.of(code, codeExplanation, codeType);
+            this.codes = List.of(code, codeExplanation, codeType.toString());
         }
-        if (url == null) {
+        if (url1 != null) {
             this.url = List.of(url1);
         }
     }
@@ -55,6 +57,8 @@ public class LayoutDto {
         this.dtype = node.getDtype();
         this.width = node.getWidth();
         this.height = node.getHeight();
+        this.codes = node.getCodes();
+        this.url.addAll(node.getUrl());
     }
 
     // 게시글 작성 API
