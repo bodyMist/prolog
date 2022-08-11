@@ -3,12 +3,17 @@ package kit.prolog.controller;
 import kit.prolog.dto.*;
 import kit.prolog.service.PostService;
 import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -83,7 +88,8 @@ public class PostController {
                                           @PathVariable String category,
                                           @RequestParam int last){
         List<PostPreviewDto> posts = postService.viewPostsByCategory(user, category, last);
-        return new SuccessDto(true, posts);
+        List<PostPreview> previewList = changeResponseType(posts);
+        return new SuccessDto(true, previewList);
     }
 
     /**
@@ -179,5 +185,57 @@ public class PostController {
     public SuccessDto readRecentPosts(@RequestParam int cursor){
         List<PostPreviewDto> hottestPosts = postService.getRecentPostList(cursor);
         return new SuccessDto(true, hottestPosts);
+    }
+
+    private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){
+        return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
+    }
+
+    @Data
+    @AllArgsConstructor
+    class Image{
+        String url;
+    }
+    @Data
+    @RequiredArgsConstructor
+    class MainLayout{
+        private int type;
+        private Double width;
+        private Double height;
+        private String content;
+        private List<Image> images;
+        private List<String> codes;
+        private String explanation;
+
+        MainLayout(LayoutDto dto){
+            this.type = dto.getDtype();
+            this.width = dto.getWidth();
+            this.height = dto.getHeight();
+            this.content = dto.getContent();
+            this.images = dto.getUrl().stream().map(Image::new).collect(Collectors.toList());
+            this.codes = dto.getCodes();
+            this.explanation = dto.getExplanation();
+        }
+    }
+    @Data
+    @RequiredArgsConstructor
+    class PostPreview{
+        private Long id;
+        private String title;
+        private LocalDate written;
+        private String member;
+        private String memberImage;
+        private Integer likes;
+        private MainLayout mainLayout;
+
+        PostPreview(PostPreviewDto dto){
+            this.id = dto.getPostDto().getId();
+            this.title = dto.getPostDto().getTitle();
+            this.written = dto.getPostDto().getTime();
+            this.member = dto.getUserDto().getName();
+            this.memberImage = dto.getUserDto().getImage();
+            this.likes = dto.getLikes();
+            this.mainLayout = new MainLayout(dto.getLayoutDto());
+        }
     }
 }
