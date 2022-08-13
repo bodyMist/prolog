@@ -288,7 +288,7 @@ public class PostService {
      * 발생 가능 에러 :
      * */
     public List<String> findTagByName(String tagName){
-        return tagRepository.findAllByNameLike(tagName)
+        return tagRepository.findAllByNameContains(tagName)
                 .stream().map(Tag::getName).collect(Collectors.toList());
     }
 
@@ -305,7 +305,8 @@ public class PostService {
             likeRepository.delete(like.get());
             log.info("좋아요 취소 Service 실행");
         }else{
-            likeRepository.save(new Like(new User(userId), new Post(postId)));
+            Like myLike = new Like(new User(userId), new Post(postId));
+            likeRepository.save(myLike);
             log.info("좋아요 등록 Service 실행");
             result = true;
         }

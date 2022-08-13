@@ -128,8 +128,8 @@ public class PostController {
      * 태그 조회 API
      * */
     @GetMapping("/tags")
-    public SuccessDto getTags(@RequestParam String keyword){
-        List<String> tags = postService.findTagByName(keyword);
+    public SuccessDto getTags(@RequestParam String name){
+        List<String> tags = postService.findTagByName(name);
         return new SuccessDto(true, tags);
     }
 
@@ -146,8 +146,8 @@ public class PostController {
      * 게시글 좋아요/취소 API
      * */
     @PostMapping("/board/{id}")
-    public SuccessDto likePost(@PathVariable Long id, @RequestBody Long userId){
-        boolean like = postService.likePost(id, userId);
+    public SuccessDto likePost(@RequestHeader Long memberPk, @PathVariable Long id){
+        boolean like = postService.likePost(memberPk, id);
         return new SuccessDto(like);
     }
 

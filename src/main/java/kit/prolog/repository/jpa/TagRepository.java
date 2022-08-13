@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface TagRepository extends JpaRepository<Tag, Long> {
     // 검색어가 포함된 태그 이름 모두 조회
-    List<Tag> findAllByNameLike(String name);
+    List<Tag> findAllByNameContains(String name);
     // 태그 여부 확인
     boolean existsByName(String name);
     // 태그 조회(name은 unique key)
