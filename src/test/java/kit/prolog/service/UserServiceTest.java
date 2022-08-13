@@ -38,23 +38,23 @@ public class UserServiceTest {
         User user = new User(userId);
         Post post = new Post(postId);
 
-        when(likeRepository.deleteAllByUser_Id(userId)).thenReturn(true);
-        when(postRepository.findByUser_Id(userId)).thenReturn(List.of(post));
-
-        when(hitRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(commentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(attachmentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(postTagRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(postRepository.findMoldIdByPostId(postId)).thenReturn(moldId);
-        when(layoutRepository.deleteAllByMold_Id(moldId)).thenReturn(true);
-
-        Mockito.doNothing().when(postRepository).deleteById(postId);
-        Mockito.doNothing().when(moldRepository).deleteById(moldId);
-
-        when(commentRepository.blockCommentsByUserId(userId)).thenReturn(true);
-        when(categoryRepository.deleteAllByUser_Id(userId)).thenReturn(true);
-
-        when(userRepository.findOneById(userId)).thenReturn(user);
+//        when(likeRepository.deleteAllByUser_Id(userId)).thenReturn(true);
+//        when(postRepository.findByUser_Id(userId)).thenReturn(List.of(post));
+//
+//        when(hitRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(commentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(attachmentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(postTagRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(postRepository.findMoldIdByPostId(postId)).thenReturn(moldId);
+//        when(layoutRepository.deleteAllByMold_Id(moldId)).thenReturn(true);
+//
+//        Mockito.doNothing().when(postRepository).deleteById(postId);
+//        Mockito.doNothing().when(moldRepository).deleteById(moldId);
+//
+//        when(commentRepository.blockCommentsByUserId(userId)).thenReturn(true);
+//        when(categoryRepository.deleteAllByUser_Id(userId)).thenReturn(true);
+//
+//        when(userRepository.findOneById(userId)).thenReturn(user);
 //        Mockito.doNothing().when(userRepository).deleteById(userId);
 
     }
