@@ -10,6 +10,7 @@ import java.util.List;
 @Getter
 public class PostPreviewDto {
     private PostDto postDto;
+    private Long hits = 0L;
     private int likes;
     private UserDto userDto;
     private LayoutDto layoutDto;
@@ -18,6 +19,10 @@ public class PostPreviewDto {
         this.postDto = new PostDto(postId, title, time.toLocalDate());
         this.likes = likes.intValue();
         this.userDto = new UserDto(name, image);
+    }
+
+    public void setHits(Long hits) {
+        this.hits = hits;
     }
 
     public void setLayoutDto(List<LayoutDto> context) {

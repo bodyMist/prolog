@@ -1,5 +1,6 @@
 package kit.prolog.repository.custom;
 
+import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
@@ -7,13 +8,17 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
 import kit.prolog.dto.LayoutDto;
 import kit.prolog.dto.PostDetailDto;
+import kit.prolog.dto.PostDto;
 import kit.prolog.dto.PostPreviewDto;
 import kit.prolog.repository.jpa.LayoutRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
@@ -92,20 +97,23 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     @Override
-    public List<PostPreviewDto> findMyPostByUserId(Long userId, int cursor) {
+    public List<PostPreviewDto> findMyPostByUserId(String account, int cursor) {
         List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
                         user.name, user.image, like.count())
         )
                 .from(post)
-                .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
+                .innerJoin(user).on(post.user.eq(user).and(user.account.eq(account)))
                 .leftJoin(like).on(post.eq(like.post))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
+
+        getPostsHits(previewDtos);
+
         previewDtos.forEach(post -> {
                     List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
                     post.setLayoutDto(layoutContext);
@@ -195,6 +203,26 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .where(context.post.id.eq(postId)
                         .and(context.main.eq(true))
                 );
+    }
+    private void getPostsHits(List<PostPreviewDto> previewDtos){
+        List<Long> idList = previewDtos.stream()
+                .map(PostPreviewDto::getPostDto)
+                .map(PostDto::getId).collect(Collectors.toList());
+
+        Map<Long, Long> hitCount = new HashMap<>();
+        List<Tuple> tuples = query
+                .select(hit.post.id, hit.count())
+                .from(hit)
+                .where(hit.post.id.in(idList))
+                .groupBy(hit.post).fetch();
+        for(Tuple tuple : tuples){
+            hitCount.put(tuple.get(0, Long.class), tuple.get(1, Long.class));
+        }
+        previewDtos.forEach(dto -> {
+            Long hit = hitCount.get(dto.getPostDto().getId());
+
+            dto.setHits(hit == null ? 0 : hit);
+        });
     }
     private BooleanExpression lowerThanCursor(int cursor){
         return cursor == 0 ? null : post.id.lt( cursor);

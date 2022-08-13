@@ -154,10 +154,11 @@ public class PostController {
     /**
      * 내가 쓴 글 목록 조회 API
      * */
-    @GetMapping("{userId}/")
-    public SuccessDto readMyPosts(@PathVariable Long userId, @RequestParam int last){
-        List<PostPreviewDto> myPosts = postService.getMyPostList(userId, last);
-        return new SuccessDto(true, myPosts);
+    @GetMapping("/{account}/")
+    public SuccessDto readMyPosts(@PathVariable String account, @RequestParam int last){
+        List<PostPreviewDto> myPosts = postService.getMyPostList(account, last);
+        List<PostPreview> post = changeResponseType(myPosts);
+        return new SuccessDto(true, post);
     }
 
     /**

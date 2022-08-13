@@ -63,18 +63,4 @@ public class PostRepositoryTest {
                 .filteredOn(post -> post.getMold() == null)
                 .hasSize(posts.size());
     }
-
-    @Test
-    void 사용자_게시글_조회(){
-        Long userId = 1L;
-        postRepository.findMyPostByUserId(userId, 4)
-                .forEach(System.out::println);
-    }
-
-    @Test
-    void 좋아요_게시글_조회(){
-        Long userId = 1L;
-        postRepository.findLikePostByUserId(userId, 4)
-                .forEach(System.out::println);
-    }
 }

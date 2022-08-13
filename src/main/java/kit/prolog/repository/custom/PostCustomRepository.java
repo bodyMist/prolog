@@ -12,7 +12,7 @@ public interface PostCustomRepository {
     PostDetailDto findPostById(Long id);
     List<LayoutDto> selectDetailLayout(Long postId);
     List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor);
-    List<PostPreviewDto> findMyPostByUserId(Long userId, int cursor);
+    List<PostPreviewDto> findMyPostByUserId(String account, int cursor);
     List<PostPreviewDto> findLikePostByUserId(Long userId, int cursor);
     List<PostPreviewDto> findHottestPosts(int cursor);
     List<PostPreviewDto> findRecentPosts(int cursor);

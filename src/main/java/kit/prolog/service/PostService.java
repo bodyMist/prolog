@@ -318,8 +318,8 @@ public class PostService {
      * 매개변수 : userId(사용자 pk), cursor(페이지 번호)
      * 반환 : List<PostPreviewDto>
      * */
-    public List<PostPreviewDto> getMyPostList(Long userId, int cursor){
-        return postRepository.findMyPostByUserId(userId, cursor);
+    public List<PostPreviewDto> getMyPostList(String account, int cursor){
+        return postRepository.findMyPostByUserId(account, cursor);
     }
 
     /**
