@@ -9,5 +9,5 @@ import java.util.List;
 public interface PostTagRepository extends JpaRepository<PostTag, Long> {
     @Query("SELECT t.name FROM POSTS_AND_TAGS pt INNER JOIN TAGS t ON pt.tag.id = t.id WHERE pt.post.id = :postId")
     List<String> findTagNameByPost_Id(Long postId);
-    boolean deleteAllByPost_Id(Long postId);
+    void deleteAllByPost_Id(Long postId);
 }

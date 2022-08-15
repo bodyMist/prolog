@@ -87,22 +87,22 @@ public class PostServiceTest {
         assertThat(postDetailDto).isNotNull();
     }
 
-    @Test
-    void 게시글_삭제_연쇄작용(){
-        Long postId = 1L;
-
-        when(likeRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(commentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(hitRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(postTagRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-        when(attachmentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
-
-        when(postRepository.findMoldIdByPostId(postId)).thenReturn(1L);
-        when(layoutRepository.deleteAllByMold_Id(postId)).thenReturn(true);
-        Mockito.doNothing().when(postRepository).deleteById(postId);
-
-        boolean deletePost = postService.deletePost(postId);
-
-        assertThat(deletePost).isTrue();
-    }
+//    @Test
+//    void 게시글_삭제_연쇄작용(){
+//        Long postId = 1L;
+//
+//        when(likeRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(commentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(hitRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(postTagRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//        when(attachmentRepository.deleteAllByPost_Id(postId)).thenReturn(true);
+//
+//        when(postRepository.findMoldIdByPostId(postId)).thenReturn(1L);
+//        when(layoutRepository.deleteAllByMold_Id(postId)).thenReturn(true);
+//        Mockito.doNothing().when(postRepository).deleteById(postId);
+//
+//        boolean deletePost = postService.deletePost(postId);
+//
+//        assertThat(deletePost).isTrue();
+//    }
 }
