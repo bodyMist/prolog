@@ -3,10 +3,12 @@ package kit.prolog.dto;
 import kit.prolog.domain.Layout;
 import kit.prolog.enums.CodeType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 /*
@@ -14,6 +16,7 @@ import java.util.List;
  * */
 @Getter
 @Setter
+@NoArgsConstructor
 @ToString
 public class LayoutDto {
     private Long id;
@@ -31,6 +34,15 @@ public class LayoutDto {
 
     public void addUrl(LayoutDto n){
         this.url.addAll(n.getUrl());
+    }
+
+    public LayoutDto(LinkedHashMap<String, String> json) {
+        this.dtype = Integer.parseInt(json.get("type"));
+        this.coordinateX = Double.parseDouble(json.get("coordinateX"));
+        this.coordinateY = Double.parseDouble(json.get("coordinateY"));
+        this.width = Double.parseDouble(json.get("width"));
+        this.height = Double.parseDouble(json.get("height"));
+        this.explanation = json.get("explanation");
     }
 
     // PostPreviewDto 하위 DTO
@@ -98,14 +110,6 @@ public class LayoutDto {
         this.height = height;
     }
 
-    // 레이아웃 작성 API
-    public LayoutDto(int dtype, double coordinateX, double coordinateY, double width, double height) {
-        this.dtype = dtype;
-        this.coordinateX = coordinateX;
-        this.coordinateY = coordinateY;
-        this.width = width;
-        this.height = height;
-    }
 
     // 레이아웃 작성 service layer
     public LayoutDto(Layout layout){
