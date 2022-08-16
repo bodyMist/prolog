@@ -113,17 +113,20 @@ public class PostService {
      * 반환 : Long(게시글 pk)
      * 에러처리 :
      * */
-    public Long writePost(Long userId, Long moldId, String title,
+    public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
                           HashMap<String, Object> param){
-        Optional<Mold> mold = moldRepository.findById(moldId);
+        Optional<Mold> mold;
+
         Optional<User> user = userRepository.findById(userId);
         Optional<Category> category = categoryRepository.findById(categoryId);
-        if(!mold.isPresent() || !user.isPresent() || !category.isPresent()){
-            throw new IllegalArgumentException("잘못된 접근입니다.");
-        }
 
-        Post post = new Post(title, LocalDateTime.now(),user.get(), category.get(), mold.get());
+        Post post = new Post(title, LocalDateTime.now(),user.get(), category.get());
+        if (param.containsKey("moldId")){
+            Long moldId = Long.parseLong(param.get("moldId").toString());
+            mold = moldRepository.findById(moldId);
+            post.setMold(mold.get());
+        }
         Post savedPost = postRepository.save(post);
 
         layoutDtos.forEach(layoutDto -> {
@@ -166,9 +169,11 @@ public class PostService {
             if(param.containsKey("tags")){
                 List<String> tagList = (List<String>) param.get("tags");
                 tagList.forEach(tag -> {
-                    Tag tagEntity = new Tag(tag);
-                    tagRepository.save(tagEntity);
-                    PostTag postTag = new PostTag(savedPost, tagEntity);
+                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
+                    if(!optionalTag.isPresent()) {
+                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
+                    }
+                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
                     postTagRepository.save(postTag);
                 });
             }
@@ -228,6 +233,8 @@ public class PostService {
                 }else {
                     layoutId.put(layout.getId(), layout);
                 }
+            }else{
+                layoutId.put(layout.getId(), layout);
             }
         });
 

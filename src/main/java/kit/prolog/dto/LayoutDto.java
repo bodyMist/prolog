@@ -10,6 +10,8 @@ import lombok.ToString;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /*
  * PostDetailDto를 위한 부분 DTO
@@ -36,13 +38,27 @@ public class LayoutDto {
         this.url.addAll(n.getUrl());
     }
 
-    public LayoutDto(LinkedHashMap<String, String> json) {
-        this.dtype = Integer.parseInt(json.get("type"));
-        this.coordinateX = Double.parseDouble(json.get("coordinateX"));
-        this.coordinateY = Double.parseDouble(json.get("coordinateY"));
-        this.width = Double.parseDouble(json.get("width"));
-        this.height = Double.parseDouble(json.get("height"));
-        this.explanation = json.get("explanation");
+    public LayoutDto(LinkedHashMap<String, Object> json) {
+        this.id = Long.parseLong(json.get("id").toString());
+        this.dtype = Integer.parseInt(json.get("type").toString());
+        this.coordinateX = Double.parseDouble(json.get("coordinateX").toString());
+        this.coordinateY = Double.parseDouble(json.get("coordinateY").toString());
+        this.width = Double.parseDouble(json.get("width").toString());
+        this.height = Double.parseDouble(json.get("height").toString());
+
+        this.explanation = json.get("explanation") == null
+                ? "" : json.get("explanation").toString();
+
+        this.content = json.get("content") == null
+                ? "" : json.get("content").toString();
+
+        if(json.get("images") != null) {
+            ((List<LinkedHashMap<String, String>>) json.get("images"))
+                    .forEach(image -> this.url.add(image.get("url")));
+        }
+        this.codes = json.get("codes") == null
+                ? null : ((List<String>) json.get("codes"))
+                .stream().map(Objects::toString).collect(Collectors.toList());
     }
 
     // PostPreviewDto 하위 DTO

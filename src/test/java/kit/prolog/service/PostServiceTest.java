@@ -58,14 +58,14 @@ public class PostServiceTest {
         param.put("tags", List.of("react", "spring"));
 
         Post post = new Post(title, LocalDateTime.now(), new User(userId),
-                Category.builder().id(categoryId).build(), new Mold(moldId));
+                Category.builder().id(categoryId).build());
 
         when(postRepository.save(any(Post.class))).thenReturn(post);
         when(moldRepository.findById(moldId)).thenReturn(Optional.of(new Mold(moldId)));
         when(categoryRepository.findById(categoryId)).thenReturn(Optional.of(Category.builder().id(categoryId).build()));
         when(userRepository.findById(userId)).thenReturn(Optional.of(new User(userId)));
 
-        Long writePost = postService.writePost(userId, moldId, title, layoutList, categoryId, param);
+        Long writePost = postService.writePost(userId, title, layoutList, categoryId, param);
 
         assertThat(writePost).isEqualTo(post.getId());
         verify(tagRepository, times(2)).save(any(Tag.class));

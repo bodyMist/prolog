@@ -2,18 +2,13 @@ package kit.prolog.controller;
 
 import kit.prolog.dto.*;
 import kit.prolog.service.PostService;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -26,10 +21,14 @@ public class PostController {
      * 레이아웃 작성 API
      * */
     @PostMapping("/layout")
-    public SuccessDto createLayout(Long userId, String moldName, List<LayoutDto> layouts){
-        // 세션에서 user 정보 가져와야 함
-
-        List<LayoutDto> layoutDtos = postService.saveLayouts(userId, moldName, layouts);
+    public SuccessDto createLayout(@RequestHeader Long memberPk,
+                                   @RequestBody Map<String, Object> json){
+        List<LayoutDto> layouts =
+                ((List<LinkedHashMap>) json.get("layouts"))
+                        .stream().map(LayoutDto::new)
+                        .collect(Collectors.toList());
+        String moldName = json.get("moldName") == null ? "" : json.get("moldName").toString();
+        List<LayoutDto> layoutDtos = postService.saveLayouts(memberPk, layouts, moldName);
         return new SuccessDto(true, layoutDtos);
     }
     /**
@@ -62,21 +61,34 @@ public class PostController {
      * 게시글 작성 API
      * */
     @PostMapping("/board")
-    public SuccessDto createPost(@RequestBody Long userId,
-                                 @RequestBody Long moldId,
-                                 @RequestBody String title,
-                                 @RequestBody List<LayoutDto> layoutDtos,
-                                 @RequestBody Long categoryId,
-                                 @RequestBody(required = false) List<AttachmentDto> attachments,
-                                 @RequestBody(required = false) List<String> tags){
+    public SuccessDto createPost(@RequestHeader Long memberPk, @RequestBody Map<String, Object> json){
+        // required
+        Long categoryId = Long.parseLong(json.get("category").toString());
+        String title = json.get("title").toString();
+        List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
+                .stream().map(LayoutDto::new).collect(Collectors.toList());
+
+        // optional
+        Long moldId = json.get("moldId") == null
+                ? null : Long.parseLong(json.get("moldId").toString());
+        List<String> tags = new ArrayList<>();
+        if( json.get("tag") != null){
+            ((List<String>) json.get("tag")).forEach(tags::add);
+        }
+        List<AttachmentDto> attachments = json.get("attachments") == null
+                ? null : ((List<LinkedHashMap>) json.get("attachments"))
+                .stream().map(AttachmentDto::new)
+                .collect(Collectors.toList());
+
         HashMap<String, Object> params = new HashMap<>();
-        if (attachments != null) {
+        if(moldId != null)
+            params.put("moldId", moldId);
+        if (attachments != null)
             params.put("attachments", attachments);
-        }
-        if (tags != null) {
+        if (!tags.isEmpty())
             params.put("tags", tags);
-        }
-        postService.writePost(userId, moldId, title, layoutDtos, categoryId, params);
+
+        postService.writePost(memberPk, title, layoutDtos, categoryId, params);
 
         return new SuccessDto(true);
     }
@@ -194,6 +206,10 @@ public class PostController {
         return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
     }
 
+
+    /**
+     * Inner Class For Response
+     * */
     @Data
     @AllArgsConstructor
     class Image{
