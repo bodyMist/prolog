@@ -53,8 +53,9 @@ public class PostController {
      * 레이아웃 삭제 API
      * */
     @DeleteMapping("/layouts/{id}")
-    public boolean deleteMold(@PathVariable Long id){
-        return postService.deleteMold(id);
+    public SuccessDto deleteMold(@PathVariable Long id){
+        postService.deleteMold(id);
+        return new SuccessDto(true);
     }
 
     /**
@@ -196,10 +197,10 @@ public class PostController {
     /**
      * 최근 게시글 목록 조회 API
      * */
-    @GetMapping("/recent")
-    public SuccessDto readRecentPosts(@RequestParam int cursor){
-        List<PostPreviewDto> hottestPosts = postService.getRecentPostList(cursor);
-        return new SuccessDto(true, hottestPosts);
+    @GetMapping("/recent/")
+    public SuccessDto readRecentPosts(@RequestParam int last){
+        List<PostPreviewDto> recentPostList = postService.getRecentPostList(last);
+        return new SuccessDto(true, recentPostList);
     }
 
     private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){

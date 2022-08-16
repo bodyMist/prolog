@@ -39,7 +39,8 @@ public class LayoutDto {
     }
 
     public LayoutDto(LinkedHashMap<String, Object> json) {
-        this.id = Long.parseLong(json.get("id").toString());
+        this.id = json.get("id") == null
+                ? null : Long.parseLong(json.get("id").toString());
         this.dtype = Integer.parseInt(json.get("type").toString());
         this.coordinateX = Double.parseDouble(json.get("coordinateX").toString());
         this.coordinateY = Double.parseDouble(json.get("coordinateY").toString());
@@ -129,6 +130,7 @@ public class LayoutDto {
 
     // 레이아웃 작성 service layer
     public LayoutDto(Layout layout){
+        this.id = layout.getId();
         this.dtype = layout.getDtype();
         this.coordinateX = layout.getCoordinateX();
         this.coordinateY = layout.getCoordinateY();
