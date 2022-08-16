@@ -1,4 +1,4 @@
-# 사용자 1
+/* 사용자 1 */
 INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
 VALUES ('sky834459', 0, 'sky834459@gmail.com', '', '안냥하세요', '김태훈', '판교', '8344');
 INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
@@ -7,16 +7,16 @@ INSERT INTO users(account, alarm, email, image, introduce, name, nickname, passw
 VALUES ('javaJesus', 0, 'javaJesus@gmail.com', '', '안냥하세요', '이자바', '객체지향만세', '1234');
 
 
-# 카테고리 3
+/* 카테고리 3 */
 INSERT INTO categories(name, user_user_id) VALUES ('개발용', 1);
 INSERT INTO categories(name, user_user_id) VALUES ('취미용', 1);
 INSERT INTO categories(name, user_user_id) VALUES ('전시용', 1);
 
-# 레이아웃틀 3
+/* 레이아웃틀 3 */
 INSERT INTO molds(name, user_user_id) VALUES ('기본 틀', 1);
 INSERT INTO molds(name, user_user_id) VALUES ('복합 틀', 1);
 
-# 게시글 6
+/* 게시글 6 */
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '1이것은 테스트용이예요', 1, 1, 1);
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
@@ -26,7 +26,7 @@ VALUES (CURRENT_TIME, '3이것은 테스트용이예요', 2, 2, 1);
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '4이것은 테스트용이예요', 2, 2, 1);
 
-# 레이아웃 6
+/* 레이아웃 6 */
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width, mold_mold_id)
 VALUES (1, 10.245, 34.349, '레이아웃 설명1', 20, 30, 1);
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width, mold_mold_id)
@@ -48,7 +48,7 @@ INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (2, 4, 'h
 INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (3, 5, '수학공식', true);
 INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (3, 6, 'https://www.youtube.com/watch?v=i2jWju6cUvk', false);
 
-# 태그 6
+/* 태그 6 */
 INSERT INTO tags(name) VALUES ('딥러닝');
 INSERT INTO tags(name) VALUES ('react');
 INSERT INTO tags(name) VALUES ('typescript');
@@ -68,9 +68,9 @@ INSERT INTO posts_and_tags(post_post_id, tag_tag_id) VALUES (3,1);
 INSERT INTO posts_and_tags(post_post_id, tag_tag_id) VALUES (3,5);
 INSERT INTO posts_and_tags(post_post_id, tag_tag_id) VALUES (3,6);
 
-# 첨부파일 1
+/* 첨부파일 1 */
 INSERT INTO attachments(extension, name, url, post_post_id) VALUES ('txt', '실험 파일', '', 1);
-# 조회 10
+/* 조회 10 */
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 1);
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 1);
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 1);
@@ -81,7 +81,7 @@ INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 2);
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 2);
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 3);
 INSERT INTO hits(time, post_post_id) VALUES (CURRENT_TIME, 3);
-# 좋아요 1
+/* 좋아요 1 */
 INSERT INTO likes(post_post_id, user_user_id, time) VALUES (1,1, CURRENT_TIME);
 INSERT INTO likes(post_post_id, user_user_id, time) VALUES (2,1, CURRENT_TIME);
 INSERT INTO likes(post_post_id, user_user_id, time) VALUES (3,1, CURRENT_TIME);
