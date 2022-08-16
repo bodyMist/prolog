@@ -88,9 +88,9 @@ public class UserService {
     public User deleteUser(Long memberPk){
         User user = new User();
         try{
-
             likeRepository.deleteAllByUser_Id(memberPk);
             postRepository.findByUser_Id(memberPk).forEach(post -> {
+                likeRepository.deleteAllByPost_Id(post.getId());
                 commentRepository.deleteAllByPost_Id(post.getId());
                 hitRepository.deleteAllByPost_Id(post.getId());
                 // 파일서버에 삭제 요청 필요
@@ -100,8 +100,9 @@ public class UserService {
                 Long moldId = postRepository.findMoldIdByPostId(post.getId());
                 postRepository.deleteById(post.getId());
                 layoutRepository.deleteAllByMold_Id(moldId);
-                moldRepository.deleteById(moldId);
             });
+            moldRepository.deleteByUser_Id(memberPk);
+
             // 유저가 작성한 게시글에 대해 모든 댓글들을 삭제한 후,
             // 유저의 남은 comment를 block처리 후 userFK를 null로 변경
             commentRepository.blockCommentsByUserId(memberPk);
@@ -112,6 +113,8 @@ public class UserService {
                 userRepository.deleteById(memberPk);
         }catch (NullPointerException e){
             System.out.println("Error : no user");
+        }catch (Exception e){
+            System.out.println(e.getMessage());
         }
         return user;
     }

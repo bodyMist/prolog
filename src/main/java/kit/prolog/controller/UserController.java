@@ -71,7 +71,7 @@ public class UserController {
     public SuccessDto deleteUser(@PathVariable Long userId){
         User user = userService.deleteUser(userId);
         if(user.getId() != 0){
-            return new SuccessDto(true, user);
+            return new SuccessDto(true, user.getId());
         }else{
             return new SuccessDto(false, null);
         }

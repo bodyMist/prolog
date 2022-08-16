@@ -27,7 +27,7 @@ public class Layout {
     private String explanation;
 
     @Column(name = "dtype", insertable = false, updatable = false)
-    protected int dtype;
+    protected Integer dtype;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Mold mold;
