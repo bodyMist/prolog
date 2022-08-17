@@ -280,7 +280,7 @@ public class PostService {
      * 발생 가능 에러 :
      * */
     public List<String> findTagByName(String tagName){
-        return tagRepository.findAllByNameContains(tagName)
+        return tagRepository.findByNameStartingWith(tagName)
                 .stream().map(Tag::getName).collect(Collectors.toList());
     }
 
