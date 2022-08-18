@@ -1,5 +1,6 @@
 package kit.prolog.service;
 
+import kit.prolog.controller.CategoryController;
 import kit.prolog.domain.Category;
 import kit.prolog.dto.CategoryDto;
 import kit.prolog.dto.CategoryInfoDto;
@@ -20,20 +21,22 @@ public class CategoryService {
     private final CategoryRepository categoryRepository;
     private final UserRepository userRepository;
 
-    public void insertCategory(CategoryDto categoryDto, Long userId) {
+    public void insertCategory(CategoryController.CategoryFormDto categoryFormDto, Long userId) {
         Category category = Category.builder()
-                .name(categoryDto.getName())
+                .name(categoryFormDto.getName())
                 .user(userRepository.findById(userId).get())
+                .upperCategory(categoryRepository.findById(categoryFormDto.getUpperId()).get())
                 .build();
         categoryRepository.save(category);
     }
 
-    public void updateCategory(CategoryDto categoryDto, Long userId) {
-        Category category = categoryRepository.findById(categoryDto.getId()).get();
+    public void updateCategory(Long categoryId, CategoryController.CategoryFormDto categoryFormDto, Long userId) {
+        Category category = categoryRepository.findById(categoryId).get();
         if (category.getUser().getId() != userId)
             throw new AccessDeniedException("");
 
-        category.setName(categoryDto.getName());
+        category.setName(categoryFormDto.getName());
+        category.setUpperCategory(categoryRepository.findById(categoryFormDto.getUpperId()).get());
         categoryRepository.save(category);
     }
 

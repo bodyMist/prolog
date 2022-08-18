@@ -8,9 +8,12 @@ VALUES ('javaJesus', 0, 'javaJesus@gmail.com', '', '안냥하세요', '이자바
 
 
 /* 카테고리 3 */
-INSERT INTO categories(name, user_user_id) VALUES ('개발용', 1);
-INSERT INTO categories(name, user_user_id) VALUES ('취미용', 1);
-INSERT INTO categories(name, user_user_id) VALUES ('전시용', 1);
+INSERT INTO categories(name, user_user_id) VALUES ('전체', 1);
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('개발용', 1, 1);
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('취미용', 1, 1);
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('전시용', 1, 1);
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('프론트', 1, 2);
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('백', 1, 2);
 
 /* 레이아웃틀 3 */
 INSERT INTO molds(name, user_user_id) VALUES ('기본 틀', 1);
