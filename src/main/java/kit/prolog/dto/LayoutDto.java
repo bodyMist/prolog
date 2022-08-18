@@ -3,17 +3,22 @@ package kit.prolog.dto;
 import kit.prolog.domain.Layout;
 import kit.prolog.enums.CodeType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 /*
  * PostDetailDto를 위한 부분 DTO
  * */
 @Getter
 @Setter
+@NoArgsConstructor
 @ToString
 public class LayoutDto {
     private Long id;
@@ -31,6 +36,29 @@ public class LayoutDto {
 
     public void addUrl(LayoutDto n){
         this.url.addAll(n.getUrl());
+    }
+
+    public LayoutDto(LinkedHashMap<String, Object> json) {
+        this.id = Long.parseLong(json.get("id").toString());
+        this.dtype = Integer.parseInt(json.get("type").toString());
+        this.coordinateX = Double.parseDouble(json.get("coordinateX").toString());
+        this.coordinateY = Double.parseDouble(json.get("coordinateY").toString());
+        this.width = Double.parseDouble(json.get("width").toString());
+        this.height = Double.parseDouble(json.get("height").toString());
+
+        this.explanation = json.get("explanation") == null
+                ? "" : json.get("explanation").toString();
+
+        this.content = json.get("content") == null
+                ? "" : json.get("content").toString();
+
+        if(json.get("images") != null) {
+            ((List<LinkedHashMap<String, String>>) json.get("images"))
+                    .forEach(image -> this.url.add(image.get("url")));
+        }
+        this.codes = json.get("codes") == null
+                ? null : ((List<String>) json.get("codes"))
+                .stream().map(Objects::toString).collect(Collectors.toList());
     }
 
     // PostPreviewDto 하위 DTO
@@ -98,14 +126,6 @@ public class LayoutDto {
         this.height = height;
     }
 
-    // 레이아웃 작성 API
-    public LayoutDto(int dtype, double coordinateX, double coordinateY, double width, double height) {
-        this.dtype = dtype;
-        this.coordinateX = coordinateX;
-        this.coordinateY = coordinateY;
-        this.width = width;
-        this.height = height;
-    }
 
     // 레이아웃 작성 service layer
     public LayoutDto(Layout layout){

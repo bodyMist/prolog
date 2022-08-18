@@ -27,7 +27,7 @@ public class Layout {
     private String explanation;
 
     @Column(name = "dtype", insertable = false, updatable = false)
-    protected int dtype;
+    protected Integer dtype;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Mold mold;
@@ -36,13 +36,12 @@ public class Layout {
         this.id = id;
     }
 
-    public Layout(LayoutDto layoutDto, Mold mold) {
+    public Layout(LayoutDto layoutDto) {
         this.coordinateX = layoutDto.getCoordinateX();
         this.coordinateY = layoutDto.getCoordinateY();
         this.width = layoutDto.getWidth();
         this.height = layoutDto.getHeight();
         this.dtype = layoutDto.getDtype();
-        this.mold = mold;
     }
 
     public Layout(Long id, Double coordinateX, Double coordinateY, Double width, Double height, String explanation, int dtype) {

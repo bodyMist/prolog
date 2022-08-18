@@ -40,9 +40,9 @@ public class PostService {
     private final ContextRepository contextRepository;
 
     /**
-     * 레이아웃 작성 API - moldId가 없을 때
+     * 레이아웃 작성 API
      * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
-     * 매개변수 : userId(사용자 pk), moldName(레이아웃틀 이름), List<LayoutDto> (레이아웃 데이터)
+     * 매개변수 : userId(사용자 pk), List<LayoutDto> (레이아웃 데이터), arg(레이아웃틀 이름/가변 매개)
      * 반환 : List<LayoutDto> pk를 포함한 저장된 결과 반환
      *
      * !!Warning!!
@@ -50,32 +50,17 @@ public class PostService {
      * update문은 spring jpa save로 사용.
      * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
      * */
-    public List<LayoutDto> saveLayouts(Long userId, String moldName, List<LayoutDto> layoutData){
-        Mold savedMold = moldRepository.save(new Mold(moldName, new User(userId)));
-        List<LayoutDto> result = new ArrayList<>();
-        layoutData.forEach(layoutDto -> {
-            Layout layout = layoutRepository.save(new Layout(layoutDto, savedMold));
-            result.add(new LayoutDto(layout));
-        });
-        return result;
-    }
-    /**
-     * 레이아웃 작성 API - moldId가 있을 때
-     * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
-     * 매개변수 : userId(사용자 pk), moldId(레이아웃 틀 pk), moldName(레이아웃틀 이름), List<LayoutDto> (레이아웃 데이터)
-     * 반환 : List<LayoutDto> pk를 포함한 저장된 결과 반환
-     *
-     * !!Warning!!
-     * 레이아웃 content는 이후 게시글 작성 API에서 이루어짐
-     * update문은 spring jpa save로 사용.
-     * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
-     * */
-    public List<LayoutDto> saveLayouts(Long userId, Long moldId, String moldName, List<LayoutDto> layoutData){
-        List<LayoutDto> result = new ArrayList<>();
-        layoutData.forEach(layoutDto -> {
-            Layout layout = layoutRepository.save(new Layout(layoutDto, new Mold(moldId)));
-            result.add(new LayoutDto(layout));
-        });
+    public List<LayoutDto> saveLayouts(Long userId, List<LayoutDto> layoutData, String moldName){
+        Mold savedMold = null;
+        if (!moldName.isEmpty()) {
+            savedMold = moldRepository.save(new Mold(moldName, new User(userId)));
+        }
+        List<Layout> savedLayouts = layoutData.stream().map(Layout::new).collect(Collectors.toList());
+        if (savedMold != null) {
+            Mold finalSavedMold = savedMold;
+            savedLayouts.forEach(layout -> layout.setMold(finalSavedMold));
+        }
+        List<LayoutDto> result = layoutRepository.saveAll(savedLayouts).stream().map(LayoutDto::new).collect(Collectors.toList());
         return result;
     }
 
@@ -128,17 +113,20 @@ public class PostService {
      * 반환 : Long(게시글 pk)
      * 에러처리 :
      * */
-    public Long writePost(Long userId, Long moldId, String title,
+    public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
                           HashMap<String, Object> param){
-        Optional<Mold> mold = moldRepository.findById(moldId);
+        Optional<Mold> mold;
+
         Optional<User> user = userRepository.findById(userId);
         Optional<Category> category = categoryRepository.findById(categoryId);
-        if(!mold.isPresent() || !user.isPresent() || !category.isPresent()){
-            throw new IllegalArgumentException("잘못된 접근입니다.");
-        }
 
-        Post post = new Post(title, LocalDateTime.now(),user.get(), category.get(), mold.get());
+        Post post = new Post(title, LocalDateTime.now(),user.get(), category.get());
+        if (param.containsKey("moldId")){
+            Long moldId = Long.parseLong(param.get("moldId").toString());
+            mold = moldRepository.findById(moldId);
+            post.setMold(mold.get());
+        }
         Post savedPost = postRepository.save(post);
 
         layoutDtos.forEach(layoutDto -> {
@@ -181,9 +169,11 @@ public class PostService {
             if(param.containsKey("tags")){
                 List<String> tagList = (List<String>) param.get("tags");
                 tagList.forEach(tag -> {
-                    Tag tagEntity = new Tag(tag);
-                    tagRepository.save(tagEntity);
-                    PostTag postTag = new PostTag(savedPost, tagEntity);
+                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
+                    if(!optionalTag.isPresent()) {
+                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
+                    }
+                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
                     postTagRepository.save(postTag);
                 });
             }
@@ -243,6 +233,8 @@ public class PostService {
                 }else {
                     layoutId.put(layout.getId(), layout);
                 }
+            }else{
+                layoutId.put(layout.getId(), layout);
             }
         });
 

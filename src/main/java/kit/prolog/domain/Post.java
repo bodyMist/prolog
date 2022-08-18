@@ -40,11 +40,10 @@ public class Post {
         this.mold = mold;
     }
 
-    public Post(String title, LocalDateTime time, User user, Category category, Mold mold) {
+    public Post(String title, LocalDateTime time, User user, Category category) {
         this.title = title;
         this.time = time;
         this.user = user;
         this.category = category;
-        this.mold = mold;
     }
 }

@@ -15,7 +15,7 @@ public interface LayoutRepository extends JpaRepository<Layout, Long> {
 
     List<Layout> findByMold_Id(Long moldId);
 
-    boolean deleteAllByMold_Id(Long moldId);
+    void deleteAllByMold_Id(Long moldId);
 
     @Query("SELECT l FROM LAYOUTS l WHERE l.id = :id")
     Optional<Layout> findLayoutById(Long id);
