@@ -88,6 +88,9 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
+
+        getPostsHits(previewDtos);
+
         previewDtos.forEach(post -> {
             List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
             post.setLayoutDto(layoutContext);
@@ -123,20 +126,23 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     @Override
-    public List<PostPreviewDto> findLikePostByUserId(Long userId, int cursor) {
+    public List<PostPreviewDto> findLikePostByUserId(String account, int cursor) {
         List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
                         user.name, user.image, like.count())
         )
                 .from(post)
-                .innerJoin(user).on(post.user.eq(user).and(user.id.eq(userId)))
-                .innerJoin(like).on(post.eq(like.post))
-                .where(lowerThanCursor(cursor).and(like.user.id.eq(userId)))
+                .innerJoin(user).on(post.user.eq(user))
+                .leftJoin(like).on(post.eq(like.post).and(like.user.eq(user)))
+                .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
                 .fetch();
+
+        getPostsHits(previewDtos);
+
         previewDtos.forEach(post -> {
                     List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
                     post.setLayoutDto(layoutContext);
@@ -161,6 +167,9 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .offset(page)
                 .limit(PAGE_SIZE)
                 .fetch();
+
+        getPostsHits(previewDtos);
+
         previewDtos.forEach(post -> {
                     List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
                     post.setLayoutDto(layoutContext);
@@ -195,7 +204,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     private JPQLQuery<LayoutDto> selectMainContext(Long postId){
         return query.select(
                         Projections.constructor(LayoutDto.class,
-                                layout.dtype, layout.width, layout.height,
+                                layout.dtype, layout.width, layout.height, layout.explanation,
                                 context.context, context.code, context.codeExplanation, context.codeType, context.url
                         ))
                 .from(context)

@@ -69,11 +69,12 @@ public class LayoutDto {
     }
 
     // 카테고리 하위 게시글 조회 - QueryDSL
-    public LayoutDto(Integer dtype, Double width, Double height, String content,
+    public LayoutDto(Integer dtype, Double width, Double height, String explanation, String content,
                      String code, String codeExplanation, CodeType codeType, String url1){
         this.dtype = dtype;
         this.width = width;
         this.height = height;
+        this.explanation = explanation;
         this.content = content;
         if (code != null) {
             this.codes = List.of(code, codeExplanation, codeType.toString());
@@ -86,6 +87,8 @@ public class LayoutDto {
         this.dtype = node.getDtype();
         this.width = node.getWidth();
         this.height = node.getHeight();
+        this.content = node.getContent();
+        this.explanation = node.getExplanation();
         this.codes = node.getCodes();
         this.url.addAll(node.getUrl());
     }
