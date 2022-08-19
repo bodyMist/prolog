@@ -177,10 +177,11 @@ public class PostController {
     /**
      * 좋아요 한 글 목록 조회 API
      * */
-    @GetMapping("{userId}/likes")
-    public SuccessDto readLikedPosts(@PathVariable Long userId, @RequestParam int last){
-        List<PostPreviewDto> likedPosts = postService.getLikePostList(userId, last);
-        return new SuccessDto(true, likedPosts);
+    @GetMapping("{account}/likes")
+    public SuccessDto readLikedPosts(@PathVariable String account, @RequestParam int last){
+        List<PostPreviewDto> likedPosts = postService.getLikePostList(account, last);
+        List<PostPreview> post = changeResponseType(likedPosts);
+        return new SuccessDto(true, post);
     }
 
     /**
@@ -191,7 +192,8 @@ public class PostController {
     @GetMapping("/")
     public SuccessDto readHottestPosts(@RequestParam int page, @RequestParam int size){
         List<PostPreviewDto> hottestPosts = postService.getHottestPostList(page, size);
-        return new SuccessDto(true, hottestPosts);
+        List<PostPreview> post = changeResponseType(hottestPosts);
+        return new SuccessDto(true, post);
     }
 
     /**
@@ -200,7 +202,8 @@ public class PostController {
     @GetMapping("/recent/")
     public SuccessDto readRecentPosts(@RequestParam int last){
         List<PostPreviewDto> recentPostList = postService.getRecentPostList(last);
-        return new SuccessDto(true, recentPostList);
+        List<PostPreview> post = changeResponseType(recentPostList);
+        return new SuccessDto(true, post);
     }
 
     private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){
