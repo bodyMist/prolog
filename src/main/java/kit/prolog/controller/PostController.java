@@ -2,13 +2,24 @@ package kit.prolog.controller;
 
 import kit.prolog.dto.*;
 import kit.prolog.service.PostService;
+<<<<<<< HEAD
 import lombok.*;
+=======
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+>>>>>>> c689f0c (Redis emailAuth)
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+<<<<<<< HEAD
 import java.time.LocalDateTime;
 import java.util.*;
+=======
+import java.util.HashMap;
+import java.util.List;
+>>>>>>> c689f0c (Redis emailAuth)
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -21,6 +32,7 @@ public class PostController {
      * 레이아웃 작성 API
      * */
     @PostMapping("/layout")
+<<<<<<< HEAD
     public SuccessDto createLayout(@RequestHeader Long memberPk,
                                    @RequestBody Map<String, Object> json){
         List<LayoutDto> layouts =
@@ -29,6 +41,12 @@ public class PostController {
                         .collect(Collectors.toList());
         String moldName = json.get("moldName") == null ? "" : json.get("moldName").toString();
         List<LayoutDto> layoutDtos = postService.saveLayouts(memberPk, layouts, moldName);
+=======
+    public SuccessDto createLayout(Long userId, String moldName, List<LayoutDto> layouts){
+        // 세션에서 user 정보 가져와야 함
+
+        List<LayoutDto> layoutDtos = postService.saveLayouts(userId, layouts, moldName);
+>>>>>>> c689f0c (Redis emailAuth)
         return new SuccessDto(true, layoutDtos);
     }
     /**

@@ -3,6 +3,8 @@ package kit.prolog.controller;
 import kit.prolog.domain.User;
 import kit.prolog.dto.*;
 import kit.prolog.service.EmailAuthService;
+import kit.prolog.service.KakaoAuthService;
+import kit.prolog.service.RedisService;
 import kit.prolog.service.UserService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +15,9 @@ import org.springframework.web.bind.annotation.*;
 @AllArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final RedisService redisService;
     private final EmailAuthService emailAuthService;
+    private final KakaoAuthService kakaoAuthService;
 
 
     @PostMapping("/signup/email")
@@ -108,6 +112,25 @@ public class UserController {
         }
     }
 
+    //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=ac1a0ec2e424c32d5baa95bf6114d8b0&redirect_uri=http://127.0.0.1:8080/login/kakao
+    @GetMapping("/login/kakao")
+    public SuccessDto loginByKakao(@RequestParam String code){
+        System.out.println(code); // 인가코드 받기
+        System.out.println(kakaoAuthService.getKaKaoAccessToken(code));
+        // jwt 추가
+
+        return new SuccessDto(true, null);
+    }
+
+    @GetMapping("/login/github")
+    public SuccessDto loginByGithub(@RequestParam String code){
+        System.out.println(code);
+        System.out.println();
+        // jwt 추가
+
+        return new SuccessDto(true, null);
+    }
+
     @PostMapping("/idauth")
     public SuccessDto searchAccount(@RequestBody UserEmailDto userEmailDto){
         String account = userService.searchAccount(userEmailDto.getEmail());
@@ -121,9 +144,17 @@ public class UserController {
     @PostMapping("/email")
     public SuccessDto sendMail(@RequestBody UserEmailDto userEmailDto){
         if(userService.searchAccount(userEmailDto.getEmail()) != null){
+            System.out.println("test2");
             int emailAuthNumber = emailAuthService.sendMail(userEmailDto.getEmail());
-            return new SuccessDto(true, emailAuthNumber);
+            if(redisService.createEmailAuthNumber(userEmailDto.getEmail(), emailAuthNumber)){
+                System.out.println("test3");
+                return new SuccessDto(true, null);
+            }else{
+                System.out.println("test4");
+                return new SuccessDto(false, null);
+            }
         }else{
+            System.out.println("test1");
             return new SuccessDto(false, null);
         }
     }
@@ -144,5 +175,5 @@ public class UserController {
     // 저장된 데이터에 +3분 한 시간 인증번호 발송과 함께 프론트에 전달
     // 프론트는 해당 시간까지 전송이 가능하도록 함
     // 백엔드는 해당 시간까지 데이터를 받을 수 있음
-    // 받아야하는 데이터 인증번호만, 현재 시간을 기준으로 판단함*/
+    // 받아야하는 데이터 인증번호만, 현재 시간을 기준으로 판단함
 }

@@ -21,6 +21,7 @@ public class EmailAuthService {
     // email 발송
     public int sendMail(String email){
         int emailAuthNumber = makeEmailAuthNumber();
+
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
         simpleMailMessage.setFrom("ansang01234@gmail.com");
         simpleMailMessage.setTo(email);
@@ -43,7 +44,7 @@ public class EmailAuthService {
     // 랜덤한 숫자 시스템 생성
     public int makeEmailAuthNumber(){
         Random random = new Random(System.currentTimeMillis());
-        int num = random.nextInt(999999) + 100000;
+        int num = random.nextInt(900000) + 100000;
         return num;
     }
 }
