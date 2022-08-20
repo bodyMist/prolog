@@ -158,8 +158,6 @@ public class UserController {
     @PostMapping("/email/auth")
     public SuccessDto emailAuth(@RequestBody UserEmailAuthNumber userEmailAuthNumber){
         int authNumber = redisService.readEmailAuthNumber(userEmailAuthNumber.getEmail());
-        System.out.println(authNumber);
-        System.out.println(userEmailAuthNumber.getAuthNumber());
         if(authNumber == 0){
             return new SuccessDto(false, null);
         } else if (authNumber == userEmailAuthNumber.getAuthNumber()) {
