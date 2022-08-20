@@ -42,7 +42,6 @@ public class RedisService {
                 return 0;
             }
         }catch (NullPointerException e) {
-            e.printStackTrace();
             return 0;
         }
     }

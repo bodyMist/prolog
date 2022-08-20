@@ -17,6 +17,6 @@ public class EmailAuthTokenTest {
 
     @Test
     void 이메일인증번호읽기(){
-        System.out.println(emailAuthTokenRedisRepository.findOneByEmail("ansang01234@gmail.com"));
+        System.out.println(emailAuthTokenRedisRepository.findOneByEmail("ansang01234@gmail.com").getEmailAuthNumber());
     }
 }

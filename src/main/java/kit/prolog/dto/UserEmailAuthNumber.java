@@ -6,5 +6,6 @@ import lombok.ToString;
 @Getter
 @ToString
 public class UserEmailAuthNumber {
-    private int emailAuthNumber;
+    private String email;
+    private int authNumber;
 }

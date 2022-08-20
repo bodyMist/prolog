@@ -144,25 +144,25 @@ public class UserController {
     @PostMapping("/email")
     public SuccessDto sendMail(@RequestBody UserEmailDto userEmailDto){
         if(userService.searchAccount(userEmailDto.getEmail()) != null){
-            System.out.println("test2");
             int emailAuthNumber = emailAuthService.sendMail(userEmailDto.getEmail());
             if(redisService.createEmailAuthNumber(userEmailDto.getEmail(), emailAuthNumber)){
-                System.out.println("test3");
                 return new SuccessDto(true, null);
             }else{
-                System.out.println("test4");
                 return new SuccessDto(false, null);
             }
         }else{
-            System.out.println("test1");
             return new SuccessDto(false, null);
         }
     }
 
     @PostMapping("/email/auth")
     public SuccessDto emailAuth(@RequestBody UserEmailAuthNumber userEmailAuthNumber){
-        int makeAuthNumber = 0; // 받아와야함
-        if(emailAuthService.emailAuth(userEmailAuthNumber.getEmailAuthNumber(), makeAuthNumber)){
+        int authNumber = redisService.readEmailAuthNumber(userEmailAuthNumber.getEmail());
+        System.out.println(authNumber);
+        System.out.println(userEmailAuthNumber.getAuthNumber());
+        if(authNumber == 0){
+            return new SuccessDto(false, null);
+        } else if (authNumber == userEmailAuthNumber.getAuthNumber()) {
             return new SuccessDto(true, null);
         }else{
             return new SuccessDto(false, null);

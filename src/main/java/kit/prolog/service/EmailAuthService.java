@@ -31,16 +31,6 @@ public class EmailAuthService {
         return emailAuthNumber;
     }
 
-    // email 인증
-    // inputEmailAuthNumber 사용자 입력, emailAuthNumber 시스템 생성
-    public boolean emailAuth(int inputEmailAuthNumber, int emailAuthNumber){
-        if(inputEmailAuthNumber == emailAuthNumber){
-            return true;
-        }else{
-            return false;
-        }
-    }
-
     // 랜덤한 숫자 시스템 생성
     public int makeEmailAuthNumber(){
         Random random = new Random(System.currentTimeMillis());
