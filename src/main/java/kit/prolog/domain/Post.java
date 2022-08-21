@@ -1,5 +1,6 @@
 package kit.prolog.domain;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -8,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-@Getter
+@Data
 @Entity(name = "POSTS")
 @NoArgsConstructor
 public class Post {

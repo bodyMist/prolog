@@ -125,6 +125,40 @@ public class PostController {
     /**
      * 게시글 수정 API
      * */
+    @PutMapping("/board/{id}")
+    public SuccessDto updatePost(@RequestHeader Long memberPk,
+                                 @PathVariable Long id,
+                                 @RequestBody Map<String, Object> json){
+        // required
+        Long categoryId = Long.parseLong(json.get("category").toString());
+        String title = json.get("title").toString();
+        List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
+                .stream().map(LayoutDto::new).collect(Collectors.toList());
+
+        // optional
+        Long moldId = json.get("moldId") == null
+                ? null : Long.parseLong(json.get("moldId").toString());
+        List<String> tags = new ArrayList<>();
+        if( json.get("tag") != null){
+            ((List<String>) json.get("tag")).forEach(tags::add);
+        }
+        List<AttachmentDto> attachments = json.get("attachments") == null
+                ? null : ((List<LinkedHashMap>) json.get("attachments"))
+                .stream().map(AttachmentDto::new)
+                .collect(Collectors.toList());
+
+        HashMap<String, Object> params = new HashMap<>();
+        if(moldId != null)
+            params.put("moldId", moldId);
+        if (attachments != null)
+            params.put("attachments", attachments);
+        if (!tags.isEmpty())
+            params.put("tags", tags);
+
+
+        Long postId = postService.updatePost(id, memberPk, title, layoutDtos, categoryId, params);
+        return new SuccessDto(true, postId);
+    }
 
 
     /**

@@ -215,7 +215,7 @@ public class PostService {
         int likeCount = likeRepository.countByPost_Id(postId);
 
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "time"));
-        List<CommentLv1Dto> commentList = commentRepository.findByPostId(postId, userId, pageable);
+//        List<CommentLv1Dto> commentList = commentRepository.findByPostId(postId, userId, pageable);
 
         List<AttachmentDto> attachmentList = attachmentRepository.findByPost_Id(postId);
         List<String> tagList = new ArrayList<>();
@@ -244,12 +244,97 @@ public class PostService {
             like.setExist(exist);
         }
         postDetailDto.setLikeDto(like);
-        postDetailDto.setComments(commentList);
+//        postDetailDto.setComments(commentList);
         postDetailDto.setAttachmentDto(attachmentList);
         postDetailDto.setTags(tagList);
         postDetailDto.setLayoutDto(new ArrayList<>(layoutId.values()));
 
         return postDetailDto;
+    }
+
+
+    /**
+     * 게시글 수정 API
+     * 매개변수 :
+     * 반환 :
+     * */
+    public Long updatePost(Long postId, Long userId, String title,
+                              List<LayoutDto> layoutDtos, Long categoryId,
+                              HashMap<String, Object> param){
+        Optional<Mold> mold;
+        Optional<Category> category = categoryRepository.findById(categoryId);
+
+        Post post = postRepository.findById(postId).get();
+        post.setTitle(title);
+        post.setCategory(category.get());
+
+        if (param.containsKey("moldId")){
+            Long moldId = Long.parseLong(param.get("moldId").toString());
+            mold = moldRepository.findById(moldId);
+            post.setMold(mold.get());
+        }
+        Post savedPost = postRepository.save(post);
+
+        layoutDtos.forEach(layoutDto -> {
+            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
+
+                List<Context> contextList = new ArrayList<>();
+                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
+                switch (layoutType){
+                    case CONTEXT:
+                    case MATHEMATICS:
+                        context.setContext(layoutDto.getContent());
+                        break;
+                    case IMAGE:
+                        layoutDto.getUrl().forEach(url -> {
+                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
+                        });
+                        break;
+                    case CODES:
+                        List<String> codes = layoutDto.getCodes();
+                        context.setCode(codes.get(0));
+                        context.setCodeExplanation(codes.get(1));
+                        context.setCodeType(CodeType.valueOf(codes.get(2)));
+                        break;
+                    case HYPERLINK:
+                    case VIDEOS:
+                    case DOCUMENTS:
+                        context.setUrl(layoutDto.getContent());
+                        break;
+                }
+
+                if(contextList.isEmpty()){
+                    contextRepository.save(context);
+                }else{
+                    contextRepository.saveAll(contextList);
+                }
+            });
+        });
+        if (!param.isEmpty()){
+            if(param.containsKey("tags")){
+                List<String> tagList = (List<String>) param.get("tags");
+                postTagRepository.deleteAllByPost_Id(postId);
+                tagList.forEach(tag -> {
+                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
+                    if(!optionalTag.isPresent()) {
+                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
+                    }
+                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
+                    postTagRepository.save(postTag);
+                });
+            }
+            if(param.containsKey("attachments")){
+                attachmentRepository.deleteAllByPost_Id(postId);
+                List<AttachmentDto> attachmentList = (List<AttachmentDto>) param.get("attachments");
+                attachmentList.forEach(attachmentDto -> {
+                    Attachment attachment = new Attachment(attachmentDto, savedPost);
+                    attachmentRepository.save(attachment);
+                });
+            }
+        }
+
+        return savedPost.getId();
     }
 
     /**
