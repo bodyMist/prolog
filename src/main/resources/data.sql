@@ -23,11 +23,9 @@ INSERT INTO molds(name, user_user_id) VALUES ('복합 틀', 1);
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '1이것은 테스트용이예요', 1, 1, 1);
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
-VALUES (CURRENT_TIME, '2이것은 테스트용이예요', 1, 1, 1);
-INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
-VALUES (CURRENT_TIME, '3이것은 테스트용이예요', 2, 2, 1);
-INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
-VALUES (CURRENT_TIME, '4이것은 테스트용이예요', 2, 2, 1);
+VALUES (CURRENT_TIME, '2이것은 테스트용이예요', 1, 2, 1);
+INSERT INTO posts(time, title, category_category_id, user_user_id)
+VALUES (CURRENT_TIME, '3이것은 테스트용이예요', 2, 1);
 
 /* 레이아웃 6 */
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width, mold_mold_id)

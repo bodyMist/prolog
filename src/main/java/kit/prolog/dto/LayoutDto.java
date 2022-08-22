@@ -39,7 +39,8 @@ public class LayoutDto {
     }
 
     public LayoutDto(LinkedHashMap<String, Object> json) {
-        this.id = Long.parseLong(json.get("id").toString());
+        this.id = json.get("id") == null
+                ? null : Long.parseLong(json.get("id").toString());
         this.dtype = Integer.parseInt(json.get("type").toString());
         this.coordinateX = Double.parseDouble(json.get("coordinateX").toString());
         this.coordinateY = Double.parseDouble(json.get("coordinateY").toString());
@@ -68,11 +69,12 @@ public class LayoutDto {
     }
 
     // 카테고리 하위 게시글 조회 - QueryDSL
-    public LayoutDto(Integer dtype, Double width, Double height, String content,
+    public LayoutDto(Integer dtype, Double width, Double height, String explanation, String content,
                      String code, String codeExplanation, CodeType codeType, String url1){
         this.dtype = dtype;
         this.width = width;
         this.height = height;
+        this.explanation = explanation;
         this.content = content;
         if (code != null) {
             this.codes = List.of(code, codeExplanation, codeType.toString());
@@ -85,6 +87,8 @@ public class LayoutDto {
         this.dtype = node.getDtype();
         this.width = node.getWidth();
         this.height = node.getHeight();
+        this.content = node.getContent();
+        this.explanation = node.getExplanation();
         this.codes = node.getCodes();
         this.url.addAll(node.getUrl());
     }
@@ -129,6 +133,7 @@ public class LayoutDto {
 
     // 레이아웃 작성 service layer
     public LayoutDto(Layout layout){
+        this.id = layout.getId();
         this.dtype = layout.getDtype();
         this.coordinateX = layout.getCoordinateX();
         this.coordinateY = layout.getCoordinateY();

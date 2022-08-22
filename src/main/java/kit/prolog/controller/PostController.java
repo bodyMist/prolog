@@ -53,8 +53,9 @@ public class PostController {
      * 레이아웃 삭제 API
      * */
     @DeleteMapping("/layouts/{id}")
-    public boolean deleteMold(@PathVariable Long id){
-        return postService.deleteMold(id);
+    public SuccessDto deleteMold(@PathVariable Long id){
+        postService.deleteMold(id);
+        return new SuccessDto(true);
     }
 
     /**
@@ -124,6 +125,40 @@ public class PostController {
     /**
      * 게시글 수정 API
      * */
+    @PutMapping("/board/{id}")
+    public SuccessDto updatePost(@RequestHeader Long memberPk,
+                                 @PathVariable Long id,
+                                 @RequestBody Map<String, Object> json){
+        // required
+        Long categoryId = Long.parseLong(json.get("category").toString());
+        String title = json.get("title").toString();
+        List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
+                .stream().map(LayoutDto::new).collect(Collectors.toList());
+
+        // optional
+        Long moldId = json.get("moldId") == null
+                ? null : Long.parseLong(json.get("moldId").toString());
+        List<String> tags = new ArrayList<>();
+        if( json.get("tag") != null){
+            ((List<String>) json.get("tag")).forEach(tags::add);
+        }
+        List<AttachmentDto> attachments = json.get("attachments") == null
+                ? null : ((List<LinkedHashMap>) json.get("attachments"))
+                .stream().map(AttachmentDto::new)
+                .collect(Collectors.toList());
+
+        HashMap<String, Object> params = new HashMap<>();
+        if(moldId != null)
+            params.put("moldId", moldId);
+        if (attachments != null)
+            params.put("attachments", attachments);
+        if (!tags.isEmpty())
+            params.put("tags", tags);
+
+
+        Long postId = postService.updatePost(id, memberPk, title, layoutDtos, categoryId, params);
+        return new SuccessDto(true, postId);
+    }
 
 
     /**
@@ -176,10 +211,11 @@ public class PostController {
     /**
      * 좋아요 한 글 목록 조회 API
      * */
-    @GetMapping("{userId}/likes")
-    public SuccessDto readLikedPosts(@PathVariable Long userId, @RequestParam int last){
-        List<PostPreviewDto> likedPosts = postService.getLikePostList(userId, last);
-        return new SuccessDto(true, likedPosts);
+    @GetMapping("{account}/likes")
+    public SuccessDto readLikedPosts(@PathVariable String account, @RequestParam int last){
+        List<PostPreviewDto> likedPosts = postService.getLikePostList(account, last);
+        List<PostPreview> post = changeResponseType(likedPosts);
+        return new SuccessDto(true, post);
     }
 
     /**
@@ -190,16 +226,18 @@ public class PostController {
     @GetMapping("/")
     public SuccessDto readHottestPosts(@RequestParam int page, @RequestParam int size){
         List<PostPreviewDto> hottestPosts = postService.getHottestPostList(page, size);
-        return new SuccessDto(true, hottestPosts);
+        List<PostPreview> post = changeResponseType(hottestPosts);
+        return new SuccessDto(true, post);
     }
 
     /**
      * 최근 게시글 목록 조회 API
      * */
-    @GetMapping("/recent")
-    public SuccessDto readRecentPosts(@RequestParam int cursor){
-        List<PostPreviewDto> hottestPosts = postService.getRecentPostList(cursor);
-        return new SuccessDto(true, hottestPosts);
+    @GetMapping("/recent/")
+    public SuccessDto readRecentPosts(@RequestParam int last){
+        List<PostPreviewDto> recentPostList = postService.getRecentPostList(last);
+        List<PostPreview> post = changeResponseType(recentPostList);
+        return new SuccessDto(true, post);
     }
 
     private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){
