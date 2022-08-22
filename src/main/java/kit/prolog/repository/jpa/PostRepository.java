@@ -1,8 +1,10 @@
 package kit.prolog.repository.jpa;
 
+import kit.prolog.domain.Category;
 import kit.prolog.domain.Post;
 import kit.prolog.repository.custom.PostCustomRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -17,4 +19,8 @@ public interface PostRepository extends JpaRepository<Post, Long>, PostCustomRep
     Long findMoldIdByPostId(Long id);
 
     List<Post> findByUser_Id(Long userId);
+
+    @Modifying
+    @Query("UPDATE POSTS p SET p.category = :newCategory WHERE p.category = :oldCategory")
+    int updatePostCategory(Category oldCategory, Category newCategory);
 }
