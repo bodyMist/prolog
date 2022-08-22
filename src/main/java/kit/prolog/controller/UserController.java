@@ -41,6 +41,7 @@ public class UserController {
         user.setImage(userInfoDto.getImage());
         user.setNickname(userInfoDto.getNickname());
         user.setIntroduce(userInfoDto.getIntroduction());
+        user.setSns(0); // sns { 0번 : email, 1번 : kakao로그인 2번 : github }
 
         if(userService.createUserByEmail(user)){
             return new SuccessDto(true, null);
@@ -57,24 +58,31 @@ public class UserController {
      //memberpk로 유저 정보 검색
      //readUser()
      //검색된 유저 정보 반환
-    @GetMapping("/my-info/{userId}")
-    public SuccessDto readUser(@PathVariable Long userId){
-        User user = userService.readUser(userId);
-        if(user.getId() != 0){
-            return new SuccessDto(true,
-                    new UserInfoDto(
-                            user.getName(),
-                            user.getAccount(),
-                            user.getPassword(),
-                            user.getEmail(),
-                            user.getAlarm(),
-                            user.getImage(),
-                            user.getNickname(),
-                            user.getIntroduce()));
+    @GetMapping("/my-info")
+    public SuccessDto readUser(
+            @RequestHeader(value = "accessToken") String accessToken,
+            @RequestHeader(value = "refreshToken") String refreshToken){
+        if(jwtService.validateToken(accessToken)){
+            String userId = jwtService.getUserPk(accessToken);
+            User user = userService.readUser(Long.parseLong(userId));
+            if(user.getId() != 0){
+                return new SuccessDto(true,
+                        new UserInfoDto(
+                                user.getName(),
+                                user.getAccount(),
+                                user.getPassword(),
+                                user.getEmail(),
+                                user.getAlarm(),
+                                user.getImage(),
+                                user.getNickname(),
+                                user.getIntroduce()));
+            }else{
+                return new SuccessDto(false, null);
+            }
         }else{
+            // jwt accessToken 인증시간 초과
             return new SuccessDto(false, null);
         }
-
     }
 
 
