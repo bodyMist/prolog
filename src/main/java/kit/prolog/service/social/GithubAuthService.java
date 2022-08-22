@@ -1,4 +1,4 @@
-package kit.prolog.service;
+package kit.prolog.service.social;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

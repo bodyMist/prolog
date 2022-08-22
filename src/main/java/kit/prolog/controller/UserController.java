@@ -1,13 +1,18 @@
 package kit.prolog.controller;
 
 import kit.prolog.domain.User;
+import kit.prolog.domain.redis.JwtAuthToken;
 import kit.prolog.dto.*;
 import kit.prolog.service.EmailAuthService;
-import kit.prolog.service.KakaoAuthService;
+import kit.prolog.service.JwtService;
 import kit.prolog.service.RedisService;
 import kit.prolog.service.UserService;
+import kit.prolog.service.social.KakaoAuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @Slf4j
@@ -18,7 +23,12 @@ public class UserController {
     private final RedisService redisService;
     private final EmailAuthService emailAuthService;
     private final KakaoAuthService kakaoAuthService;
+    private final JwtService jwtService;
 
+    @GetMapping("/test")
+    public String test(){
+        return "test";
+    }
 
     @PostMapping("/signup/email")
     public SuccessDto createUserByEmail(@RequestBody UserInfoDto userInfoDto){
@@ -103,23 +113,43 @@ public class UserController {
     }
 
     @PostMapping("/login")
-    public SuccessDto login(@RequestBody UserLoginDto userLoginDto){
+    public ResponseEntity<SuccessDto> login(@RequestBody UserLoginDto userLoginDto){
         User user = userService.login(userLoginDto.getAccount(), userLoginDto.getPassword());
         if(user != null){
-            return new SuccessDto(true, user.getId());
+            HttpHeaders headers = new HttpHeaders();
+            String accessToken = jwtService.createAccessToken(String.valueOf(user.getId()));
+            String refreshToken = jwtService.createRefreshToken(String.valueOf(user.getId()));
+            redisService.createJwtAuthToken(new JwtAuthToken(user.getId(), accessToken, refreshToken, null));
+            headers.set("accessToken", accessToken);
+            headers.set("refreshToken", refreshToken);
+            return new ResponseEntity<SuccessDto>(new SuccessDto(true, user.getId()), headers, HttpStatus.valueOf(200));
         }else {
-            return new SuccessDto(false, null);
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, null), null, HttpStatus.valueOf(401));
         }
     }
 
-    //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=ac1a0ec2e424c32d5baa95bf6114d8b0&redirect_uri=http://127.0.0.1:8080/login/kakao
+    //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=ac1a0ec2e424c32d5baa95bf6114d8b0&redirect_uri=http://127.0.0.1:8080/login/kakao&scope=account_email,openid
     @GetMapping("/login/kakao")
-    public SuccessDto loginByKakao(@RequestParam String code){
-        System.out.println(code); // 인가코드 받기
-        System.out.println(kakaoAuthService.getKaKaoAccessToken(code));
-        // jwt 추가
-
-        return new SuccessDto(true, null);
+    public SuccessDto loginByKakao(@RequestParam String code) {
+        // 인가코드 받기
+        String accessToken = kakaoAuthService.getKaKaoAccessToken(code);
+        String email = kakaoAuthService.createKakaoUser(accessToken);
+        if(email != null){
+            User user = new User();
+            user.setName("2391519776");
+            user.setEmail(email);
+            user.setAccount(email);
+            user.setPassword("test");
+            user.setAlarm(false);
+            user.setSns(1);
+            if(userService.createUserByEmail(user)){
+                return new SuccessDto(true, null);
+            }else{
+                return new SuccessDto(false, null);
+            }
+        }else{
+            return new SuccessDto(false, null);
+        }
     }
 
     @GetMapping("/login/github")
@@ -127,6 +157,13 @@ public class UserController {
         System.out.println(code);
         System.out.println();
         // jwt 추가
+
+        return new SuccessDto(true, null);
+    }
+
+    @PostMapping("/logout/kaako")
+    public SuccessDto logout(){
+        kakaoAuthService.logout("kfjZQIYglUAx3_K81StmRphjS-1JauB_j2Gz1hBvCj11mwAAAYK-tsdY");
 
         return new SuccessDto(true, null);
     }
