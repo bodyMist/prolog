@@ -253,6 +253,26 @@ public class PostService {
     }
 
     /**
+     * 게시글 수정 API
+     * 매개변수 :
+     * 반환 :
+     * 발생 가능 에러 :
+     * */
+    public boolean updatePost(Long postId, Long userId, String title,
+                              List<LayoutDto> layoutDtos, Long categoryId,
+                              HashMap<String, Object> param){
+        Optional<Mold> mold;
+
+        Optional<User> user = userRepository.findById(userId);
+        Optional<Category> category = categoryRepository.findById(categoryId);
+        Post post = new Post();
+        post.setId(postId);
+        postRepository.save(post);
+
+        return true;
+    }
+
+    /**
     * 게시글 삭제 API
     * 매개변수 : postId(게시글 pk)
     * 반환 : boolean
