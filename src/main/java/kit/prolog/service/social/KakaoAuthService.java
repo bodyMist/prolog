@@ -16,8 +16,8 @@ import java.net.URL;
 @RequiredArgsConstructor
 public class KakaoAuthService {
     public String getKaKaoAccessToken(String code) {
-        String access_Token = "";
-        String refresh_Token = "";
+        String accessToken = "";
+        String refreshToken = "";
         String reqURL = "https://kauth.kakao.com/oauth/token";
         try {
             URL url = new URL(reqURL);
@@ -54,11 +54,11 @@ public class KakaoAuthService {
             //Gson 라이브러리에 포함된 클래스로 JSON파싱 객체 생성
 
             JSONObject jObject = new JSONObject(result);
-            access_Token = jObject.get("access_token").toString();
-            refresh_Token = jObject.get("refresh_token").toString();
+            accessToken = jObject.get("access_token").toString();
+            refreshToken = jObject.get("refresh_token").toString();
 
-            System.out.println("access_token : " + access_Token);
-            System.out.println("refresh_token : " + refresh_Token);
+            System.out.println("access_token : " + accessToken);
+            System.out.println("refresh_token : " + refreshToken);
 
             br.close();
             bw.close();
@@ -66,7 +66,7 @@ public class KakaoAuthService {
             e.printStackTrace();
         }
 
-        return access_Token;
+        return accessToken;
     }
 
     public String createKakaoUser(String token) {

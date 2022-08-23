@@ -7,6 +7,7 @@ import kit.prolog.service.EmailAuthService;
 import kit.prolog.service.JwtService;
 import kit.prolog.service.RedisService;
 import kit.prolog.service.UserService;
+import kit.prolog.service.social.GithubAuthService;
 import kit.prolog.service.social.KakaoAuthService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
 
 @Slf4j
 @RestController
@@ -23,6 +26,7 @@ public class UserController {
     private final RedisService redisService;
     private final EmailAuthService emailAuthService;
     private final KakaoAuthService kakaoAuthService;
+    private final GithubAuthService githubAuthService;
     private final JwtService jwtService;
 
     @GetMapping("/test")
@@ -79,9 +83,12 @@ public class UserController {
             }else{
                 return new SuccessDto(false, null);
             }
-        }else{
+        }else if(jwtService.validateToken(refreshToken)){
             // jwt accessToken 인증시간 초과
-            return new SuccessDto(false, null);
+            return new SuccessDto(false, "access toekn invalid");
+        }else{
+            // jwt accessToken, jwt refreshToken 인증시간 초과
+            return new SuccessDto(false, "access toekn & refresh token invalid");
         }
     }
 
@@ -89,35 +96,69 @@ public class UserController {
     //memberpk로 유저 정보 검색
     //deleteUser()
     //삭제된 유저 정보 반환
-    @GetMapping("/memberout/{userId}")
-    public SuccessDto deleteUser(@PathVariable Long userId){
-        User user = userService.deleteUser(userId);
-        if(user.getId() != 0){
-            return new SuccessDto(true, user.getId());
+    @GetMapping("/memberout")
+    public SuccessDto deleteUser(
+            @RequestHeader(value = "accessToken") String accessToken,
+            @RequestHeader(value = "refreshToken") String refreshToken){
+        if(jwtService.validateToken(accessToken)){
+            String userId = jwtService.getUserPk(accessToken);
+            User user = userService.readUser(Long.parseLong(userId));
+            if(user.getId() != 0){
+                userService.deleteUser(Long.parseLong(userId));
+                return new SuccessDto(true, user.getId());
+            }else{
+                return new SuccessDto(false, null);
+            }
+        }else if(jwtService.validateToken(refreshToken)){
+            // jwt accessToken 인증시간 초과
+            return new SuccessDto(false, "access toekn invalid");
         }else{
-            return new SuccessDto(false, null);
+            // jwt accessToken, jwt refreshToken 인증시간 초과
+            return new SuccessDto(false, "access toekn & refresh token invalid");
         }
     }
 
 
-    @PutMapping("/my-info-update/{userId}")
-    public SuccessDto updateUser(@PathVariable Long userId, @RequestBody UserInfoDto userInfoDto){
-        if(userService.updateUser(userId, userInfoDto)){
-            return new SuccessDto(true, null);
+    @PutMapping("/my-info-update")
+    public SuccessDto updateUser(
+            @RequestHeader(value = "accessToken") String accessToken,
+            @RequestHeader(value = "refreshToken") String refreshToken,
+            @RequestBody UserInfoDto userInfoDto){
+        if(jwtService.validateToken(accessToken)){
+            String userId = jwtService.getUserPk(accessToken);
+            User user = userService.readUser(Long.parseLong(userId));
+            if(userService.updateUser(Long.parseLong(userId), userInfoDto)){
+                return new SuccessDto(true, null);
+            }else{
+                return new SuccessDto(false, null);
+            }
+        }else if(jwtService.validateToken(refreshToken)){
+            // jwt accessToken 인증시간 초과
+            return new SuccessDto(false, "access toekn invalid");
         }else{
-            return new SuccessDto(false, null);
+            // jwt accessToken, jwt refreshToken 인증시간 초과
+            return new SuccessDto(false, "access toekn & refresh token invalid");
         }
-
     }
 
     @PostMapping("/updatepw")
-    public SuccessDto changePassword(@RequestBody UserPwChangeDto userPwChangeDto){
-        if(userService.changePassword(userPwChangeDto.getEmail(), userPwChangeDto.getAccount(), userPwChangeDto.getPassword())){
-            return new SuccessDto(true, null);
-        }else {
-            return new SuccessDto(false, null);
+    public SuccessDto changePassword(
+            @RequestHeader(value = "accessToken") String accessToken,
+            @RequestHeader(value = "refreshToken") String refreshToken,
+            @RequestBody UserPwChangeDto userPwChangeDto){
+        if(jwtService.validateToken(accessToken)){
+            if(userService.changePassword(userPwChangeDto.getEmail(), userPwChangeDto.getAccount(), userPwChangeDto.getPassword())){
+                return new SuccessDto(true, null);
+            }else {
+                return new SuccessDto(false, null);
+            }
+        }else if(jwtService.validateToken(refreshToken)){
+            // jwt accessToken 인증시간 초과
+            return new SuccessDto(false, "access toekn invalid");
+        }else{
+            // jwt accessToken, jwt refreshToken 인증시간 초과
+            return new SuccessDto(false, "access toekn & refresh token invalid");
         }
-
     }
 
     @PostMapping("/login")
@@ -135,8 +176,11 @@ public class UserController {
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, null), null, HttpStatus.valueOf(401));
         }
     }
-
+    //kakao 인증 url
     //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=ac1a0ec2e424c32d5baa95bf6114d8b0&redirect_uri=http://127.0.0.1:8080/login/kakao&scope=account_email,openid
+
+    //github 인증 url
+    //https://github.com/login/oauth/authorize?client_id=0006efe23ef0c6ecb6c0&redirect_uri=http://localhost:8080/login/github
     @GetMapping("/login/kakao")
     public SuccessDto loginByKakao(@RequestParam String code) {
         // 인가코드 받기
@@ -161,15 +205,17 @@ public class UserController {
     }
 
     @GetMapping("/login/github")
-    public SuccessDto loginByGithub(@RequestParam String code){
+    public SuccessDto loginByGithub(@RequestParam String code) throws IOException {
         System.out.println(code);
-        System.out.println();
-        // jwt 추가
+        String accessToken = githubAuthService.getGithubAccessToken(code);
+        System.out.println(accessToken);
+        githubAuthService.createGithubUser(accessToken);
 
+        // jwt 추가
         return new SuccessDto(true, null);
     }
 
-    @PostMapping("/logout/kaako")
+    @PostMapping("/logout/kakao")
     public SuccessDto logout(){
         kakaoAuthService.logout("kfjZQIYglUAx3_K81StmRphjS-1JauB_j2Gz1hBvCj11mwAAAYK-tsdY");
 
@@ -211,12 +257,4 @@ public class UserController {
             return new SuccessDto(false, null);
         }
     }
-
-    // 이메일 시간 단위 인증
-    // 현재 시간을 날짜, 시간, 분, 초 단위까지 데이터 저장
-    // mysql 에 새로운 테이블 필요 -> 데이터는 id(AutoIncrement), email(유저가 입력한 email), 시간데이터, 인증번호
-    // 저장된 데이터에 +3분 한 시간 인증번호 발송과 함께 프론트에 전달
-    // 프론트는 해당 시간까지 전송이 가능하도록 함
-    // 백엔드는 해당 시간까지 데이터를 받을 수 있음
-    // 받아야하는 데이터 인증번호만, 현재 시간을 기준으로 판단함
 }
