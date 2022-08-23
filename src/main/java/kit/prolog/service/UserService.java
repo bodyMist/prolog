@@ -28,6 +28,7 @@ public class UserService {
 
     // email 회원가입
     public boolean createUserByEmail(User newUser){
+        newUser.setSns(0); // email 회원가입
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
         if(user == null){
             userRepository.save(newUser);
@@ -39,6 +40,7 @@ public class UserService {
 
     // 소셜 회원가입
     public boolean createUserBySocial(User newUser){
+        newUser.setSns(1); // 소셜 회원가입
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
         if(user != null){
             userRepository.save(newUser);
