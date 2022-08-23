@@ -22,7 +22,6 @@ public class SecurityConfiguration {
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
 
     private static final String[] GET_PERMIT_ALL_MATCHERS = {};
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
