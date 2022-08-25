@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 @RestController
 @AllArgsConstructor
 public class PostController {
+    private static final Long NO_USER = 0L;
     private final PostService postService;
 
     /**
@@ -113,10 +114,12 @@ public class PostController {
      * 로그인 상태일 때, 좋아요 exist 정보를 포함하여 조회
      * */
     @GetMapping("/board/{id}")
-    public SuccessDto readPost(@RequestHeader Long memberPk,@PathVariable Long id){
+    public SuccessDto readPost(@RequestHeader(required = false) Long memberPk,@PathVariable Long id){
         PostDetailDto post;
-        // 로그인 상태
-        post = postService.viewPostDetailById(memberPk, id);
+        if(memberPk != null)
+            post = postService.viewPostDetailById(memberPk, id);
+        else
+            post = postService.viewPostDetailById(NO_USER, id);
         // 비로그인 상태
 
         PostDetail postDetail = new PostDetail(post);

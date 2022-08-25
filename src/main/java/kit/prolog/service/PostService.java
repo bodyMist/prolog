@@ -217,7 +217,6 @@ public class PostService {
         int likeCount = likeRepository.countByPost_Id(postId);
 
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "time"));
-//        List<CommentLv1Dto> commentList = commentRepository.findByPostId(postId, userId, pageable);
 
         List<AttachmentDto> attachmentList = attachmentRepository.findByPost_Id(postId);
         List<String> tagList = new ArrayList<>();
