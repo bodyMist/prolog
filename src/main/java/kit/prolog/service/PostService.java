@@ -246,7 +246,6 @@ public class PostService {
             like.setExist(exist);
         }
         postDetailDto.setLikeDto(like);
-//        postDetailDto.setComments(commentList);
         postDetailDto.setAttachmentDto(attachmentList);
         postDetailDto.setTags(tagList);
         postDetailDto.setLayoutDto(new ArrayList<>(layoutId.values()));
