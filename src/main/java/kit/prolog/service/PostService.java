@@ -67,10 +67,12 @@ public class PostService {
     /**
     * 레이아웃 리스트 조회 API
     * 매개변수 : moldId(레이아웃 틀 pk)
-    * 반환 : List<LayoutDto>
+    * 반환 : MoldWithLayoutsDto (레이아웃 틀과 하위 레이아웃들을 포함한 레이아웃 틀)
     * */
-    public List<LayoutDto> viewLayoutsByMold(Long moldId){
-        return layoutRepository.findLayoutDtoByMold_Id(moldId);
+    public MoldWithLayoutsDto viewLayoutsByMold(Long moldId){
+        Mold mold = moldRepository.findById(moldId).get();
+        List<LayoutDto> layoutDtos = layoutRepository.findLayoutDtoByMold_Id(moldId);
+        return new MoldWithLayoutsDto(mold, layoutDtos);
     }
 
     /**

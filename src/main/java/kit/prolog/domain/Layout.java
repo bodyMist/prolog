@@ -26,7 +26,7 @@ public class Layout {
     private Double height;
     private String explanation;
 
-    @Column(name = "dtype", insertable = false, updatable = false)
+    @Column(name = "dtype")
     protected Integer dtype;
 
     @ManyToOne(fetch = FetchType.LAZY)

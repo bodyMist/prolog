@@ -1,11 +1,13 @@
 package kit.prolog.domain;
 
+import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+@Data
 @Entity(name = "MOLDS")
 @NoArgsConstructor
 public class Mold {

@@ -37,7 +37,7 @@ public class PostController {
      * */
     @GetMapping("/layouts/{id}")
     public SuccessDto readLayouts(@PathVariable Long id){
-        List<LayoutDto> layoutDtos = postService.viewLayoutsByMold(id);
+        MoldWithLayoutsDto layoutDtos = postService.viewLayoutsByMold(id);
         return new SuccessDto(true, layoutDtos);
     }
 
