@@ -71,7 +71,7 @@ public class UserService {
             if(user != null){
                 user.setName(modifiedUser.getName());
                 user.setImage(modifiedUser.getImage());
-                user.setIntroduce(modifiedUser.getIntroduction());
+                user.setIntroduce(modifiedUser.getIntroduce());
                 user.setNickname(modifiedUser.getNickname());
                 user.setAlarm(modifiedUser.isAlarm());
                 userRepository.save(user);
@@ -134,6 +134,12 @@ public class UserService {
             System.out.println("Error : no user");
             return null;
         }
+    }
+
+    // userId 찾기
+    public Long searchUserId(String account, String email){
+        User user = userRepository.findOneByAccountAndEmail(account, email);
+        return user.getId();
     }
 
     // 아이디 찾기

@@ -7,5 +7,5 @@ import lombok.ToString;
 @ToString
 public class UserEmailAuthNumber {
     private String email;
-    private int authNumber;
+    private String emailAuthNumber;
 }

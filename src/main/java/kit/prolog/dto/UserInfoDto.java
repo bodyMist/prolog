@@ -2,9 +2,11 @@ package kit.prolog.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
+@Setter
 @ToString
 @AllArgsConstructor
 public class UserInfoDto {
@@ -15,5 +17,5 @@ public class UserInfoDto {
     private boolean alarm;
     private String image;
     private String nickname;
-    private String introduction;
+    private String introduce;
 }
