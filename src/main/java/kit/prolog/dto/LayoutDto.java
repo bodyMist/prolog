@@ -1,7 +1,6 @@
 package kit.prolog.dto;
 
 import kit.prolog.domain.Layout;
-import kit.prolog.enums.CodeType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -70,14 +69,14 @@ public class LayoutDto {
 
     // 카테고리 하위 게시글 조회 - QueryDSL
     public LayoutDto(Integer dtype, Double width, Double height, String explanation, String content,
-                     String code, String codeExplanation, CodeType codeType, String url1){
+                     String code, String codeExplanation, String codeType, String url1){
         this.dtype = dtype;
         this.width = width;
         this.height = height;
         this.explanation = explanation;
         this.content = content;
         if (code != null) {
-            this.codes = List.of(code, codeExplanation, codeType.toString());
+            this.codes = List.of(code, codeExplanation, codeType);
         }
         if (url1 != null) {
             this.url.add(url1);
@@ -101,7 +100,7 @@ public class LayoutDto {
 
     // 게시글 상세조회 API
     public LayoutDto(Layout layout, String context, String code,
-                     String codeExplanation, CodeType codeType, String url, Boolean main){
+                     String codeExplanation, String codeType, String url, Boolean main){
         this.id = layout.getId();
         this.dtype = layout.getDtype();
         this.coordinateX = layout.getCoordinateX();
@@ -113,7 +112,7 @@ public class LayoutDto {
         this.leader = main;
 
         if (code != null) {
-            this.codes = List.of(code, codeExplanation, codeType.toString());
+            this.codes = List.of(code, codeExplanation, codeType);
         }
         if (url != null) {
             this.url.add(url);
