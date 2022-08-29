@@ -30,8 +30,8 @@ public class PostController {
                         .stream().map(LayoutDto::new)
                         .collect(Collectors.toList());
         String moldName = json.get("moldName") == null ? "" : json.get("moldName").toString();
-        List<LayoutDto> layoutDtos = postService.saveLayouts(memberPk, layouts, moldName);
-        return new SuccessDto(true, layoutDtos);
+        MoldWithLayoutsDto moldWithLayoutsDto = postService.saveLayouts(memberPk, layouts, moldName);
+        return new SuccessDto(true, moldWithLayoutsDto);
     }
     /**
      * 레이아웃 리스트 조회 API
@@ -72,8 +72,8 @@ public class PostController {
                 .stream().map(LayoutDto::new).collect(Collectors.toList());
 
         // optional
-        Long moldId = json.get("moldId") == null
-                ? null : Long.parseLong(json.get("moldId").toString());
+        Long moldId = json.get("layoutID") == null
+                ? null : Long.parseLong(json.get("layoutID").toString());
         List<String> tags = new ArrayList<>();
         if( json.get("tag") != null){
             ((List<String>) json.get("tag")).forEach(tags::add);
@@ -91,9 +91,9 @@ public class PostController {
         if (!tags.isEmpty())
             params.put("tags", tags);
 
-        postService.writePost(memberPk, title, layoutDtos, categoryId, params);
+        Long writePost = postService.writePost(memberPk, title, layoutDtos, categoryId, params);
 
-        return new SuccessDto(true);
+        return new SuccessDto(true, writePost);
     }
 
     /**

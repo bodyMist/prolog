@@ -11,6 +11,10 @@ public class MoldWithLayoutsDto {
     private String title;
     private List<LayoutDto> layouts;
 
+    public MoldWithLayoutsDto(List<LayoutDto> layouts) {
+        this.layouts = layouts;
+    }
+
     public MoldWithLayoutsDto(Mold mold, List<LayoutDto> layouts) {
         this.layoutId = mold.getId();
         this.title = mold.getName();

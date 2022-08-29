@@ -2,7 +2,6 @@ package kit.prolog.service;
 
 import kit.prolog.domain.*;
 import kit.prolog.dto.*;
-import kit.prolog.enums.CodeType;
 import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
@@ -50,17 +49,23 @@ public class PostService {
      * update문은 spring jpa save로 사용.
      * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
      * */
-    public List<LayoutDto> saveLayouts(Long userId, List<LayoutDto> layoutData, String moldName){
+    public MoldWithLayoutsDto saveLayouts(Long userId, List<LayoutDto> layoutData, String moldName){
         Mold savedMold = null;
         if (!moldName.isEmpty()) {
             savedMold = moldRepository.save(new Mold(moldName, new User(userId)));
         }
-        List<Layout> savedLayouts = layoutData.stream().map(Layout::new).collect(Collectors.toList());
+        List<Layout> layouts = layoutData.stream().map(Layout::new).collect(Collectors.toList());
         if (savedMold != null) {
             Mold finalSavedMold = savedMold;
-            savedLayouts.forEach(layout -> layout.setMold(finalSavedMold));
+            layouts.forEach(layout -> layout.setMold(finalSavedMold));
         }
-        List<LayoutDto> result = layoutRepository.saveAll(savedLayouts).stream().map(LayoutDto::new).collect(Collectors.toList());
+        List<LayoutDto> savedLayouts = layoutRepository.saveAll(layouts).stream().map(LayoutDto::new).collect(Collectors.toList());
+
+        MoldWithLayoutsDto result = new MoldWithLayoutsDto(savedLayouts);
+        if (savedMold != null) {
+            result.setLayoutId(savedMold.getId());
+            result.setTitle(savedMold.getName());
+        }
         return result;
     }
 
@@ -118,6 +123,7 @@ public class PostService {
     public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
                           HashMap<String, Object> param){
+        log.info("게시글 작성 API");
         Optional<Mold> mold;
 
         Optional<User> user = userRepository.findById(userId);
@@ -133,6 +139,12 @@ public class PostService {
 
         layoutDtos.forEach(layoutDto -> {
             layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                layout.setExplanation(layoutDto.getExplanation());
+                layout.setCoordinateX(layoutDto.getCoordinateX());
+                layout.setCoordinateY(layoutDto.getCoordinateY());
+                layout.setWidth(layoutDto.getWidth());
+                layout.setHeight(layoutDto.getHeight());
+
                 LayoutType layoutType = LayoutType.values()[layout.getDtype()];
 
                 List<Context> contextList = new ArrayList<>();
@@ -151,7 +163,7 @@ public class PostService {
                         List<String> codes = layoutDto.getCodes();
                         context.setCode(codes.get(0));
                         context.setCodeExplanation(codes.get(1));
-                        context.setCodeType(CodeType.valueOf(codes.get(2)));
+                        context.setCodeType(codes.get(2));
                         break;
                     case HYPERLINK:
                     case VIDEOS:
@@ -159,7 +171,7 @@ public class PostService {
                         context.setUrl(layoutDto.getContent());
                         break;
                 }
-
+                layoutRepository.save(layout);
                 if(contextList.isEmpty()){
                     contextRepository.save(context);
                 }else{
@@ -197,6 +209,7 @@ public class PostService {
     * 반환 : List<PostPreviewDto>
     * */
     public List<PostPreviewDto> viewPostsByCategory(String account, String categoryName, int cursor){
+        log.info("특정 카테고리 게시글 조회 API");
         return postRepository.findPostByCategoryName(account, categoryName, cursor);
     }
 
@@ -212,6 +225,7 @@ public class PostService {
     * Spring JPA : 댓글, 좋아요 , 첨부파일(리스트), 태그(리스트), 레이아웃(리스트)는 별도 쿼리로 조회하여 전달
     * */
     public PostDetailDto viewPostDetailById(Long userId, Long postId){
+        log.info("게시글 상세조회 API");
         PostDetailDto postDetailDto = postRepository.findPostById(postId);
         boolean exist;
         int likeCount = likeRepository.countByPost_Id(postId);
@@ -295,7 +309,7 @@ public class PostService {
                         List<String> codes = layoutDto.getCodes();
                         context.setCode(codes.get(0));
                         context.setCodeExplanation(codes.get(1));
-                        context.setCodeType(CodeType.valueOf(codes.get(2)));
+                        context.setCodeType(codes.get(2));
                         break;
                     case HYPERLINK:
                     case VIDEOS:
