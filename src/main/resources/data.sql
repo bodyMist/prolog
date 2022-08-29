@@ -12,6 +12,10 @@ INSERT INTO categories(name, user_user_id) VALUES ('개발용', 1);
 INSERT INTO categories(name, user_user_id) VALUES ('취미용', 1);
 INSERT INTO categories(name, user_user_id) VALUES ('전시용', 1);
 
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('React', 1, 1);
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('Game', 1, 2);
+INSERT INTO categories(name, user_user_id, upper_id) VALUES ('워크숍', 1, 3);
+
 # 레이아웃틀 3
 INSERT INTO molds(name, user_user_id) VALUES ('기본 틀', 1);
 INSERT INTO molds(name, user_user_id) VALUES ('복합 틀', 1);
