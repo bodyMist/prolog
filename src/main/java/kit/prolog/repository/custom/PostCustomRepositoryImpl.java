@@ -187,7 +187,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user))
-                .innerJoin(like).on(post.eq(like.post))
+                .leftJoin(like).on(post.eq(like.post))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
