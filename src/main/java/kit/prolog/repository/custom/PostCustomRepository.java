@@ -16,4 +16,5 @@ public interface PostCustomRepository {
     List<PostPreviewDto> findLikePostByUserId(String account, int cursor);
     List<PostPreviewDto> findHottestPosts(int cursor);
     List<PostPreviewDto> findRecentPosts(int cursor);
+    List<PostPreviewDto> searchPosts(String keyword, int cursor);
 }

@@ -201,6 +201,32 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         return previewDtos;
     }
 
+    @Override
+    public List<PostPreviewDto> searchPosts(String keyword, int cursor) {
+        // 1번안) 제목검색, 내용검색 따로 둬서 사용하기
+        List<PostPreviewDto> previewDtos = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image, like.count())
+        )
+                .from(post)
+                .innerJoin(user).on(post.user.eq(user))
+                .innerJoin(context).on(post.id.eq(context.post.id))
+                .innerJoin(like).on(post.eq(like.post))
+                .where(lowerThanCursor(cursor))
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .limit(PAGE_SIZE)
+                .fetch();
+        previewDtos.forEach(post -> {
+                    List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
+                    post.setLayoutDto(layoutContext);
+                }
+        );
+
+       return previewDtos;
+    }
+
     private JPQLQuery<LayoutDto> selectMainContext(Long postId){
         return query.select(
                         Projections.constructor(LayoutDto.class,

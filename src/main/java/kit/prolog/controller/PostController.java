@@ -248,6 +248,15 @@ public class PostController {
         return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
     }
 
+    /**
+     * 검색 기능 API
+     * */
+    @GetMapping("/search")
+    public SuccessDto searchPosts(@RequestParam String keyword, @RequestParam int page){
+        List<PostPreviewDto> searchPosts = postService.searchPosts(keyword, page);
+        List<PostPreview> post = changeResponseType(searchPosts);
+        return new SuccessDto(true, post);
+    }
 
     /**
      * Inner Class For Response
@@ -285,6 +294,7 @@ public class PostController {
         private String member;
         private String memberImage;
         private Integer likes;
+        private Integer hits;
         private MainLayout mainLayout;
 
         PostPreview(PostPreviewDto dto){
@@ -294,6 +304,7 @@ public class PostController {
             this.member = dto.getUserDto().getName();
             this.memberImage = dto.getUserDto().getImage();
             this.likes = dto.getLikes();
+            this.hits = dto.getHits().intValue();
             this.mainLayout = new MainLayout(dto.getLayoutDto());
         }
     }

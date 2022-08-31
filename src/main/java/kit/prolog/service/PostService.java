@@ -440,4 +440,13 @@ public class PostService {
     public List<PostPreviewDto> getRecentPostList(int cursor){
         return postRepository.findRecentPosts(cursor);
     }
+
+    /**
+     * 게시글 검색 API
+     * 매개변수 : keyword(검색 키워드), cursor(페이지 번호)
+     * 반환 : List<PostPreviewDto>
+     * */
+    public List<PostPreviewDto> searchPosts(String keyword, int cursor){
+        return postRepository.searchPosts(keyword, cursor);
+    }
 }
