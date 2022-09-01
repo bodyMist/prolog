@@ -228,8 +228,8 @@ public class PostController {
      * 메인화면
      * */
     @GetMapping("/")
-    public SuccessDto readHottestPosts(@RequestParam int page, @RequestParam int size){
-        List<PostPreviewDto> hottestPosts = postService.getHottestPostList(page, size);
+    public SuccessDto readHottestPosts(@RequestParam int last){
+        List<PostPreviewDto> hottestPosts = postService.getHottestPostList(last);
         List<PostPreview> post = changeResponseType(hottestPosts);
         return new SuccessDto(true, post);
     }
@@ -244,18 +244,18 @@ public class PostController {
         return new SuccessDto(true, post);
     }
 
-    private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){
-        return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
-    }
-
     /**
      * 검색 기능 API
      * */
     @GetMapping("/search")
-    public SuccessDto searchPosts(@RequestParam String keyword, @RequestParam int page){
-        List<PostPreviewDto> searchPosts = postService.searchPosts(keyword, page);
+    public SuccessDto searchPosts(@RequestParam String keyword, @RequestParam int last){
+        List<PostPreviewDto> searchPosts = postService.searchPosts(keyword, last);
         List<PostPreview> post = changeResponseType(searchPosts);
         return new SuccessDto(true, post);
+    }
+
+    private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){
+        return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
     }
 
     /**
@@ -303,7 +303,7 @@ public class PostController {
             this.written = dto.getPostDto().getTime();
             this.member = dto.getUserDto().getName();
             this.memberImage = dto.getUserDto().getImage();
-            this.likes = dto.getLikes();
+            this.likes = dto.getLikes().intValue();
             this.hits = dto.getHits().intValue();
             this.mainLayout = new MainLayout(dto.getLayoutDto());
         }
