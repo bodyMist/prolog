@@ -410,6 +410,7 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getMyPostList(String account, int cursor){
+        log.info("내가 쓴 게시글 목록 조회");
         return postRepository.findMyPostByUserId(account, cursor);
     }
 
@@ -419,6 +420,7 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getLikePostList(String account, int cursor){
+        log.info("좋아요 한 게시글 목록 조회");
         return postRepository.findLikePostByUserId(account, cursor);
     }
 
@@ -428,8 +430,9 @@ public class PostService {
      * 매개변수 : cursor(페이지 번호)
      * 반환 : List<PostPreviewDto>
      * */
-    public List<PostPreviewDto> getHottestPostList(int page, int size){
-        return postRepository.findHottestPosts(page);
+    public List<PostPreviewDto> getHottestPostList(int cursor){
+        log.info("전체 게시글 목록 조회");
+        return postRepository.findHottestPosts(cursor);
     }
 
     /**
@@ -438,6 +441,7 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getRecentPostList(int cursor){
+        log.info("최근 게시글 목록 조회");
         return postRepository.findRecentPosts(cursor);
     }
 
