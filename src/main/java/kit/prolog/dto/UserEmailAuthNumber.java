@@ -1,11 +1,15 @@
 package kit.prolog.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
+@Setter
 @ToString
+@AllArgsConstructor
 public class UserEmailAuthNumber {
     private String email;
-    private int authNumber;
+    private String emailAuthNumber;
 }

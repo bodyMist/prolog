@@ -65,7 +65,7 @@ public class GithubAuthService {
         return accessToken;
     }
 
-    public void createGithubUser(String access_token) throws IOException {
+    public String getGithubUserKey(String access_token) throws IOException {
         URL url = new URL("https://api.github.com/user");
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -86,22 +86,9 @@ public class GithubAuthService {
             result += line;
         }
         System.out.println("response body : " + result);
-    }
 
-    private String getResponse(HttpURLConnection conn, int responseCode) throws IOException {
-        StringBuilder sb = new StringBuilder();
-        if (responseCode == 200) {
-            try (InputStream is = conn.getInputStream();
-                 BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
-                for (String line = br.readLine(); line != null; line = br.readLine()) {
-                    sb.append(line);
-                }
-            }
-        }
-        return sb.toString();
-    }
-
-    public void createKakaoUser(String token) {
-
+        JSONObject jObject = new JSONObject(result);
+        int socialKey = jObject.getInt("id");
+        return String.valueOf(socialKey);
     }
 }

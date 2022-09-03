@@ -10,7 +10,7 @@ import org.springframework.data.redis.core.index.Indexed;
 
 @Getter
 @Setter
-@RedisHash("jwtAtuhToken")
+@RedisHash("jwtAuthToken")
 @AllArgsConstructor
 public class JwtAuthToken {
     @Id @Indexed
@@ -18,7 +18,7 @@ public class JwtAuthToken {
     @Indexed
     private String accessToken;
     @Indexed
-    String refreshToken;
+    private String refreshToken;
     @TimeToLive
     private Long expiration;
 }

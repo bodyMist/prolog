@@ -1,10 +1,11 @@
 package kit.prolog.dto;
 
-import lombok.Getter;
-import lombok.ToString;
+import lombok.*;
 
 @Getter
-@ToString
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserEmailDto {
     private String email;
 }

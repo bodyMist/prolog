@@ -17,8 +17,8 @@ import java.net.URL;
 public class KakaoAuthService {
     public String getKaKaoAccessToken(String code) {
         String accessToken = "";
-        String refreshToken = "";
         String reqURL = "https://kauth.kakao.com/oauth/token";
+        String client_id = "ac1a0ec2e424c32d5baa95bf6114d8b0"; //프론트에서 호출한 uri와 동일하게
         try {
             URL url = new URL(reqURL);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -31,9 +31,10 @@ public class KakaoAuthService {
             BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
             StringBuilder sb = new StringBuilder();
             sb.append("grant_type=authorization_code");
-            sb.append("&client_id=ac1a0ec2e424c32d5baa95bf6114d8b0"); // TODO REST_API_KEY 입력
-            sb.append("&redirect_uri=http://127.0.0.1:8080/login/kakao"); // TODO 인가코드 받은 redirect_uri 입력
-            sb.append("&code=" + code);
+            sb.append("&client_id=");
+            sb.append(client_id); // TODO REST_API_KEY 입력
+            sb.append("&code=");
+            sb.append(code);
             bw.write(sb.toString());
             bw.flush();
 
@@ -55,10 +56,8 @@ public class KakaoAuthService {
 
             JSONObject jObject = new JSONObject(result);
             accessToken = jObject.get("access_token").toString();
-            refreshToken = jObject.get("refresh_token").toString();
 
             System.out.println("access_token : " + accessToken);
-            System.out.println("refresh_token : " + refreshToken);
 
             br.close();
             bw.close();
@@ -69,7 +68,7 @@ public class KakaoAuthService {
         return accessToken;
     }
 
-    public String createKakaoUser(String token) {
+    public String getKakaoUserKey(String token) {
 
         String reqURL = "https://kapi.kakao.com/v1/oidc/userinfo";
 
@@ -99,39 +98,14 @@ public class KakaoAuthService {
 
 
             JSONObject jObject = new JSONObject(result);
-            String email = jObject.getString("email");
             String sub = jObject.getString("sub");
-            Boolean verified = jObject.getBoolean("email_verified");
 
             br.close();
 
-            if(verified){
-                return email;
-            }else{
-                return null;
-            }
+            return sub;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    public void logout(String token) {
-        String reqURL = "https://kapi.kakao.com/v1/user/logout";
-
-        try {
-            URL url = new URL(reqURL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Authorization", "Bearer " + token); //전송할 header 작성, access_token전송
-
-            //결과 코드가 200이라면 성공
-            int responseCode = conn.getResponseCode();
-            System.out.println("responseCode : " + responseCode);
-
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 }

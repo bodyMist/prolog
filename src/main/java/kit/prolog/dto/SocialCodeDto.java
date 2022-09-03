@@ -2,20 +2,18 @@ package kit.prolog.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
+
 
 @Getter
 @Setter
-@ToString
 @AllArgsConstructor
-public class UserInfoDto {
-    private String name;
+@NoArgsConstructor
+public class SocialCodeDto {
+    private String code;
     private String account;
     private String password;
+    private String name;
     private String email;
-    private boolean alarm;
-    private String image;
-    private String nickname;
-    private String introduce;
 }

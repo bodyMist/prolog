@@ -21,6 +21,7 @@ import java.io.IOException;
 @Slf4j
 @RestController
 @AllArgsConstructor
+@CrossOrigin(origins = "*")
 public class UserController {
     private final UserService userService;
     private final RedisService redisService;
@@ -28,11 +29,6 @@ public class UserController {
     private final KakaoAuthService kakaoAuthService;
     private final GithubAuthService githubAuthService;
     private final JwtService jwtService;
-
-    @GetMapping("/test")
-    public String test(){
-        return "test";
-    }
 
     @PostMapping("/signup/email")
     public SuccessDto createUserByEmail(@RequestBody UserInfoDto userInfoDto){
@@ -44,7 +40,7 @@ public class UserController {
         user.setAlarm(userInfoDto.isAlarm());
         user.setImage(userInfoDto.getImage());
         user.setNickname(userInfoDto.getNickname());
-        user.setIntroduce(userInfoDto.getIntroduction());
+        user.setIntroduce(userInfoDto.getIntroduce());
         user.setSns(0); // sns { 0번 : email, 1번 : kakao로그인 2번 : github }
 
         if(userService.createUserByEmail(user)){
@@ -54,41 +50,60 @@ public class UserController {
         }
     }
 
-    @GetMapping("/signup/{social}")
-    public SuccessDto createUserBySocial(@PathVariable String social){
-        return new SuccessDto(true, social);
+    @PostMapping("/signup/{social}")
+    public ResponseEntity<SuccessDto> createUserBySocial(
+            @PathVariable("social") String socialType,
+            @RequestBody UserInfoDto userInfoDto){
+        User user = new User();
+        user.setName(userInfoDto.getName());
+        user.setAccount(userInfoDto.getAccount());
+        user.setPassword(userInfoDto.getPassword());
+        user.setEmail(userInfoDto.getEmail());
+        user.setAlarm(false);
+        user.setImage("");
+        user.setNickname("");
+        user.setIntroduce("");
+
+        // sns { 0번 : email, 1번 : kakao로그인, 2번 : github }
+        if(socialType.equals("kakao")){
+            user.setSns(1);
+        }else if(socialType.equals("github")){
+            user.setSns(2);
+        }else{
+            return ResponseEntity.ok().body(new SuccessDto(false, "url error"));
+        }
+
+        if(userService.createUserBySocial(user)){
+            Long userId = userService.searchUserId(userInfoDto.getAccount(), userInfoDto.getEmail());
+            return ResponseEntity.ok().body(new SuccessDto(true, userId));
+        }else{
+            return ResponseEntity.ok().body(new SuccessDto(false, "signup fail"));
+        }
     }
 
-     //memberpk로 유저 정보 검색
-     //readUser()
-     //검색된 유저 정보 반환
     @GetMapping("/my-info")
-    public SuccessDto readUser(
-            @RequestHeader(value = "accessToken") String accessToken,
-            @RequestHeader(value = "refreshToken") String refreshToken){
+    public ResponseEntity<SuccessDto> readUser(
+            @RequestHeader(value = "X-AUTH-TOKEN") String accessToken){
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
             User user = userService.readUser(Long.parseLong(userId));
             if(user.getId() != 0){
-                return new SuccessDto(true,
-                        new UserInfoDto(
-                                user.getName(),
-                                user.getAccount(),
-                                user.getPassword(),
-                                user.getEmail(),
-                                user.getAlarm(),
-                                user.getImage(),
-                                user.getNickname(),
-                                user.getIntroduce()));
+                return new ResponseEntity<SuccessDto>(
+                        new SuccessDto(true, new UserInfoDto(
+                        user.getName(),
+                        user.getAccount(),
+                        user.getPassword(),
+                        user.getEmail(),
+                        user.getAlarm(),
+                        user.getImage(),
+                        user.getNickname(),
+                        user.getIntroduce())),HttpStatus.OK);
             }else{
-                return new SuccessDto(false, null);
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user read error"), HttpStatus.OK);
             }
-        }else if(jwtService.validateToken(refreshToken)){
-            // jwt accessToken 인증시간 초과
-            return new SuccessDto(false, "access toekn invalid");
         }else{
-            // jwt accessToken, jwt refreshToken 인증시간 초과
-            return new SuccessDto(false, "access toekn & refresh token invalid");
+            // jwt accessToken 인증시간 초과
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
         }
     }
 
@@ -97,67 +112,64 @@ public class UserController {
     //deleteUser()
     //삭제된 유저 정보 반환
     @GetMapping("/memberout")
-    public SuccessDto deleteUser(
-            @RequestHeader(value = "accessToken") String accessToken,
-            @RequestHeader(value = "refreshToken") String refreshToken){
+    public ResponseEntity<SuccessDto> deleteUser(
+            @RequestHeader(value = "X-AUTH-TOKEN") String accessToken){
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
             User user = userService.readUser(Long.parseLong(userId));
             if(user.getId() != 0){
                 userService.deleteUser(Long.parseLong(userId));
-                return new SuccessDto(true, user.getId());
+                UserInfoDto userInfoDto = new UserInfoDto(
+                        user.getName(),
+                        user.getAccount(),
+                        user.getPassword(),
+                        user.getEmail(),
+                        user.getAlarm(),
+                        user.getImage(),
+                        user.getNickname(),
+                        user.getIntroduce());
+                return new ResponseEntity<SuccessDto>(new SuccessDto(true, userInfoDto), HttpStatus.OK);
             }else{
-                return new SuccessDto(false, null);
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user delete error"), HttpStatus.OK);
             }
-        }else if(jwtService.validateToken(refreshToken)){
-            // jwt accessToken 인증시간 초과
-            return new SuccessDto(false, "access toekn invalid");
         }else{
             // jwt accessToken, jwt refreshToken 인증시간 초과
-            return new SuccessDto(false, "access toekn & refresh token invalid");
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
         }
     }
 
 
     @PutMapping("/my-info-update")
-    public SuccessDto updateUser(
-            @RequestHeader(value = "accessToken") String accessToken,
-            @RequestHeader(value = "refreshToken") String refreshToken,
+    public ResponseEntity<SuccessDto> updateUser(
+            @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
             @RequestBody UserInfoDto userInfoDto){
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
-            User user = userService.readUser(Long.parseLong(userId));
             if(userService.updateUser(Long.parseLong(userId), userInfoDto)){
-                return new SuccessDto(true, null);
+                return new ResponseEntity<SuccessDto>(new SuccessDto(true, "update success"), HttpStatus.OK);
             }else{
-                return new SuccessDto(false, null);
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "update error"), HttpStatus.OK);
             }
-        }else if(jwtService.validateToken(refreshToken)){
-            // jwt accessToken 인증시간 초과
-            return new SuccessDto(false, "access toekn invalid");
         }else{
             // jwt accessToken, jwt refreshToken 인증시간 초과
-            return new SuccessDto(false, "access toekn & refresh token invalid");
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "update error"), HttpStatus.valueOf(403));
+
         }
     }
 
     @PostMapping("/updatepw")
-    public SuccessDto changePassword(
-            @RequestHeader(value = "accessToken") String accessToken,
-            @RequestHeader(value = "refreshToken") String refreshToken,
+    public ResponseEntity<SuccessDto> changePassword(
+            @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
             @RequestBody UserPwChangeDto userPwChangeDto){
         if(jwtService.validateToken(accessToken)){
             if(userService.changePassword(userPwChangeDto.getEmail(), userPwChangeDto.getAccount(), userPwChangeDto.getPassword())){
-                return new SuccessDto(true, null);
+                return new ResponseEntity<SuccessDto>(new SuccessDto(true, "password update success"), HttpStatus.OK);
             }else {
-                return new SuccessDto(false, null);
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "password update error"), HttpStatus.OK);
             }
-        }else if(jwtService.validateToken(refreshToken)){
-            // jwt accessToken 인증시간 초과
-            return new SuccessDto(false, "access toekn invalid");
         }else{
             // jwt accessToken, jwt refreshToken 인증시간 초과
-            return new SuccessDto(false, "access toekn & refresh token invalid");
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
         }
     }
 
@@ -169,13 +181,14 @@ public class UserController {
             String accessToken = jwtService.createAccessToken(String.valueOf(user.getId()));
             String refreshToken = jwtService.createRefreshToken(String.valueOf(user.getId()));
             redisService.createJwtAuthToken(new JwtAuthToken(user.getId(), accessToken, refreshToken, null));
-            headers.set("accessToken", accessToken);
-            headers.set("refreshToken", refreshToken);
-            return new ResponseEntity<SuccessDto>(new SuccessDto(true, user.getId()), headers, HttpStatus.valueOf(200));
+            headers.set("userId", String.valueOf(user.getId()));
+            headers.set("X-AUTH-TOKEN", refreshToken);
+            return ResponseEntity.ok().headers(headers).body(new SuccessDto(true, "login success"));
         }else {
-            return new ResponseEntity<SuccessDto>(new SuccessDto(false, null), null, HttpStatus.valueOf(401));
+            return ResponseEntity.ok().body(new SuccessDto(false, "login fail"));
         }
     }
+
     //kakao 인증 url
     //https://kauth.kakao.com/oauth/authorize?response_type=code&client_id=ac1a0ec2e424c32d5baa95bf6114d8b0&redirect_uri=http://127.0.0.1:8080/login/kakao&scope=account_email,openid
 
@@ -185,41 +198,24 @@ public class UserController {
     public SuccessDto loginByKakao(@RequestParam String code) {
         // 인가코드 받기
         String accessToken = kakaoAuthService.getKaKaoAccessToken(code);
-        String email = kakaoAuthService.createKakaoUser(accessToken);
-        if(email != null){
-            User user = new User();
-            user.setName("2391519776");
-            user.setEmail(email);
-            user.setAccount(email);
-            user.setPassword("test");
-            user.setAlarm(false);
-            user.setSns(1);
-            if(userService.createUserByEmail(user)){
-                return new SuccessDto(true, null);
-            }else{
-                return new SuccessDto(false, null);
-            }
+        String socialKey = kakaoAuthService.getKakaoUserKey(accessToken);
+        if(socialKey != null){
+            return new SuccessDto(true, socialKey);
         }else{
-            return new SuccessDto(false, null);
+            return new SuccessDto(false, "kakao login error");
         }
     }
 
     @GetMapping("/login/github")
     public SuccessDto loginByGithub(@RequestParam String code) throws IOException {
-        System.out.println(code);
+        // 인가코드 받기
         String accessToken = githubAuthService.getGithubAccessToken(code);
-        System.out.println(accessToken);
-        githubAuthService.createGithubUser(accessToken);
-
-        // jwt 추가
-        return new SuccessDto(true, null);
-    }
-
-    @PostMapping("/logout/kakao")
-    public SuccessDto logout(){
-        kakaoAuthService.logout("kfjZQIYglUAx3_K81StmRphjS-1JauB_j2Gz1hBvCj11mwAAAYK-tsdY");
-
-        return new SuccessDto(true, null);
+        String socialKey = githubAuthService.getGithubUserKey(accessToken);
+        if(socialKey != null){
+            return new SuccessDto(true, socialKey);
+        }else{
+            return new SuccessDto(false, "github login error");
+        }
     }
 
     @PostMapping("/idauth")
@@ -234,27 +230,50 @@ public class UserController {
 
     @PostMapping("/email")
     public SuccessDto sendMail(@RequestBody UserEmailDto userEmailDto){
-        if(userService.searchAccount(userEmailDto.getEmail()) != null){
-            int emailAuthNumber = emailAuthService.sendMail(userEmailDto.getEmail());
-            if(redisService.createEmailAuthNumber(userEmailDto.getEmail(), emailAuthNumber)){
-                return new SuccessDto(true, null);
-            }else{
-                return new SuccessDto(false, null);
-            }
+        int emailAuthNumber = emailAuthService.sendMail(userEmailDto.getEmail());
+        if(redisService.createEmailAuthNumber(userEmailDto.getEmail(), String.valueOf(emailAuthNumber))){
+            return new SuccessDto(true, "mail send success");
         }else{
-            return new SuccessDto(false, null);
+            return new SuccessDto(false, "mail send error");
         }
     }
 
     @PostMapping("/email/auth")
     public SuccessDto emailAuth(@RequestBody UserEmailAuthNumber userEmailAuthNumber){
-        int authNumber = redisService.readEmailAuthNumber(userEmailAuthNumber.getEmail());
-        if(authNumber == 0){
-            return new SuccessDto(false, null);
-        } else if (authNumber == userEmailAuthNumber.getAuthNumber()) {
-            return new SuccessDto(true, null);
+        String emailAuthNumber = String.valueOf(redisService.readEmailAuthNumber(userEmailAuthNumber.getEmail()));
+        if (emailAuthNumber.equals(userEmailAuthNumber.getEmailAuthNumber())) {
+            return new SuccessDto(true, "email auth success");
         }else{
-            return new SuccessDto(false, null);
+            return new SuccessDto(false, "email auth error");
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<SuccessDto> logoutSocial(
+            @RequestHeader(value = "X-AUTH-TOKEN") String accessToken){
+        if(jwtService.validateToken(accessToken)){
+            String useId = jwtService.getUserPk(accessToken);
+            if(redisService.deleteJwtAuthToken(Long.parseLong(useId))){
+                return new ResponseEntity<SuccessDto>(new SuccessDto(true, "logout success"), HttpStatus.OK);
+            }else{
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "session error"), HttpStatus.OK);
+            }
+        }else{
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "logout error"), HttpStatus.valueOf(403));
+        }
+    }
+
+    @PostMapping("auth/refresh-token")
+    public ResponseEntity<SuccessDto> reissueAccessToken(@RequestHeader(value = "X-AUTH-TOKEN") String refreshToken){
+        if(jwtService.validateToken(refreshToken)){
+            HttpHeaders headers = new HttpHeaders();
+            String userId = jwtService.getUserPk(refreshToken);
+            String reissuedAccessToken = jwtService.createAccessToken(userId);
+            redisService.createJwtAuthToken(new JwtAuthToken(Long.parseLong(userId), reissuedAccessToken, refreshToken, null));
+            headers.set("X-AUTH-TOKEN", reissuedAccessToken);
+            return new ResponseEntity<SuccessDto>(new SuccessDto(true, "reissue success"), headers, HttpStatus.OK);
+        }else{
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "reissue error"), HttpStatus.valueOf(403));
         }
     }
 }

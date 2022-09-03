@@ -22,15 +22,15 @@ public class RedisService {
     @Autowired
     private JwtAuthTokenRepository jwtAuthTokenRepository;
 
-    public boolean createEmailAuthNumber(String email, int emailAuthNumber){
+    public boolean createEmailAuthNumber(String email, String emailAuthNumber){
         try{
             EmailAuthToken emailAuthToken = emailAuthTokenRedisRepository.findOneByEmail(email);
             if(emailAuthToken != null){
-                emailAuthToken.setEmailAuthNumber(emailAuthNumber);
+                emailAuthToken.setEmailAuthNumber(Integer.parseInt(emailAuthNumber));
                 emailAuthToken.setExpiration(180L);
                 emailAuthTokenRedisRepository.save(emailAuthToken);
             }else{
-                emailAuthTokenRedisRepository.save(new EmailAuthToken(email, emailAuthNumber, 180L));
+                emailAuthTokenRedisRepository.save(new EmailAuthToken(email, Integer.parseInt(emailAuthNumber), 180L));
             }
             return true;
         }catch (NullPointerException e){
@@ -80,6 +80,21 @@ public class RedisService {
         }catch (NullPointerException e){
             e.printStackTrace();
             return null;
+        }
+    }
+
+    public boolean deleteJwtAuthToken(Long userId){
+        try{
+            JwtAuthToken jwtAuthToken = jwtAuthTokenRepository.findOneById(userId);
+            if(jwtAuthToken != null){
+                jwtAuthTokenRepository.deleteById(userId);
+                return true;
+            }else{
+                return false;
+            }
+        }catch (NullPointerException e){
+            e.printStackTrace();
+            return false;
         }
     }
 }
