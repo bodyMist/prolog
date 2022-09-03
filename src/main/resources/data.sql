@@ -1,10 +1,10 @@
 # 사용자 1
-INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
-VALUES ('sky834459', 0, 'sky834459@gmail.com', '', '안냥하세요', '김태훈', '판교', '8344');
-INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
-VALUES ('IntegerIsNullable', 0, 'IntegerIsNullable@naver.com', '', '안냥하세요', '김정수', 'int', '0000');
-INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password)
-VALUES ('javaJesus', 0, 'javaJesus@gmail.com', '', '안냥하세요', '이자바', '객체지향만세', '1234');
+INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password, sns, social_key)
+VALUES ('sky834459', 0, 'sky834459@gmail.com', '', '안냥하세요', '김태훈', '판교', '8344', 0, null);
+INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password,  sns, social_key)
+VALUES ('IntegerIsNullable', 0, 'IntegerIsNullable@naver.com', '', '안냥하세요', '김정수', 'int', '0000', 0, null);
+INSERT INTO users(account, alarm, email, image, introduce, name, nickname, password,  sns, social_key)
+VALUES ('javaJesus', 0, 'javaJesus@gmail.com', '', '안냥하세요', '이자바', '객체지향만세', '1234',0, null);
 
 
 # 카테고리 3

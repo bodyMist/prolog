@@ -30,6 +30,7 @@ public class User {
     private String image;
     private String nickname;
     private String introduce;
+    private String social_key;
 
     @OneToMany(mappedBy = "user") // cascade = CascadeType.ALL,orphanRemoval = true
     private List<Like> likes = new ArrayList<>();

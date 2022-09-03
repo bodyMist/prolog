@@ -1,7 +1,7 @@
 package kit.prolog.service;
 
 import kit.prolog.domain.User;
-import kit.prolog.dto.UserInfoDto;
+import kit.prolog.dto.UserEmailInfoDto;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -65,7 +65,7 @@ public class UserService {
     }
 
     // 회원 정보 수정
-    public boolean updateUser(Long memberPk, UserInfoDto modifiedUser){
+    public boolean updateUser(Long memberPk, UserEmailInfoDto modifiedUser){
         User user = userRepository.findOneById(memberPk);
         try{
             if(user != null){
@@ -157,6 +157,20 @@ public class UserService {
             System.out.println("Error : no user");
             return account;
         }
+    }
+
+    // 소셜 key 찾기
+    public User searchSocialKey(Integer socialType, String newSocialKey){
+        User user = null;
+        try{
+            user = userRepository.findOneBySnsAndSocial_key(socialType, newSocialKey);
+            if(user != null){
+                return user;
+            }
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+        }
+        return user;
     }
 
     // 비밀번호 변경

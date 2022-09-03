@@ -16,8 +16,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
-
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -31,16 +29,16 @@ public class UserController {
     private final JwtService jwtService;
 
     @PostMapping("/signup/email")
-    public SuccessDto createUserByEmail(@RequestBody UserInfoDto userInfoDto){
+    public SuccessDto createUserByEmail(@RequestBody UserEmailInfoDto userEmailInfoDto){
         User user = new User();
-        user.setName(userInfoDto.getName());
-        user.setAccount(userInfoDto.getAccount());
-        user.setPassword(userInfoDto.getPassword());
-        user.setEmail(userInfoDto.getEmail());
-        user.setAlarm(userInfoDto.isAlarm());
-        user.setImage(userInfoDto.getImage());
-        user.setNickname(userInfoDto.getNickname());
-        user.setIntroduce(userInfoDto.getIntroduce());
+        user.setName(userEmailInfoDto.getName());
+        user.setAccount(userEmailInfoDto.getAccount());
+        user.setPassword(userEmailInfoDto.getPassword());
+        user.setEmail(userEmailInfoDto.getEmail());
+        user.setAlarm(userEmailInfoDto.isAlarm());
+        user.setImage(userEmailInfoDto.getImage());
+        user.setNickname(userEmailInfoDto.getNickname());
+        user.setIntroduce(userEmailInfoDto.getIntroduce());
         user.setSns(0); // sns { 0번 : email, 1번 : kakao로그인 2번 : github }
 
         if(userService.createUserByEmail(user)){
@@ -53,12 +51,12 @@ public class UserController {
     @PostMapping("/signup/{social}")
     public ResponseEntity<SuccessDto> createUserBySocial(
             @PathVariable("social") String socialType,
-            @RequestBody UserInfoDto userInfoDto){
+            @RequestBody UserSocialInfoDto userSocialInfoDto){
         User user = new User();
-        user.setName(userInfoDto.getName());
-        user.setAccount(userInfoDto.getAccount());
-        user.setPassword(userInfoDto.getPassword());
-        user.setEmail(userInfoDto.getEmail());
+        user.setName(userSocialInfoDto.getName());
+        user.setAccount(userSocialInfoDto.getAccount());
+        user.setPassword(userSocialInfoDto.getPassword());
+        user.setEmail(userSocialInfoDto.getEmail());
         user.setAlarm(false);
         user.setImage("");
         user.setNickname("");
@@ -74,7 +72,7 @@ public class UserController {
         }
 
         if(userService.createUserBySocial(user)){
-            Long userId = userService.searchUserId(userInfoDto.getAccount(), userInfoDto.getEmail());
+            Long userId = userService.searchUserId(userSocialInfoDto.getAccount(), userSocialInfoDto.getEmail());
             return ResponseEntity.ok().body(new SuccessDto(true, userId));
         }else{
             return ResponseEntity.ok().body(new SuccessDto(false, "signup fail"));
@@ -89,7 +87,7 @@ public class UserController {
             User user = userService.readUser(Long.parseLong(userId));
             if(user.getId() != 0){
                 return new ResponseEntity<SuccessDto>(
-                        new SuccessDto(true, new UserInfoDto(
+                        new SuccessDto(true, new UserEmailInfoDto(
                         user.getName(),
                         user.getAccount(),
                         user.getPassword(),
@@ -119,7 +117,7 @@ public class UserController {
             User user = userService.readUser(Long.parseLong(userId));
             if(user.getId() != 0){
                 userService.deleteUser(Long.parseLong(userId));
-                UserInfoDto userInfoDto = new UserInfoDto(
+                UserEmailInfoDto userEmailInfoDto = new UserEmailInfoDto(
                         user.getName(),
                         user.getAccount(),
                         user.getPassword(),
@@ -128,7 +126,7 @@ public class UserController {
                         user.getImage(),
                         user.getNickname(),
                         user.getIntroduce());
-                return new ResponseEntity<SuccessDto>(new SuccessDto(true, userInfoDto), HttpStatus.OK);
+                return new ResponseEntity<SuccessDto>(new SuccessDto(true, userEmailInfoDto), HttpStatus.OK);
             }else{
                 return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user delete error"), HttpStatus.OK);
             }
@@ -142,10 +140,10 @@ public class UserController {
     @PutMapping("/my-info-update")
     public ResponseEntity<SuccessDto> updateUser(
             @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-            @RequestBody UserInfoDto userInfoDto){
+            @RequestBody UserEmailInfoDto userEmailInfoDto){
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
-            if(userService.updateUser(Long.parseLong(userId), userInfoDto)){
+            if(userService.updateUser(Long.parseLong(userId), userEmailInfoDto)){
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, "update success"), HttpStatus.OK);
             }else{
                 return new ResponseEntity<SuccessDto>(new SuccessDto(false, "update error"), HttpStatus.OK);
@@ -194,28 +192,39 @@ public class UserController {
 
     //github 인증 url
     //https://github.com/login/oauth/authorize?client_id=0006efe23ef0c6ecb6c0&redirect_uri=http://localhost:8080/login/github
-    @GetMapping("/login/kakao")
-    public SuccessDto loginByKakao(@RequestParam String code) {
-        // 인가코드 받기
-        String accessToken = kakaoAuthService.getKaKaoAccessToken(code);
-        String socialKey = kakaoAuthService.getKakaoUserKey(accessToken);
-        if(socialKey != null){
-            return new SuccessDto(true, socialKey);
+    @GetMapping("/login/{social}")
+    public ResponseEntity<SuccessDto> loginByKakao(@PathVariable("social") String socialType, @RequestParam String code) {
+        String socailAccessToken = "";
+        String socialKey = "";
+        Integer sns = 0;
+        if(socialType.equals("kakao")){
+            socailAccessToken = kakaoAuthService.getKaKaoAccessToken(code); // 인가코드 받기
+            socialKey = kakaoAuthService.getKakaoUserKey(socailAccessToken); // accessToken 받기
+            sns = 1;
+        }else if(socialType.equals("github")) {
+            socailAccessToken = githubAuthService.getGithubAccessToken(code); // 인가코드 받기
+            socialKey = githubAuthService.getGithubAccessToken(socailAccessToken); // accessToken 받기
+            sns = 2;
         }else{
-            return new SuccessDto(false, "kakao login error");
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "social login url error"), HttpStatus.OK);
         }
-    }
 
-    @GetMapping("/login/github")
-    public SuccessDto loginByGithub(@RequestParam String code) throws IOException {
-        // 인가코드 받기
-        String accessToken = githubAuthService.getGithubAccessToken(code);
-        String socialKey = githubAuthService.getGithubUserKey(accessToken);
-        if(socialKey != null){
-            return new SuccessDto(true, socialKey);
+        User user = userService.searchSocialKey(sns, socialKey);
+
+        if(user != null){ // 로그인 유저 식별 id 확인 후 로그인 또는 회원가입 진행
+            // 이미 존재하는 socialKey
+            HttpHeaders headers = new HttpHeaders();
+            String accessToken = jwtService.createAccessToken(String.valueOf(user.getId()));
+            String refreshToken = jwtService.createRefreshToken(String.valueOf(user.getId()));
+            redisService.createJwtAuthToken(new JwtAuthToken(user.getId(), accessToken, refreshToken, null));
+            headers.set("userId", String.valueOf(user.getId()));
+            headers.set("X-AUTH-TOKEN", refreshToken);
+            return ResponseEntity.ok().headers(headers).body(new SuccessDto(true, "social login success"));
         }else{
-            return new SuccessDto(false, "github login error");
+            // 새로운 socialKey
+            return new ResponseEntity<SuccessDto>(new SuccessDto(true, socialKey), HttpStatus.OK);
         }
+
     }
 
     @PostMapping("/idauth")
