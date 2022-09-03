@@ -17,7 +17,6 @@ import java.net.URL;
 public class KakaoAuthService {
     public String getKaKaoAccessToken(String code) {
         String accessToken = "";
-        String refreshToken = "";
         String reqURL = "https://kauth.kakao.com/oauth/token";
         try {
             URL url = new URL(reqURL);
@@ -55,10 +54,8 @@ public class KakaoAuthService {
 
             JSONObject jObject = new JSONObject(result);
             accessToken = jObject.get("access_token").toString();
-            refreshToken = jObject.get("refresh_token").toString();
 
             System.out.println("access_token : " + accessToken);
-            System.out.println("refresh_token : " + refreshToken);
 
             br.close();
             bw.close();
@@ -69,7 +66,7 @@ public class KakaoAuthService {
         return accessToken;
     }
 
-    public String createKakaoUser(String token) {
+    public String getKakaoUserKey(String token) {
 
         String reqURL = "https://kapi.kakao.com/v1/oidc/userinfo";
 
@@ -99,17 +96,11 @@ public class KakaoAuthService {
 
 
             JSONObject jObject = new JSONObject(result);
-            String email = jObject.getString("email");
             String sub = jObject.getString("sub");
-            Boolean verified = jObject.getBoolean("email_verified");
 
             br.close();
 
-            if(verified){
-                return email;
-            }else{
-                return null;
-            }
+            return sub;
         } catch (IOException e) {
             e.printStackTrace();
             return null;
