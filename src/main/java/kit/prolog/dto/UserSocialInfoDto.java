@@ -9,7 +9,9 @@ import lombok.ToString;
 @Setter
 @ToString
 @AllArgsConstructor
-public class UserEmailAuthNumber {
+public class UserSocialInfoDto {
+    private String name;
+    private String account;
+    private String password;
     private String email;
-    private String emailAuthNumber;
 }
