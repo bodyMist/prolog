@@ -10,6 +10,7 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class UserSocialInfoDto {
+    private String social_key;
     private String name;
     private String account;
     private String password;

@@ -40,6 +40,7 @@ public class UserController {
         user.setNickname(userEmailInfoDto.getNickname());
         user.setIntroduce(userEmailInfoDto.getIntroduce());
         user.setSns(0); // sns { 0번 : email, 1번 : kakao로그인 2번 : github }
+        user.setSocial_key("");
 
         if(userService.createUserByEmail(user)){
             return new SuccessDto(true, null);
@@ -61,6 +62,7 @@ public class UserController {
         user.setImage("");
         user.setNickname("");
         user.setIntroduce("");
+        user.setSocial_key(userSocialInfoDto.getSocial_key());
 
         // sns { 0번 : email, 1번 : kakao로그인, 2번 : github }
         if(socialType.equals("kakao")){
@@ -224,7 +226,6 @@ public class UserController {
             // 새로운 socialKey
             return new ResponseEntity<SuccessDto>(new SuccessDto(true, socialKey), HttpStatus.OK);
         }
-
     }
 
     @PostMapping("/idauth")
