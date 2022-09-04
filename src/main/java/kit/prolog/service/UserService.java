@@ -40,9 +40,8 @@ public class UserService {
 
     // 소셜 회원가입
     public boolean createUserBySocial(User newUser){
-        newUser.setSns(1); // 소셜 회원가입
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
-        if(user != null){
+        if(user == null){
             userRepository.save(newUser);
             return true;
         }else{
@@ -163,7 +162,7 @@ public class UserService {
     public User searchSocialKey(Integer socialType, String newSocialKey){
         User user = null;
         try{
-            user = userRepository.findOneBySnsAndSocial_key(socialType, newSocialKey);
+            user = userRepository.findOneBySnsAndSocialKey(socialType, newSocialKey);
             if(user != null){
                 return user;
             }

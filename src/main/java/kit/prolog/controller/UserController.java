@@ -40,7 +40,7 @@ public class UserController {
         user.setNickname(userEmailInfoDto.getNickname());
         user.setIntroduce(userEmailInfoDto.getIntroduce());
         user.setSns(0); // sns { 0번 : email, 1번 : kakao로그인 2번 : github }
-        user.setSocial_key("");
+        user.setSocialKey("");
 
         if(userService.createUserByEmail(user)){
             return new SuccessDto(true, null);
@@ -53,6 +53,7 @@ public class UserController {
     public ResponseEntity<SuccessDto> createUserBySocial(
             @PathVariable("social") String socialType,
             @RequestBody UserSocialInfoDto userSocialInfoDto){
+        System.out.println(userSocialInfoDto.getSocial_key());
         User user = new User();
         user.setName(userSocialInfoDto.getName());
         user.setAccount(userSocialInfoDto.getAccount());
@@ -62,7 +63,7 @@ public class UserController {
         user.setImage("");
         user.setNickname("");
         user.setIntroduce("");
-        user.setSocial_key(userSocialInfoDto.getSocial_key());
+        user.setSocialKey(userSocialInfoDto.getSocial_key());
 
         // sns { 0번 : email, 1번 : kakao로그인, 2번 : github }
         if(socialType.equals("kakao")){
@@ -75,7 +76,14 @@ public class UserController {
 
         if(userService.createUserBySocial(user)){
             Long userId = userService.searchUserId(userSocialInfoDto.getAccount(), userSocialInfoDto.getEmail());
-            return ResponseEntity.ok().body(new SuccessDto(true, userId));
+            HttpHeaders headers = new HttpHeaders();
+            String accessToken = jwtService.createAccessToken(String.valueOf(userId));
+            String refreshToken = jwtService.createRefreshToken(String.valueOf(userId));
+            redisService.createJwtAuthToken(new JwtAuthToken(userId, accessToken, refreshToken, null));
+            headers.set("userId", String.valueOf(userId));
+            headers.set("accessToken", accessToken);
+            headers.set("refreshToken", refreshToken);
+            return ResponseEntity.ok().headers(headers).body(new SuccessDto(true, "login success"));
         }else{
             return ResponseEntity.ok().body(new SuccessDto(false, "signup fail"));
         }
@@ -106,7 +114,6 @@ public class UserController {
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
         }
     }
-
 
     //memberpk로 유저 정보 검색
     //deleteUser()
@@ -182,7 +189,8 @@ public class UserController {
             String refreshToken = jwtService.createRefreshToken(String.valueOf(user.getId()));
             redisService.createJwtAuthToken(new JwtAuthToken(user.getId(), accessToken, refreshToken, null));
             headers.set("userId", String.valueOf(user.getId()));
-            headers.set("X-AUTH-TOKEN", refreshToken);
+            headers.set("accessToken", accessToken);
+            headers.set("refreshToken", refreshToken);
             return ResponseEntity.ok().headers(headers).body(new SuccessDto(true, "login success"));
         }else {
             return ResponseEntity.ok().body(new SuccessDto(false, "login fail"));
@@ -194,17 +202,18 @@ public class UserController {
 
     //github 인증 url
     //https://github.com/login/oauth/authorize?client_id=0006efe23ef0c6ecb6c0&redirect_uri=http://localhost:8080/login/github
-    @GetMapping("/login/{social}")
-    public ResponseEntity<SuccessDto> loginByKakao(@PathVariable("social") String socialType, @RequestParam String code) {
+    @PostMapping("/login/{social}")
+    public ResponseEntity<SuccessDto> loginBySocial(@PathVariable("social") String socialType, @RequestBody UserCodeDto userCodeDto) {
+        System.out.println(userCodeDto.getCode());
         String socailAccessToken = "";
         String socialKey = "";
         Integer sns = 0;
         if(socialType.equals("kakao")){
-            socailAccessToken = kakaoAuthService.getKaKaoAccessToken(code); // 인가코드 받기
+            socailAccessToken = kakaoAuthService.getKaKaoAccessToken(userCodeDto.getCode()); // 인가코드 받기
             socialKey = kakaoAuthService.getKakaoUserKey(socailAccessToken); // accessToken 받기
             sns = 1;
         }else if(socialType.equals("github")) {
-            socailAccessToken = githubAuthService.getGithubAccessToken(code); // 인가코드 받기
+            socailAccessToken = githubAuthService.getGithubAccessToken(userCodeDto.getCode()); // 인가코드 받기
             socialKey = githubAuthService.getGithubAccessToken(socailAccessToken); // accessToken 받기
             sns = 2;
         }else{
@@ -220,8 +229,9 @@ public class UserController {
             String refreshToken = jwtService.createRefreshToken(String.valueOf(user.getId()));
             redisService.createJwtAuthToken(new JwtAuthToken(user.getId(), accessToken, refreshToken, null));
             headers.set("userId", String.valueOf(user.getId()));
-            headers.set("X-AUTH-TOKEN", refreshToken);
-            return ResponseEntity.ok().headers(headers).body(new SuccessDto(true, "social login success"));
+            headers.set("accessToken", accessToken);
+            headers.set("refreshToken", refreshToken);
+            return ResponseEntity.ok().headers(headers).body(new SuccessDto(false, "social login success"));
         }else{
             // 새로운 socialKey
             return new ResponseEntity<SuccessDto>(new SuccessDto(true, socialKey), HttpStatus.OK);
