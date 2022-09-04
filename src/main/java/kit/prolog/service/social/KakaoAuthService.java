@@ -3,6 +3,9 @@ package kit.prolog.service.social;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.expression.ParseException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,13 +17,18 @@ import java.net.URL;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@PropertySource("classpath:social/kakao.properties")
 public class KakaoAuthService {
+    @Value("${kakao.client_id}")
+    private String client_id; //프론트에서 호출한 uri와 동일하게
+    @Value("${kakao.requestTokenUrl}")
+    private String requestTokenUrl;
+    @Value("${kakao.requestUserInfoUrl}")
+    private String requestUserInfoUrl;
     public String getKaKaoAccessToken(String code) {
         String accessToken = "";
-        String reqURL = "https://kauth.kakao.com/oauth/token";
-        String client_id = "ac1a0ec2e424c32d5baa95bf6114d8b0"; //프론트에서 호출한 uri와 동일하게
         try {
-            URL url = new URL(reqURL);
+            URL url = new URL(requestTokenUrl);
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 
             //POST 요청을 위해 기본값이 false인 setDoOutput을 true로
@@ -40,72 +48,59 @@ public class KakaoAuthService {
 
             //결과 코드가 200이라면 성공
             int responseCode = conn.getResponseCode();
-            System.out.println("responseCode : " + responseCode);
-            //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            if(responseCode == 200){
+                //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
-            String line = "";
-            String result = "";
+                String line = "";
+                String result = "";
 
-            while ((line = br.readLine()) != null) {
-                result += line;
+                while ((line = br.readLine()) != null) {
+                    result += line;
+                }
+                System.out.println("response body : " + result);
+
+                //Gson 라이브러리에 포함된 클래스로 JSON파싱 객체 생성
+                JSONObject jObject = new JSONObject(result);
+                accessToken = jObject.get("access_token").toString();
+                System.out.println("access_token : " + accessToken);
+
+                br.close();
+                bw.close();
+                return accessToken;
             }
-            System.out.println("response body : " + result);
-
-            //Gson 라이브러리에 포함된 클래스로 JSON파싱 객체 생성
-
-            JSONObject jObject = new JSONObject(result);
-            accessToken = jObject.get("access_token").toString();
-
-            System.out.println("access_token : " + accessToken);
-
-            br.close();
-            bw.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        return accessToken;
+        return null;
     }
 
     public String getKakaoUserKey(String token) {
-
-        String reqURL = "https://kapi.kakao.com/v1/oidc/userinfo";
-
-        //access_token을 이용하여 사용자 정보 조회
+        String id = "";
         try {
-            URL url = new URL(reqURL);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            URL url = new URL(requestUserInfoUrl);
+            HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+            urlConnection.setRequestProperty("Authorization", "Bearer " + token);
+            urlConnection.setRequestMethod("GET");
 
-            conn.setRequestMethod("GET");
-            conn.setDoOutput(true);
-            conn.setRequestProperty("Authorization", "Bearer " + token); //전송할 header 작성, access_token전송
-            conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-
-            //결과 코드가 200이라면 성공
-            int responseCode = conn.getResponseCode();
-            System.out.println("responseCode : " + responseCode);
-
-            //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line = "";
-            String result = "";
-
-            while ((line = br.readLine()) != null) {
-                result += line;
+            int responseCode = urlConnection.getResponseCode();
+            if(responseCode == 200){
+                BufferedReader br = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                String line = "";
+                String res = "";
+                while((line=br.readLine())!=null){
+                    res += line;
+                }
+                System.out.println("res = " + res);
+                JSONObject jObject = new JSONObject(res);
+                id = jObject.get("id").toString();
+                System.out.println("id : " + id);
+                br.close();
+                return id;
             }
-            System.out.println("response body : " + result);
-
-
-            JSONObject jObject = new JSONObject(result);
-            String sub = jObject.getString("sub");
-
-            br.close();
-
-            return sub;
-        } catch (IOException e) {
+        } catch (IOException | ParseException e) {
             e.printStackTrace();
-            return null;
         }
+        return null;
     }
 }
