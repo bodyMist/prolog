@@ -43,6 +43,7 @@ public class UserController {
         user.setSocialKey("");
 
         if(userService.createUserByEmail(user)){
+            // 프로필 사진 이미지 저장 추가부분
             return new SuccessDto(true, null);
         }else{
             return new SuccessDto(false, null);
@@ -75,6 +76,7 @@ public class UserController {
         }
 
         if(userService.createUserBySocial(user)){
+            // 프로필 사진 이미지 저장 추가부분
             Long userId = userService.searchUserId(userSocialInfoDto.getAccount(), userSocialInfoDto.getEmail());
             HttpHeaders headers = new HttpHeaders();
             String accessToken = jwtService.createAccessToken(String.valueOf(userId));
