@@ -75,32 +75,36 @@ public class GithubAuthService {
         return null;
     }
 
-    public String getGithubUserKey(String access_token) throws IOException {
-        URL url = new URL(requestUserInfoUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setDoOutput(true);
-        conn.setRequestProperty("Accept", "application/json");
-        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36");
-        conn.setRequestProperty("Authorization", "token " + access_token);
+    public String getGithubUserKey(String access_token) {
+        try{
+            URL url = new URL(requestUserInfoUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setDoOutput(true);
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.45 Safari/537.36");
+            conn.setRequestProperty("Authorization", "token " + access_token);
 
-        int responseCode = conn.getResponseCode();
-        if(responseCode == 200){
-            //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line = "";
-            String result = "";
+            int responseCode = conn.getResponseCode();
+            if(responseCode == 200) {
+                //요청을 통해 얻은 JSON타입의 Response 메세지 읽어오기
+                BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String line = "";
+                String result = "";
 
-            while ((line = br.readLine()) != null) {
-                result += line;
+                while ((line = br.readLine()) != null) {
+                    result += line;
+                }
+                System.out.println("response body : " + result);
+
+                JSONObject jObject = new JSONObject(result);
+                int socialKey = jObject.getInt("id");
+                System.out.println("socialKey " + socialKey);
+                return String.valueOf(socialKey);
             }
-            System.out.println("response body : " + result);
-
-            JSONObject jObject = new JSONObject(result);
-            int socialKey = jObject.getInt("id");
-            return String.valueOf(socialKey);
-        }else{
-            return null;
+        }catch(IOException e){
+            e.printStackTrace();
         }
+        return null;
     }
 }

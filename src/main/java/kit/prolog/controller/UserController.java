@@ -43,6 +43,7 @@ public class UserController {
         user.setSocialKey("");
 
         if(userService.createUserByEmail(user)){
+            // 프로필 사진 이미지 저장 추가부분
             return new SuccessDto(true, null);
         }else{
             return new SuccessDto(false, null);
@@ -75,6 +76,7 @@ public class UserController {
         }
 
         if(userService.createUserBySocial(user)){
+            // 프로필 사진 이미지 저장 추가부분
             Long userId = userService.searchUserId(userSocialInfoDto.getAccount(), userSocialInfoDto.getEmail());
             HttpHeaders headers = new HttpHeaders();
             String accessToken = jwtService.createAccessToken(String.valueOf(userId));
@@ -205,21 +207,22 @@ public class UserController {
     @PostMapping("/login/{social}")
     public ResponseEntity<SuccessDto> loginBySocial(@PathVariable("social") String socialType, @RequestBody UserCodeDto userCodeDto) {
         System.out.println(userCodeDto.getCode());
-        String socailAccessToken = "";
+        String socialAccessToken = "";
         String socialKey = "";
         Integer sns = 0;
         if(socialType.equals("kakao")){
-            socailAccessToken = kakaoAuthService.getKaKaoAccessToken(userCodeDto.getCode()); // 인가코드 받기
-            socialKey = kakaoAuthService.getKakaoUserKey(socailAccessToken); // accessToken 받기
+            socialAccessToken = kakaoAuthService.getKaKaoAccessToken(userCodeDto.getCode()); // 인가코드 받기
+            socialKey = kakaoAuthService.getKakaoUserKey(socialAccessToken); // accessToken 받기
             sns = 1;
         }else if(socialType.equals("github")) {
-            socailAccessToken = githubAuthService.getGithubAccessToken(userCodeDto.getCode()); // 인가코드 받기
-            socialKey = githubAuthService.getGithubAccessToken(socailAccessToken); // accessToken 받기
+            socialAccessToken = githubAuthService.getGithubAccessToken(userCodeDto.getCode()); // 인가코드 받기
+            socialKey = githubAuthService.getGithubUserKey(socialAccessToken); // accessToken 받기
+            System.out.println("socialKey " + socialKey);
             sns = 2;
         }else{
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "social login url error"), HttpStatus.OK);
         }
-
+        System.out.println("socialKey " + socialKey);
         User user = userService.searchSocialKey(sns, socialKey);
 
         if(user != null){ // 로그인 유저 식별 id 확인 후 로그인 또는 회원가입 진행
