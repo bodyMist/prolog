@@ -6,18 +6,32 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
+@PropertySource("classpath:static/api.properties")
 @RestController
 @AllArgsConstructor
 public class PostController {
     private static final Long NO_USER = 0L;
+    @Value("${file.server.ip}")
+    private static String FILE_SERVER_IP;
     private final PostService postService;
+    private static final WebClient api = WebClient.builder()
+            .baseUrl(FILE_SERVER_IP)
+            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE)
+            .build();
 
     /**
      * 레이아웃 작성 API
@@ -187,7 +201,16 @@ public class PostController {
     /**
      * 파일 업로드 API
      * */
-
+    @PostMapping("/upload")
+    public SuccessDto uploadFiles(@RequestHeader Long memberPk, @RequestPart(value = "file") List<MultipartFile> files){
+        Flux<FileDto> uploadedFiles = api.post()
+                .body(files, List.class)
+                .retrieve()
+                .bodyToFlux(FileDto.class);
+        List<FileDto> filename = uploadedFiles.collectList().block();
+        List<String> urls = postService.saveUploadedFiles(filename);
+        return new SuccessDto(true, urls);
+    }
 
     /**
      * 파일 삭제 API

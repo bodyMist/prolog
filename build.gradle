@@ -37,7 +37,8 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'com.h2database:h2'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux'
+	compile 'org.springframework.boot:spring-boot-starter-webflux'
 
 	//querydsl 추가
 	implementation 'com.querydsl:querydsl-jpa'

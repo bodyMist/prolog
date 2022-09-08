@@ -1,6 +1,7 @@
 package kit.prolog.domain;
 
 import kit.prolog.dto.AttachmentDto;
+import kit.prolog.dto.FileDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -29,6 +30,11 @@ public class Attachment {
         this.id = dto.getId();
         this.url = dto.getUrl();
         this.post = post;
+    }
+    public Attachment(FileDto file){
+        this.name = file.getSavedName();
+        this.url = file.getPath();
+        this.extension = file.getType();
     }
 
     public void setPost(Post post) {

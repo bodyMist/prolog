@@ -405,6 +405,18 @@ public class PostService {
     }
 
     /**
+     * 파일 업로드 API
+     * 업로드 후 정보를 토대로 DB에 저장
+     * 매개변수 : List<FileDto>, memberPk
+     * 반환 : List<String> URL List
+     * */
+    public List<String> saveUploadedFiles(List<FileDto> files){
+        List<Attachment> uploadedFiles = files.stream().map(Attachment::new).collect(Collectors.toList());
+        List<Attachment> attachments = attachmentRepository.saveAll(uploadedFiles);
+        return attachments.stream().map(Attachment::getUrl).collect(Collectors.toList());
+    }
+
+    /**
      * 내가 쓴 글 목록 조회 API
      * 매개변수 : userId(사용자 pk), cursor(페이지 번호)
      * 반환 : List<PostPreviewDto>
