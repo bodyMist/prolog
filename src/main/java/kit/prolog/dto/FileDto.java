@@ -1,10 +1,10 @@
 package kit.prolog.dto;
 
-import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+@NoArgsConstructor
 public class FileDto {
     private String originalName;
     private String savedName;

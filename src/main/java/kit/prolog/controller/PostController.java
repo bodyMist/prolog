@@ -5,35 +5,29 @@ import kit.prolog.service.PostService;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
-@PropertySource("classpath:static/api.properties")
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PostController {
     private static final Long NO_USER = 0L;
-    @Value("${file.server.ip}")
-    private static String FILE_SERVER_IP;
     private final PostService postService;
-    private static final WebClient api = WebClient.builder()
-            .baseUrl(FILE_SERVER_IP)
-            .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.MULTIPART_FORM_DATA_VALUE)
-            .build();
+    private final WebClient api;
 
     /**
      * 레이아웃 작성 API
@@ -205,13 +199,18 @@ public class PostController {
      * */
     @PostMapping("/upload")
     public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files){
-        List<FileDto> uploadedFiles = api.post()
-                .uri("/upload")
-                .body(BodyInserters.fromMultipartData("file", files))
+        MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
+        files.forEach(f -> {
+            bodyBuilder.part("files", f.getResource());
+        });
+        List<FileDto> uploadedFiles = api
+                .post()
+                .uri(uriBuilder -> uriBuilder.path("/upload").build())
+                .accept(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
                 .retrieve()
-                .bodyToFlux(FileDto.class)
-                .toStream()
-                .collect(Collectors.toList());
+                .bodyToMono(new ParameterizedTypeReference<List<FileDto>>() {})
+                .block();
         List<String> urls = postService.saveUploadedFiles(uploadedFiles);
         return new SuccessDto(true, urls);
     }
