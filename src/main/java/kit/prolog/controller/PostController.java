@@ -8,10 +8,12 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Flux;
 
@@ -202,13 +204,15 @@ public class PostController {
      * 파일 업로드 API
      * */
     @PostMapping("/upload")
-    public SuccessDto uploadFiles(@RequestHeader Long memberPk, @RequestPart(value = "file") List<MultipartFile> files){
-        Flux<FileDto> uploadedFiles = api.post()
-                .body(files, List.class)
+    public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files){
+        List<FileDto> uploadedFiles = api.post()
+                .uri("/upload")
+                .body(BodyInserters.fromMultipartData("file", files))
                 .retrieve()
-                .bodyToFlux(FileDto.class);
-        List<FileDto> filename = uploadedFiles.collectList().block();
-        List<String> urls = postService.saveUploadedFiles(filename);
+                .bodyToFlux(FileDto.class)
+                .toStream()
+                .collect(Collectors.toList());
+        List<String> urls = postService.saveUploadedFiles(uploadedFiles);
         return new SuccessDto(true, urls);
     }
 
