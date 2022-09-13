@@ -46,12 +46,12 @@ public class CategoryService {
         if (category.getUpperCategory() == null)
             throw new AccessDeniedException("");
 
-        Category upperCategory = categoryRepository.findById(categoryFormDto.getUpperId()).get();
-        if (upperCategory.getUser().getId() != userId)
-            throw new AccessDeniedException("");
+//        Category upperCategory = categoryRepository.findById(categoryFormDto.getUpperId()).get();
+//        if (upperCategory.getUser().getId() != userId)
+//            throw new AccessDeniedException("");
 
         category.setName(categoryFormDto.getName());
-        category.setUpperCategory(upperCategory);
+//        category.setUpperCategory(upperCategory);
         categoryRepository.save(category);
     }
 
