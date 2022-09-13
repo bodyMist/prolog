@@ -1,7 +1,7 @@
 package kit.prolog.service;
 
 import kit.prolog.domain.User;
-import kit.prolog.dto.UserInfoDto;
+import kit.prolog.dto.UserEmailInfoDto;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +28,7 @@ public class UserService {
 
     // email 회원가입
     public boolean createUserByEmail(User newUser){
+        newUser.setSns(0); // email 회원가입
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
         if(user == null){
             userRepository.save(newUser);
@@ -40,7 +41,7 @@ public class UserService {
     // 소셜 회원가입
     public boolean createUserBySocial(User newUser){
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
-        if(user != null){
+        if(user == null){
             userRepository.save(newUser);
             return true;
         }else{
@@ -63,13 +64,13 @@ public class UserService {
     }
 
     // 회원 정보 수정
-    public boolean updateUser(Long memberPk, UserInfoDto modifiedUser){
+    public boolean updateUser(Long memberPk, UserEmailInfoDto modifiedUser){
         User user = userRepository.findOneById(memberPk);
         try{
             if(user != null){
                 user.setName(modifiedUser.getName());
                 user.setImage(modifiedUser.getImage());
-                user.setIntroduce(modifiedUser.getIntroduction());
+                user.setIntroduce(modifiedUser.getIntroduce());
                 user.setNickname(modifiedUser.getNickname());
                 user.setAlarm(modifiedUser.isAlarm());
                 userRepository.save(user);
@@ -134,6 +135,12 @@ public class UserService {
         }
     }
 
+    // userId 찾기
+    public Long searchUserId(String account, String email){
+        User user = userRepository.findOneByAccountAndEmail(account, email);
+        return user.getId();
+    }
+
     // 아이디 찾기
     public String searchAccount(String email){
         User user;
@@ -149,6 +156,20 @@ public class UserService {
             System.out.println("Error : no user");
             return account;
         }
+    }
+
+    // 소셜 key 찾기
+    public User searchSocialKey(Integer socialType, String newSocialKey){
+        User user = null;
+        try{
+            user = userRepository.findOneBySnsAndSocialKey(socialType, newSocialKey);
+            if(user != null){
+                return user;
+            }
+        }catch (NullPointerException e){
+            System.out.println("Error : no user");
+        }
+        return user;
     }
 
     // 비밀번호 변경

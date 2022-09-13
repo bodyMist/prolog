@@ -1,6 +1,5 @@
 package kit.prolog.domain;
 
-import kit.prolog.enums.CodeType;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -21,8 +20,7 @@ public class Context{
     private String url;
     @Column(length = 2000)
     private String code;
-    @Enumerated(EnumType.STRING)
-    private CodeType codeType;
+    private String codeType;
     @Column(length = 2000)
     private String codeExplanation;
     @Column(nullable = false)

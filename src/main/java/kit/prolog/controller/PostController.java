@@ -2,20 +2,32 @@ package kit.prolog.controller;
 
 import kit.prolog.dto.*;
 import kit.prolog.service.PostService;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class PostController {
+    private static final Long NO_USER = 0L;
     private final PostService postService;
+    private final WebClient api;
 
     /**
      * 레이아웃 작성 API
@@ -28,15 +40,15 @@ public class PostController {
                         .stream().map(LayoutDto::new)
                         .collect(Collectors.toList());
         String moldName = json.get("moldName") == null ? "" : json.get("moldName").toString();
-        List<LayoutDto> layoutDtos = postService.saveLayouts(memberPk, layouts, moldName);
-        return new SuccessDto(true, layoutDtos);
+        MoldWithLayoutsDto moldWithLayoutsDto = postService.saveLayouts(memberPk, layouts, moldName);
+        return new SuccessDto(true, moldWithLayoutsDto);
     }
     /**
      * 레이아웃 리스트 조회 API
      * */
     @GetMapping("/layouts/{id}")
     public SuccessDto readLayouts(@PathVariable Long id){
-        List<LayoutDto> layoutDtos = postService.viewLayoutsByMold(id);
+        MoldWithLayoutsDto layoutDtos = postService.viewLayoutsByMold(id);
         return new SuccessDto(true, layoutDtos);
     }
 
@@ -70,8 +82,8 @@ public class PostController {
                 .stream().map(LayoutDto::new).collect(Collectors.toList());
 
         // optional
-        Long moldId = json.get("moldId") == null
-                ? null : Long.parseLong(json.get("moldId").toString());
+        Long moldId = json.get("layoutID") == null
+                ? null : Long.parseLong(json.get("layoutID").toString());
         List<String> tags = new ArrayList<>();
         if( json.get("tag") != null){
             ((List<String>) json.get("tag")).forEach(tags::add);
@@ -89,9 +101,9 @@ public class PostController {
         if (!tags.isEmpty())
             params.put("tags", tags);
 
-        postService.writePost(memberPk, title, layoutDtos, categoryId, params);
+        Long writePost = postService.writePost(memberPk, title, layoutDtos, categoryId, params);
 
-        return new SuccessDto(true);
+        return new SuccessDto(true, writePost);
     }
 
     /**
@@ -112,10 +124,12 @@ public class PostController {
      * 로그인 상태일 때, 좋아요 exist 정보를 포함하여 조회
      * */
     @GetMapping("/board/{id}")
-    public SuccessDto readPost(@RequestHeader Long memberPk,@PathVariable Long id){
+    public SuccessDto readPost(@RequestHeader(required = false) Long memberPk,@PathVariable Long id){
         PostDetailDto post;
-        // 로그인 상태
-        post = postService.viewPostDetailById(memberPk, id);
+        if(memberPk != null)
+            post = postService.viewPostDetailById(memberPk, id);
+        else
+            post = postService.viewPostDetailById(NO_USER, id);
         // 비로그인 상태
 
         PostDetail postDetail = new PostDetail(post);
@@ -183,7 +197,23 @@ public class PostController {
     /**
      * 파일 업로드 API
      * */
-
+    @PostMapping("/upload")
+    public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files){
+        MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
+        files.forEach(f -> {
+            bodyBuilder.part("files", f.getResource());
+        });
+        List<FileDto> uploadedFiles = api
+                .post()
+                .uri(uriBuilder -> uriBuilder.path("/upload").build())
+                .accept(MediaType.APPLICATION_JSON)
+                .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<List<FileDto>>() {})
+                .block();
+        List<String> urls = postService.saveUploadedFiles(uploadedFiles);
+        return new SuccessDto(true, urls);
+    }
 
     /**
      * 파일 삭제 API
@@ -224,8 +254,8 @@ public class PostController {
      * 메인화면
      * */
     @GetMapping("/")
-    public SuccessDto readHottestPosts(@RequestParam int page, @RequestParam int size){
-        List<PostPreviewDto> hottestPosts = postService.getHottestPostList(page, size);
+    public SuccessDto readHottestPosts(@RequestParam int last){
+        List<PostPreviewDto> hottestPosts = postService.getHottestPostList(last);
         List<PostPreview> post = changeResponseType(hottestPosts);
         return new SuccessDto(true, post);
     }
@@ -240,10 +270,19 @@ public class PostController {
         return new SuccessDto(true, post);
     }
 
+    /**
+     * 검색 기능 API
+     * */
+    @GetMapping("/search")
+    public SuccessDto searchPosts(@RequestParam String keyword, @RequestParam int last){
+        List<PostPreviewDto> searchPosts = postService.searchPosts(keyword, last);
+        List<PostPreview> post = changeResponseType(searchPosts);
+        return new SuccessDto(true, post);
+    }
+
     private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){
         return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
     }
-
 
     /**
      * Inner Class For Response
@@ -281,6 +320,7 @@ public class PostController {
         private String member;
         private String memberImage;
         private Integer likes;
+        private Integer hits;
         private MainLayout mainLayout;
 
         PostPreview(PostPreviewDto dto){
@@ -289,7 +329,8 @@ public class PostController {
             this.written = dto.getPostDto().getTime();
             this.member = dto.getUserDto().getName();
             this.memberImage = dto.getUserDto().getImage();
-            this.likes = dto.getLikes();
+            this.likes = dto.getLikes().intValue();
+            this.hits = dto.getHits().intValue();
             this.mainLayout = new MainLayout(dto.getLayoutDto());
         }
     }

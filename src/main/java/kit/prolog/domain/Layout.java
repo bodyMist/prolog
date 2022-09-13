@@ -2,6 +2,7 @@ package kit.prolog.domain;
 
 import kit.prolog.dto.LayoutDto;
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.ColumnDefault;
@@ -10,7 +11,7 @@ import org.hibernate.annotations.OnDeleteAction;
 
 import javax.persistence.*;
 
-@Getter
+@Data
 @Entity(name = "LAYOUTS")
 @NoArgsConstructor
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class Layout {
     private Double height;
     private String explanation;
 
-    @Column(name = "dtype", insertable = false, updatable = false)
+    @Column(name = "dtype")
     protected Integer dtype;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,13 +53,5 @@ public class Layout {
         this.height = height;
         this.explanation = explanation;
         this.dtype = dtype;
-    }
-
-    public void setMold(Mold mold) {
-        this.mold = mold;
-    }
-
-    public void setExplanation(String explanation) {
-        this.explanation = explanation;
     }
 }

@@ -30,6 +30,8 @@ public class User {
     private String image;
     private String nickname;
     private String introduce;
+    @Column(name = "SOCIAL_KEY")
+    private String socialKey;
 
     @OneToMany(mappedBy = "user") // cascade = CascadeType.ALL,orphanRemoval = true
     private List<Like> likes = new ArrayList<>();

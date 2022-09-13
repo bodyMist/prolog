@@ -29,13 +29,16 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'org.json:json:20220320'
 	compileOnly 'org.projectlombok:lombok'
 	runtimeOnly 'mysql:mysql-connector-java'
 	annotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
-	testImplementation 'com.h2database:h2'
+	implementation group: 'org.springframework.boot', name: 'spring-boot-starter-webflux'
+	compile 'org.springframework.boot:spring-boot-starter-webflux'
 
 	//querydsl 추가
 	implementation 'com.querydsl:querydsl-jpa'

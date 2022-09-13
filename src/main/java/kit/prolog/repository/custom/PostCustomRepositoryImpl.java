@@ -33,6 +33,8 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     private final QHit hit = QHit.hit;
     private final QLike like = QLike.like;
     private final QContext context = QContext.context1;
+    private final QPostTag postTag = QPostTag.postTag;
+    private final QTag tag = QTag.tag;
 
     @Override
     public PostDetailDto findPostById(Long postId) {
@@ -93,7 +95,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
         previewDtos.forEach(post -> {
             List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
-            post.setLayoutDto(layoutContext);
+            post.addLayoutDto(layoutContext);
                 }
         );
         return previewDtos;
@@ -119,7 +121,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
         previewDtos.forEach(post -> {
                     List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
-                    post.setLayoutDto(layoutContext);
+                    post.addLayoutDto(layoutContext);
                 }
         );
         return previewDtos;
@@ -145,7 +147,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
         previewDtos.forEach(post -> {
                     List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
-                    post.setLayoutDto(layoutContext);
+                    post.addLayoutDto(layoutContext);
                 }
         );
         return previewDtos;
@@ -172,7 +174,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
         previewDtos.forEach(post -> {
                     List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
-                    post.setLayoutDto(layoutContext);
+                    post.addLayoutDto(layoutContext);
                 }
         );
         return previewDtos;
@@ -187,7 +189,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user))
-                .innerJoin(like).on(post.eq(like.post))
+                .leftJoin(like).on(post.eq(like.post))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
@@ -195,12 +197,47 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .fetch();
         previewDtos.forEach(post -> {
                     List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
-                    post.setLayoutDto(layoutContext);
+                    post.addLayoutDto(layoutContext);
                 }
         );
         return previewDtos;
     }
 
+    @Override
+    public List<PostPreviewDto> searchPosts(String keyword, int cursor) {
+        List<PostPreviewDto> previewDtos = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image)
+        )
+                .from(post)
+                .innerJoin(user).on(user.id.eq(post.user.id))
+                .leftJoin(context).on(context.post.id.eq(post.id))
+                .leftJoin(postTag).on(postTag.post.id.eq(post.id))
+                .leftJoin(tag).on(tag.id.eq(postTag.tag.id))
+                .where(
+                        post.title.contains(keyword)
+                                .or(context.context.contains(keyword))
+                        .and(lowerThanCursor(cursor))
+                )
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .limit(PAGE_SIZE)
+                .fetch();
+
+        previewDtos.forEach(post -> {
+            List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
+            Long likeCount = selectLikes(post.getPostDto().getId()).fetchOne();
+            post.addLayoutDto(layoutContext);
+            post.setLikes(likeCount);
+        });
+
+        return previewDtos;
+    }
+
+    private JPQLQuery<Long> selectLikes(Long postId){
+        return query.select(like.count()).from(like).where(like.post.id.eq(postId));
+    }
     private JPQLQuery<LayoutDto> selectMainContext(Long postId){
         return query.select(
                         Projections.constructor(LayoutDto.class,

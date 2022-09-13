@@ -4,8 +4,9 @@ import lombok.*;
 
 @Getter
 @Setter
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserEmailDto {
-    private String email;
+public class UserCodeDto {
+    private String code;
 }

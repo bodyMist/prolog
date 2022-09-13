@@ -2,6 +2,12 @@ logging:
   level:
     root: info
 spring:
+  mvc:
+    hidden-method:
+      filter:
+        enabled: true
+  main:
+    allow-bean-definition-overriding: true
   messages:
     basename: errors
   output:
@@ -12,6 +18,9 @@ spring:
     username: root
     password: tkd5957!@#
     driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    port: 6379
+    host: localhost
   jpa:
     hibernate:
       ddl-auto: update
@@ -19,3 +28,6 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
+  servlet:
+    multipart:
+      max-file-size: 20MB
