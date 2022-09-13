@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Transactional
 @Service
@@ -28,6 +29,8 @@ public class CommentService {
         Comment upperComment = null;
         if (upperCommentId != null) {
             upperComment = commentRepository.findById(upperCommentId).get();
+            if (upperComment.getBlock() == true)
+                throw new NoSuchElementException();
         }
 
         Comment comment = Comment.builder()
@@ -41,6 +44,8 @@ public class CommentService {
 
     public void updateComment(Long commentId, CommentFormDto commentFormDto, Long userId) {
         Comment comment = commentRepository.findById(commentId).get();
+        if (comment.getBlock() == true)
+            throw new NoSuchElementException();
         if (comment.getUser().getId() != userId)
             throw new AccessDeniedException("");
 
@@ -50,6 +55,8 @@ public class CommentService {
 
     public void deleteComment(Long commentId, Long userId) {
         Comment comment = commentRepository.findById(commentId).get();
+        if (comment.getBlock() == true)
+            throw new NoSuchElementException();
         if (comment.getUser().getId() != userId)
             throw new AccessDeniedException("");
 
