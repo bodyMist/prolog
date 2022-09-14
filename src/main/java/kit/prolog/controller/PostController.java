@@ -212,8 +212,8 @@ public class PostController {
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<List<FileDto>>() {})
                 .block();
-        List<String> urls = postService.saveUploadedFiles(uploadedFiles);
-        return new SuccessDto(true, urls);
+        List<FileDto> result = postService.saveUploadedFiles(uploadedFiles);
+        return new SuccessDto(true, result);
     }
 
     /**

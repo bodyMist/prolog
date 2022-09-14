@@ -410,10 +410,10 @@ public class PostService {
      * 매개변수 : List<FileDto>, memberPk
      * 반환 : List<String> URL List
      * */
-    public List<String> saveUploadedFiles(List<FileDto> files){
+    public List<FileDto> saveUploadedFiles(List<FileDto> files){
         List<Attachment> uploadedFiles = files.stream().map(Attachment::new).collect(Collectors.toList());
         List<Attachment> attachments = attachmentRepository.saveAll(uploadedFiles);
-        return attachments.stream().map(Attachment::getUrl).collect(Collectors.toList());
+        return attachments.stream().map(FileDto::new).collect(Collectors.toList());
     }
 
     /**
