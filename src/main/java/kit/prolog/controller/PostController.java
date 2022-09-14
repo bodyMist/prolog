@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.web.bind.annotation.*;
@@ -218,6 +219,21 @@ public class PostController {
     /**
      * 파일 삭제 API
      * */
+    @DeleteMapping("/upload/{id}")
+    public SuccessDto deleteFile(@PathVariable String id){
+
+        Boolean externalResult  = api.mutate()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build()
+                .delete()
+                .uri(uriBuilder -> uriBuilder.path("/{fileName}").build(id))
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block();
+        postService.deleteFile(id);
+
+        return new SuccessDto(true);
+    }
 
     /**
      * 게시글 좋아요/취소 API

@@ -417,6 +417,17 @@ public class PostService {
     }
 
     /**
+     * 파일 삭제 API
+     * 매개변수 : String
+     * 반환 : String
+     * */
+    public String deleteFile(String fileName){
+        Optional<Attachment> attachment = attachmentRepository.findByName(fileName);
+        attachment.ifPresent(attachmentRepository::delete);
+        return attachment.isPresent() ? attachment.get().getName() : "";
+    }
+
+    /**
      * 내가 쓴 글 목록 조회 API
      * 매개변수 : userId(사용자 pk), cursor(페이지 번호)
      * 반환 : List<PostPreviewDto>
