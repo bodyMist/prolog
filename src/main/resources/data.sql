@@ -150,6 +150,15 @@ INSERT INTO likes(post_post_id, user_user_id, time) VALUES (3,2, CURRENT_TIME);
 INSERT INTO likes(post_post_id, user_user_id, time) VALUES (3,3, CURRENT_TIME);
 
 INSERT INTO comments(context, time, post_post_id, user_user_id)
-VALUES ('이것은 댓글입니다', CURRENT_TIME, 1, 1);
+VALUES ('이것은 댓글입니다', CURRENT_TIMESTAMP, 1, 1);
+INSERT INTO comments(context, time, post_post_id, user_user_id)
+VALUES ('2번 유저 댓글입니다', CURRENT_TIMESTAMP, 1, 2);
+INSERT INTO comments(context, time, post_post_id, user_user_id)
+VALUES ('3번 유저 댓글입니다', CURRENT_TIMESTAMP, 1, 3);
+
 INSERT INTO comments(context, time, upper_comment_comment_id, post_post_id, user_user_id)
-VALUES ('요건 대댓글입니다', CURRENT_TIME, 1, 1, 1);
+VALUES ('요건 대댓글입니다', CURRENT_TIMESTAMP, 1, 1, 3);
+INSERT INTO comments(context, time, upper_comment_comment_id, post_post_id, user_user_id)
+VALUES ('1번 유저 대댓글입니다', CURRENT_TIMESTAMP, 2, 1, 1);
+INSERT INTO comments(context, time, upper_comment_comment_id, post_post_id, user_user_id)
+VALUES ('요건 대댓글입니다', CURRENT_TIMESTAMP, 3, 1, 1);
