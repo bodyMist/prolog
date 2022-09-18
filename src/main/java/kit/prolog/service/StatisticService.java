@@ -18,7 +18,7 @@ public class StatisticService {
         return statisticsCustomRepository.findStatisticByPostId(userId, postId);
     }
 
-    public StatisticsDto viewStatisByUserId(Long userId, int year){
+    public StatisticsDto viewStatisByUserId(Long userId, Long year){
         return statisticsCustomRepository.findStatisticsByUserId(userId, year);
     }
 }

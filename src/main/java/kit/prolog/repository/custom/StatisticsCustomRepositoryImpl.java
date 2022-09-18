@@ -127,102 +127,102 @@ public class StatisticsCustomRepositoryImpl implements StatisticsCustomRepositor
     }
 
     @Override
-    public StatisticsDto findStatisticsByUserId(long userId, int year) {
+    public StatisticsDto findStatisticsByUserId(long userId, long year) {
         long cumulativeViews = query.select(hit.id)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
+                .where(post.user.id.eq(userId))
                 .fetchCount();
 
         long tendaysView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
+                .where(post.user.id.eq(userId))
                 .where(hit.time.after(LocalDateTime.now().minusDays(10)))
                 .fetchCount();
 
         long januaryView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,1,1,0,0),LocalDateTime.of(year,2,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),1,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),2,1,0,0)))
                 .fetchCount();
 
         long februaryView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,2,1,0,0),LocalDateTime.of(year,3,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),2,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),3,1,0,0)))
                 .fetchCount();
 
         long marchView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,3,1,0,0),LocalDateTime.of(year,4,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),3,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),4,1,0,0)))
                 .fetchCount();
 
         long aprilView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,4,1,0,0),LocalDateTime.of(year,5,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),4,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),5,1,0,0)))
                 .fetchCount();
 
         long mayView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,5,1,0,0),LocalDateTime.of(year,6,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),5,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),6,1,0,0)))
                 .fetchCount();
 
         long juneView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,6,1,0,0),LocalDateTime.of(year,7,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),6,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),7,1,0,0)))
                 .fetchCount();
 
         long julyView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,7,1,0,0),LocalDateTime.of(year,8,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),7,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),8,1,0,0)))
                 .fetchCount();
 
         long augustView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,8,1,0,0),LocalDateTime.of(year,9,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),8,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),9,1,0,0)))
                 .fetchCount();
 
         long septemberView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,9,1,0,0),LocalDateTime.of(year,10,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),9,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),10,1,0,0)))
                 .fetchCount();
 
         long octoberView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,10,1,0,0),LocalDateTime.of(year,11,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),10,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),11,1,0,0)))
                 .fetchCount();
 
         long novemberView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,11,1,0,0),LocalDateTime.of(year,12,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),11,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue(),12,1,0,0)))
                 .fetchCount();
 
         long decemberView = query.select(hit)
                 .from(hit).join(post)
                 .on(post.id.eq(hit.post.id))
-                .where(post.id.eq(userId))
-                .where(hit.time.between(LocalDateTime.of(year,12,1,0,0),LocalDateTime.of(year+1,1,1,0,0)))
+                .where(post.user.id.eq(userId))
+                .where(hit.time.between(LocalDateTime.of(Long.valueOf(year).intValue(),12,1,0,0),LocalDateTime.of(Long.valueOf(year).intValue()+1,1,1,0,0)))
                 .fetchCount();
 
         StatisticsDto statisticsDto = new StatisticsDto(cumulativeViews,tendaysView,januaryView

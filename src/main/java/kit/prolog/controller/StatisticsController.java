@@ -28,23 +28,27 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class StatisticsController {
 
     private final StatisticService statisticService;
 
     @GetMapping("/mystatis/{year}")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
     public SuccessDto findStatisticByUserId(
             @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-            @RequestHeader(required = false) Long memberPk, @PathVariable int year){
+            @RequestHeader(required = false) Long memberPk, @PathVariable Long year){
 
         return new SuccessDto(true,statisticService.viewStatisByUserId(memberPk, year));
     }
 
 
     @GetMapping("/myboard/statis/{id}")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
     public SuccessDto findStatisticByPostId(
             @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
             @RequestHeader(required = false) Long memberPk, @PathVariable Long id){
+
         return new SuccessDto(true,statisticService.viewStatisticByPostId(memberPk, id));
     }
 }
