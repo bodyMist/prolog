@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
+@CrossOrigin(origins = "*")
 public class StatisticsController {
 
     private final StatisticService statisticService;
@@ -45,6 +46,7 @@ public class StatisticsController {
     public SuccessDto findStatisticByPostId(
             @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
             @RequestHeader(required = false) Long memberPk, @PathVariable Long id){
+
         return new SuccessDto(true,statisticService.viewStatisticByPostId(memberPk, id));
     }
 }
