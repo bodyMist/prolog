@@ -45,9 +45,6 @@ public class StatisticsController {
     public SuccessDto findStatisticByPostId(
             @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
             @RequestHeader(required = false) Long memberPk, @PathVariable Long id){
-        System.out.println(accessToken);
-        System.out.println(memberPk);
-        System.out.println(id);
         return new SuccessDto(true,statisticService.viewStatisticByPostId(memberPk, id));
     }
 }
