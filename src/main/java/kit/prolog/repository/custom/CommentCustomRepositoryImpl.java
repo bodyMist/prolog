@@ -62,7 +62,7 @@ public class CommentCustomRepositoryImpl implements CommentCustomRepository {
                                 qComment.user.nickname,
                                 qComment.user.image.as("userImage"),
                                 qComment.user.id.eq(postWriterId).as("isPostWriter"),
-                                qComment.user.id.eq(userId).as("isCommentWriter"),
+                                userId == null ? qComment.user.id.isNull().as("isCommentWriter") : qComment.user.id.eq(userId).as("isCommentWriter"),
                                 new CaseBuilder()
                                         .when(qComment.block.eq(false))
                                         .then(qComment.context)
