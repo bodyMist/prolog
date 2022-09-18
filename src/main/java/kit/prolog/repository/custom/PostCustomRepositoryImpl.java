@@ -215,11 +215,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .leftJoin(context).on(context.post.id.eq(post.id))
                 .leftJoin(postTag).on(postTag.post.id.eq(post.id))
                 .leftJoin(tag).on(tag.id.eq(postTag.tag.id))
-                .where(
-                        post.title.contains(keyword)
-                                .or(context.context.contains(keyword))
-                        .and(lowerThanCursor(cursor))
-                )
+                .where(post.title.contains(keyword).and(lowerThanCursor(cursor)))
                 .groupBy(post)
                 .orderBy(post.id.desc())
                 .limit(PAGE_SIZE)
