@@ -14,11 +14,11 @@ public class StatisticService {
 
     StatisticsCustomRepository statisticsCustomRepository;
 
-    public StatisticsDto viewStatisByPostId(Long userId, Long postId){
+    public StatisticsDto viewStatisticByPostId(Long userId, Long postId){
         return statisticsCustomRepository.findStatisticByPostId(userId, postId);
     }
 
-    public StatisticsDto viewStatisByUserId(Long userId){
-        return statisticsCustomRepository.findStatisticsByUserId(userId);
+    public StatisticsDto viewStatisByUserId(Long userId, int year){
+        return statisticsCustomRepository.findStatisticsByUserId(userId, year);
     }
 }

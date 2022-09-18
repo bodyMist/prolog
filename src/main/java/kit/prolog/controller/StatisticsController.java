@@ -3,6 +3,7 @@ package kit.prolog.controller;
 
 import kit.prolog.dto.StatisticsDto;
 import kit.prolog.dto.SuccessDto;
+import kit.prolog.service.PostService;
 import kit.prolog.service.StatisticService;
 import kit.prolog.dto.*;
 import lombok.Data;
@@ -24,17 +25,19 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class StatisticsController {
 
-    StatisticService statisticService;
+    private final StatisticService statisticService;
 
     @GetMapping("/mystatis/{year}")
-    public SuccessDto findStatisticByUserId(@PathVariable("year") long year, @PathVariable Long id){
-        StatisticsDto statis = statisticService.viewStatisByUserId(id);
+    public SuccessDto findStatisticByUserId(
+            @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
+            @RequestHeader(required = false) Long memberPk, @PathVariable int year){
 
-        return new SuccessDto(true,statis);
+        return new SuccessDto(true,statisticService.viewStatisByUserId(memberPk, year));
     }
 
 
@@ -42,14 +45,6 @@ public class StatisticsController {
     public SuccessDto findStatisticByPostId(
             @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
             @RequestHeader(required = false) Long memberPk, @PathVariable Long id){
-
-        StatisticsDto statis;
-
-        if(memberPk != null)
-            statis = statisticService.viewStatisByPostId(memberPk, id);
-        else
-            statis = statisticService.viewStatisByPostId(null, id);
-
-        return new SuccessDto(true,statis);
+        return new SuccessDto(true,statisticService.viewStatisticByPostId(memberPk, id));
     }
 }

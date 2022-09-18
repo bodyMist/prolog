@@ -6,6 +6,6 @@ public interface StatisticsCustomRepository {
 
     StatisticsDto findStatisticByPostId(long userId, long postId);
 
-    StatisticsDto findStatisticsByUserId(long userId);
+    StatisticsDto findStatisticsByUserId(long userId, int year);
 
 }
