@@ -61,7 +61,7 @@ public class CommentController {
 
     @GetMapping("/boards/{id}/comments")
     public ResponseEntity getComments(@PathVariable("id") Long postId,
-                                      @PageableDefault(sort = "time", direction = Sort.Direction.DESC) Pageable pageable,
+                                      @PageableDefault(sort = "time", direction = Sort.Direction.ASC) Pageable pageable,
                                       @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
 
         Long userId = null;
