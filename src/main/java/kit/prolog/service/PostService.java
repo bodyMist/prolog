@@ -91,12 +91,14 @@ public class PostService {
 
     /**
      * 레이아웃 틀 삭제 API
-     * 매개변수 : moldId(레이아웃 틀 pk)
+     * 매개변수 : moldId(레이아웃 틀 pk), memberId(회원 pk)
      * 반환 : boolean
-     * 에러처리 :
+     * 에러처리 : 해당 회원의 mold가 아닐 경우
      * */
-    public boolean deleteMold(Long moldId){
+    public boolean deleteMold(Long moldId, Long memberId) throws NullPointerException, IllegalArgumentException{
         Optional<Mold> mold = moldRepository.findById(moldId);
+        if(mold.isEmpty())  throw new NullPointerException("해당하는 레이아웃 틀이 없습니다");
+        if(!mold.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("해당 회원의 권한이 아닙니다");
         List<Post> postList = postRepository.findByMold_Id(moldId);
         List<Layout> layoutList = layoutRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
@@ -122,13 +124,13 @@ public class PostService {
      * */
     public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
-                          HashMap<String, Object> param){
+                          HashMap<String, Object> param) throws NullPointerException{
         log.info("게시글 작성 API");
         Optional<Mold> mold;
 
         Optional<User> user = userRepository.findById(userId);
         Optional<Category> category = categoryRepository.findById(categoryId);
-
+        if(user.isEmpty() || category.isEmpty()) throw new NullPointerException("No Required Data");
         Post post = new Post(title, LocalDateTime.now(),user.get(), category.get());
         if (param.containsKey("moldId")){
             Long moldId = Long.parseLong(param.get("moldId").toString());
@@ -353,11 +355,15 @@ public class PostService {
 
     /**
     * 게시글 삭제 API
-    * 매개변수 : postId(게시글 pk)
+    * 매개변수 : postId(게시글 pk), memberId(회원 pk)
     * 반환 : boolean
     * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
-    public boolean deletePost(Long postId){
+    public boolean deletePost(Long postId, Long memberId) throws NullPointerException{
+        Optional<Post> post = postRepository.findById(postId);
+        if(post.isEmpty())  throw new NullPointerException("There is no Post");
+        if (post.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("There is no Right");
+
         // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 내용 -> 게시글
         likeRepository.deleteAllByPost_Id(postId);
         commentRepository.deleteAllByPost_Id(postId);
@@ -389,19 +395,23 @@ public class PostService {
     * 반환 : boolean
     * 발생 가능 에러 : DataIntegrityViolationException(잘못된 데이터가 바인딩 되었을 때 발생)
     * */
-    public boolean likePost(Long userId, Long postId){
-        Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
-        boolean result = false;
-        if(like.isPresent()){
-            likeRepository.delete(like.get());
-            log.info("좋아요 취소 Service 실행");
-        }else{
-            Like myLike = new Like(new User(userId), new Post(postId));
-            likeRepository.save(myLike);
-            log.info("좋아요 등록 Service 실행");
-            result = true;
+    public boolean likePost(Long userId, Long postId) throws Exception{
+        try {
+            Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
+            boolean result = false;
+            if (like.isPresent()) {
+                likeRepository.delete(like.get());
+                log.info("좋아요 취소 Service 실행");
+            } else {
+                Like myLike = new Like(new User(userId), new Post(postId));
+                likeRepository.save(myLike);
+                log.info("좋아요 등록 Service 실행");
+                result = true;
+            }
+            return result;
+        }catch (Exception e){
+            throw new Exception("Unexpected Server Error");
         }
-        return result;
     }
 
     /**
