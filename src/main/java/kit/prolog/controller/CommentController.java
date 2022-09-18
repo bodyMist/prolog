@@ -4,10 +4,13 @@ import kit.prolog.dto.CommentFormDto;
 import kit.prolog.dto.CommentLv1Dto;
 import kit.prolog.dto.SuccessDto;
 import kit.prolog.service.CommentService;
+import kit.prolog.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,43 +20,55 @@ import java.util.List;
 public class CommentController {
 
     private final CommentService commentService;
+    private final JwtService jwtService;
 
     @PostMapping("/comments/submitComment")
-    public SuccessDto saveComment(@RequestBody CommentFormDto commentFormDto) {
-        /* TODO: principal */
-        Long userId = 1L;
+    public ResponseEntity saveComment(@RequestBody CommentFormDto commentFormDto,
+                                      @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+
+        if (!jwtService.validateToken(accessToken))
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
+        Long userId = Long.parseLong(jwtService.getUserPk(accessToken));
 
         commentService.insertComment(commentFormDto, userId);
-        return new SuccessDto(true);
+        return new ResponseEntity(new SuccessDto(true), HttpStatus.OK);
     }
 
     @PatchMapping("/comments/modifyComment/{id}")
-    public SuccessDto editComment(@PathVariable("id") Long commentId,
-                                  @RequestBody CommentFormDto commentFormDto) {
-        /* TODO: principal */
-        Long userId = 1L;
+    public ResponseEntity editComment(@PathVariable("id") Long commentId,
+                                      @RequestBody CommentFormDto commentFormDto,
+                                      @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+
+        if (!jwtService.validateToken(accessToken))
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
+        Long userId = Long.parseLong(jwtService.getUserPk(accessToken));
 
         commentService.updateComment(commentId, commentFormDto, userId);
-        return new SuccessDto(true);
+        return new ResponseEntity(new SuccessDto(true), HttpStatus.OK);
     }
 
     @DeleteMapping("/comments/deleteComment/{id}")
-    public SuccessDto deleteComment(@PathVariable("id") Long commentId) {
-        /* TODO: principal */
-        Long userId = 1L;
+    public ResponseEntity deleteComment(@PathVariable("id") Long commentId,
+                                        @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+
+        if (!jwtService.validateToken(accessToken))
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
+        Long userId = Long.parseLong(jwtService.getUserPk(accessToken));
 
         commentService.deleteComment(commentId, userId);
-        return new SuccessDto(true);
+        return new ResponseEntity(new SuccessDto(true), HttpStatus.OK);
     }
 
     @GetMapping("/boards/{id}/comments")
-    public SuccessDto getComments(@PathVariable("id") Long postId,
-                                  @PageableDefault(sort = "time", direction = Sort.Direction.DESC) Pageable pageable) {
+    public ResponseEntity getComments(@PathVariable("id") Long postId,
+                                      @PageableDefault(sort = "time", direction = Sort.Direction.DESC) Pageable pageable,
+                                      @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
 
-        /* TODO: principal */
-        Long userId = 1L;
+        Long userId = null;
+        if (jwtService.validateToken(accessToken))
+            userId = Long.parseLong(jwtService.getUserPk(accessToken));
 
         List<CommentLv1Dto> comments = commentService.findCommentsInPost(postId, userId, pageable);
-        return new SuccessDto(true, comments);
+        return new ResponseEntity(new SuccessDto(true, comments), HttpStatus.OK);
     }
 }

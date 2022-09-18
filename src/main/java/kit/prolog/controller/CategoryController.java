@@ -3,9 +3,12 @@ package kit.prolog.controller;
 import kit.prolog.dto.CategoryInfoDto;
 import kit.prolog.dto.SuccessDto;
 import kit.prolog.service.CategoryService;
+import kit.prolog.service.JwtService;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,33 +18,43 @@ import java.util.List;
 public class CategoryController {
 
     private final CategoryService categoryService;
+    private final JwtService jwtService;
 
     @PostMapping("/categories")
-    public SuccessDto createCategory(@RequestBody CategoryFormDto categoryFormDto) {
-        /* TODO: principal */
-        Long userId = 1L;
+    public ResponseEntity createCategory(@RequestBody CategoryFormDto categoryFormDto,
+                                         @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+
+        if (!jwtService.validateToken(accessToken))
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
+        Long userId = Long.parseLong(jwtService.getUserPk(accessToken));
 
         categoryService.insertCategory(categoryFormDto, userId);
-        return new SuccessDto(true);
+        return new ResponseEntity(new SuccessDto(true), HttpStatus.OK);
     }
 
     @PatchMapping("/categories/{id}")
-    public SuccessDto editCategory(@PathVariable("id") Long categoryId,
-                                   @RequestBody CategoryFormDto categoryFormDto) {
-        /* TODO: principal */
-        Long userId = 1L;
+    public ResponseEntity editCategory(@PathVariable("id") Long categoryId,
+                                       @RequestBody CategoryFormDto categoryFormDto,
+                                       @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+
+        if (!jwtService.validateToken(accessToken))
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
+        Long userId = Long.parseLong(jwtService.getUserPk(accessToken));
 
         categoryService.updateCategory(categoryId, categoryFormDto, userId);
-        return new SuccessDto(true);
+        return new ResponseEntity(new SuccessDto(true), HttpStatus.OK);
     }
 
     @DeleteMapping("/categories/{id}")
-    public SuccessDto removeCategory(@PathVariable("id") Long categoryId) {
-        /* TODO: principal */
-        Long userId = 1L;
+    public ResponseEntity removeCategory(@PathVariable("id") Long categoryId,
+                                         @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+
+        if (!jwtService.validateToken(accessToken))
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
+        Long userId = Long.parseLong(jwtService.getUserPk(accessToken));
 
         categoryService.deleteCategory(categoryId, userId);
-        return new SuccessDto(true);
+        return new ResponseEntity(new SuccessDto(true), HttpStatus.OK);
     }
 
     @GetMapping("/users/{id}/categories")
