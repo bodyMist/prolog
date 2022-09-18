@@ -24,7 +24,7 @@ public class CommentController {
 
     @PostMapping("/comments/submitComment")
     public ResponseEntity saveComment(@RequestBody CommentFormDto commentFormDto,
-                                      @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+                                      @RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken) {
 
         if (!jwtService.validateToken(accessToken))
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
@@ -37,7 +37,7 @@ public class CommentController {
     @PatchMapping("/comments/modifyComment/{id}")
     public ResponseEntity editComment(@PathVariable("id") Long commentId,
                                       @RequestBody CommentFormDto commentFormDto,
-                                      @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+                                      @RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken) {
 
         if (!jwtService.validateToken(accessToken))
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
@@ -49,7 +49,7 @@ public class CommentController {
 
     @DeleteMapping("/comments/deleteComment/{id}")
     public ResponseEntity deleteComment(@PathVariable("id") Long commentId,
-                                        @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+                                        @RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken) {
 
         if (!jwtService.validateToken(accessToken))
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
@@ -62,7 +62,7 @@ public class CommentController {
     @GetMapping("/boards/{id}/comments")
     public ResponseEntity getComments(@PathVariable("id") Long postId,
                                       @PageableDefault(sort = "time", direction = Sort.Direction.ASC) Pageable pageable,
-                                      @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+                                      @RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken) {
 
         Long userId = null;
         if (jwtService.validateToken(accessToken))

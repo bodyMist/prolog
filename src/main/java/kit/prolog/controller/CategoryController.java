@@ -22,7 +22,7 @@ public class CategoryController {
 
     @PostMapping("/categories")
     public ResponseEntity createCategory(@RequestBody CategoryFormDto categoryFormDto,
-                                         @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+                                         @RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken) {
 
         if (!jwtService.validateToken(accessToken))
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
@@ -35,7 +35,7 @@ public class CategoryController {
     @PatchMapping("/categories/{id}")
     public ResponseEntity editCategory(@PathVariable("id") Long categoryId,
                                        @RequestBody CategoryFormDto categoryFormDto,
-                                       @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+                                       @RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken) {
 
         if (!jwtService.validateToken(accessToken))
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
@@ -47,7 +47,7 @@ public class CategoryController {
 
     @DeleteMapping("/categories/{id}")
     public ResponseEntity removeCategory(@PathVariable("id") Long categoryId,
-                                         @RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+                                         @RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken) {
 
         if (!jwtService.validateToken(accessToken))
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "access token invalid"), HttpStatus.valueOf(403));
