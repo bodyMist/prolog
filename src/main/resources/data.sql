@@ -20,7 +20,7 @@ INSERT INTO categories(name, user_user_id, upper_id) VALUES ('워크숍', 1, 3);
 INSERT INTO molds(name, user_user_id) VALUES ('기본 틀', 1);
 INSERT INTO molds(name, user_user_id) VALUES ('복합 틀', 1);
 
-# 게시글 14
+# 게시글 21
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '1이것은 테스트용이예요', 1, 1, 1);
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
@@ -49,6 +49,20 @@ INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '13이것은 테스트용이예요', 1, 1, 1);
 INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
 VALUES (CURRENT_TIME, '14이것은 테스트용이예요', 1, 2, 1);
+INSERT INTO posts(time, title, category_category_id, user_user_id)
+VALUES (CURRENT_TIME, '15번 글', 1, 2);
+INSERT INTO posts(time, title, category_category_id, user_user_id)
+VALUES (CURRENT_TIME, '16 ㅁㄴㅇㄹ', 1, 2);
+INSERT INTO posts(time, title, category_category_id, user_user_id)
+VALUES (CURRENT_TIME, '17촤하하하하', 1, 2);
+INSERT INTO posts(time, title, category_category_id, user_user_id)
+VALUES (CURRENT_TIME, '18테테테스스스트트트', 2, 1);
+INSERT INTO posts(time, title, category_category_id, user_user_id)
+VALUES (CURRENT_TIME, '19React 사용법', 2, 1);
+INSERT INTO posts(time, title, category_category_id, user_user_id)
+VALUES (CURRENT_TIME, '20내 방에는 창문이 많아', 2, 1);
+INSERT INTO posts(time, title, category_category_id, mold_mold_id, user_user_id)
+VALUES (CURRENT_TIME, '21이거 방탄 유리야!!!!!!!!', 1, 2, 1);
 
 # 레이아웃 6
 INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width, mold_mold_id)
@@ -65,7 +79,7 @@ INSERT INTO layouts(dtype, coordinatex, coordinatey, explanation, height, width)
 VALUES (6, 65.245, 34.349, '레이아웃 설명6', 20, 30);
 
 
-# 내용 40
+# 내용 60
 INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (1, 1, '줄글 내용', false);
 INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (1, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
 INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (1, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
@@ -106,6 +120,28 @@ INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (13, 2, '
 INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (14, 1, '줄글 내용', false);
 INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (14, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
 INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (14, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (15, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (15, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (15, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (16, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (16, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (16, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (17, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (17, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (17, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (18, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (18, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (18, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (19, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (19, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (19, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (20, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (20, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (20, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, context, main) values (21, 1, '줄글 내용', false);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (21, 2, 'http://img4.tmon.kr/cdn4/deals/2021/11/22/9164630210/front_9d836_cfq0o.jpg', true);
+INSERT INTO contexts(post_post_id, layout_layout_id, url, main) values (21, 2, 'https://www.flaticon.com/kr/free-icon/example_5578817', true);
+
 
 # 태그 6
 INSERT INTO tags(name) VALUES ('딥러닝');
