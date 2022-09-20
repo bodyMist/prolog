@@ -3,6 +3,8 @@ package kit.prolog.repository.custom;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Projections;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPQLQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import kit.prolog.domain.*;
@@ -128,7 +130,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     @Override
-    public List<PostPreviewDto> findLikePostByUserId(String account, int cursor) {
+    public List<PostPreviewDto> findLikePostByAccount(String account, int cursor) {
         List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
@@ -136,7 +138,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user))
-                .leftJoin(like).on(post.eq(like.post).and(like.user.eq(user)))
+                .innerJoin(like).on(post.eq(like.post).and(like.user.eq(user)))
                 .where(lowerThanCursor(cursor))
                 .groupBy(post)
                 .orderBy(post.id.desc())
@@ -155,17 +157,18 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
 
     @Override
     public List<PostPreviewDto> findHottestPosts(int page) {
+        NumberPath<Long> likeCount = Expressions.numberPath(Long.class, "quantity");
         List<PostPreviewDto> previewDtos = query.select(
                 Projections.constructor(PostPreviewDto.class,
                         post.id, post.title, post.time,
-                        user.name, user.image, like.count())
+                        user.name, user.image, like.count().as(likeCount))
         )
                 .from(post)
                 .innerJoin(user).on(post.user.eq(user))
                 .leftJoin(like).on(post.eq(like.post))
                 .where(like.time.after(LocalDateTime.now().minusDays(7)).or(like.time.isNull()))
                 .groupBy(post)
-                .orderBy(post.id.desc())
+                .orderBy(likeCount.desc())
                 .offset(page)
                 .limit(PAGE_SIZE)
                 .fetch();
