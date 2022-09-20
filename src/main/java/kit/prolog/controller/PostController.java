@@ -41,9 +41,9 @@ public class PostController {
     @PostMapping("/layout")
     public SuccessDto createLayout(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                    @RequestBody Map<String, Object> json){
-        Long memberPk = validateUser(accessToken);
         SuccessDto response;
         try {
+            Long memberPk = validateUser(accessToken);
             List<LayoutDto> layouts =
                     ((List<LinkedHashMap>) json.get("layouts"))
                             .stream().map(LayoutDto::new)
@@ -51,8 +51,8 @@ public class PostController {
             String moldName = json.get("moldName") == null ? "" : json.get("moldName").toString();
             MoldWithLayoutsDto moldWithLayoutsDto = postService.saveLayouts(memberPk, layouts, moldName);
             response = new SuccessDto(true, moldWithLayoutsDto);
-        }catch (IllegalArgumentException argumentException){
-            response = new SuccessDto(false, "User Data Exception");
+        }catch (IllegalArgumentException | NullPointerException exception){
+            response = new SuccessDto(false, exception.getMessage());
         }
         return response;
     }
@@ -62,13 +62,13 @@ public class PostController {
     @GetMapping("/layouts/{id}")
     public SuccessDto readLayouts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                   @PathVariable Long id){
-        Long memberPk = validateUser(accessToken);
         SuccessDto response;
         try {
-            MoldWithLayoutsDto layoutDtos = postService.viewLayoutsByMold(id);
+            Long memberPk = validateUser(accessToken);
+            MoldWithLayoutsDto layoutDtos = postService.viewLayoutsByMold(memberPk, id);
             response = new SuccessDto(true, layoutDtos);
-        }catch (IllegalArgumentException argumentException){
-            response = new SuccessDto(false, "User Data Exception");
+        }catch (IllegalArgumentException | IllegalAccessException | NullPointerException exception){
+            response = new SuccessDto(false, exception.getMessage());
         }
         return response;
     }
@@ -78,13 +78,13 @@ public class PostController {
      * */
     @GetMapping("/layouts")
     public SuccessDto readLayoutMolds(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken){
-        Long memberPk = validateUser(accessToken);
         SuccessDto response;
         try {
+            Long memberPk = validateUser(accessToken);
             List<MoldDto> myMolds = postService.viewMyMolds(memberPk);
-            return new SuccessDto(true, myMolds);
-        }catch (IllegalArgumentException argumentException){
-            response = new SuccessDto(false, "User Data Exception");
+            response = new SuccessDto(true, myMolds);
+        }catch (IllegalArgumentException | NullPointerException exception){
+            response = new SuccessDto(false, exception.getMessage());
         }
         return response;
     }
@@ -95,15 +95,13 @@ public class PostController {
     @DeleteMapping("/layouts/{id}")
     public SuccessDto deleteMold(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                  @PathVariable Long id){
-        Long memberPk = validateUser(accessToken);
         SuccessDto response;
         try {
+            Long memberPk = validateUser(accessToken);
             postService.deleteMold(id, memberPk);
-            return new SuccessDto(true);
-        }catch (IllegalArgumentException argumentException){
-            response = new SuccessDto(false, "No Data Exception");
-        }catch (NullPointerException nullPointerException){
-            response = new SuccessDto(false, "No mold Data");
+            response = new SuccessDto(true);
+        }catch (IllegalArgumentException | NullPointerException exception) {
+            response = new SuccessDto(false, exception.getMessage());
         }
         return response;
     }
@@ -114,9 +112,9 @@ public class PostController {
     @PostMapping("/board")
     public SuccessDto createPost(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                  @RequestBody Map<String, Object> json){
-        Long memberPk = validateUser(accessToken);
         SuccessDto response;
         try {
+            Long memberPk = validateUser(accessToken);
             // required
             Long categoryId = Long.parseLong(json.get("category").toString());
             String title = json.get("title").toString();
@@ -145,10 +143,8 @@ public class PostController {
 
             Long writePost = postService.writePost(memberPk, title, layoutDtos, categoryId, params);
             response = new SuccessDto(true, writePost);
-        }catch (NullPointerException e){
-            response = new SuccessDto(false, "No Required Data");
-        }catch (IllegalArgumentException argumentException){
-            response = new SuccessDto(false, "No User Data");
+        }catch (IllegalArgumentException | NullPointerException exception) {
+            response = new SuccessDto(false, exception.getMessage());
         }catch (Exception e){
             response = new SuccessDto(false, "Unexpected Server Error");
         }
@@ -169,20 +165,23 @@ public class PostController {
 
     /**
      * 게시글 상세 조회 API
-     * 로그인 상태와 비로그인 상태에서 차이 있음  --> 세션 구현 필요
      * 로그인 상태일 때, 좋아요 exist 정보를 포함하여 조회
      * */
     @GetMapping("/board/{id}")
-    public SuccessDto readPost(@RequestHeader(required = false) Long memberPk,@PathVariable Long id){
+    public SuccessDto readPost(@RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken,
+                               @PathVariable Long id){
+        SuccessDto response;
         PostDetailDto post;
-        if(memberPk != null)
-            post = postService.viewPostDetailById(memberPk, id);
-        else
-            post = postService.viewPostDetailById(NO_USER, id);
-        // 비로그인 상태
-
-        PostDetail postDetail = new PostDetail(post);
-        return new SuccessDto(true, postDetail);
+        Long memberPk = null;
+        try {
+            if(!accessToken.isEmpty())  memberPk = validateUser(accessToken);
+            post = postService.viewPostDetailById(Objects.requireNonNullElse(memberPk, NO_USER), id);
+            PostDetail postDetail = new PostDetail(post);
+            response = new SuccessDto(true, postDetail);
+        }catch (NullPointerException | IllegalArgumentException exception){
+            response = new SuccessDto(false, exception.getMessage());
+        }
+        return response;
     }
 
     /**
@@ -192,10 +191,10 @@ public class PostController {
     public SuccessDto updatePost(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                  @PathVariable Long id,
                                  @RequestBody Map<String, Object> json){
-        Long memberPk = validateUser(accessToken);
         SuccessDto response;
         try {
             // required
+            Long memberPk = validateUser(accessToken);
             Long categoryId = Long.parseLong(json.get("category").toString());
             String title = json.get("title").toString();
             List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
@@ -224,10 +223,8 @@ public class PostController {
 
             Long postId = postService.updatePost(id, memberPk, title, layoutDtos, categoryId, params);
             response = new SuccessDto(true, postId);
-        }catch (NullPointerException nullException){
-            response = new SuccessDto(false, "No Required Data");
-        }catch (IllegalArgumentException argumentException){
-            response = new SuccessDto(false, "No User Data");
+        }catch (NullPointerException | IllegalArgumentException exception){
+            response = new SuccessDto(false, exception.getMessage());
         }catch (Exception e){
             response = new SuccessDto(false, "Unexpected Server Error");
         }
@@ -241,9 +238,9 @@ public class PostController {
     @DeleteMapping("/board/{id}")
     public SuccessDto deletePost(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                  @PathVariable Long id){
-        Long memberPk = validateUser(accessToken);
         SuccessDto response;
         try {
+            Long memberPk = validateUser(accessToken);
             postService.deletePost(id, memberPk);
             response = new SuccessDto(true);
         }catch (NullPointerException | IllegalArgumentException e){
@@ -269,40 +266,56 @@ public class PostController {
     @PostMapping("/upload")
     public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files){
         MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
-        files.forEach(f -> {
-            bodyBuilder.part("files", f.getResource());
-        });
-        List<FileDto> uploadedFiles = api
-                .post()
-                .uri(uriBuilder -> uriBuilder.path("/upload").build())
-                .accept(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<FileDto>>() {})
-                .block();
-        List<FileDto> result = postService.saveUploadedFiles(uploadedFiles);
-        return new SuccessDto(true, result);
+        SuccessDto response;
+        try {
+            files.forEach(f -> {
+                bodyBuilder.part("files", f.getResource());
+            });
+            List<FileDto> uploadedFiles = api
+                    .post()
+                    .uri(uriBuilder -> uriBuilder.path("/upload").build())
+                    .accept(MediaType.APPLICATION_JSON)
+                    .body(BodyInserters.fromMultipartData(bodyBuilder.build()))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<FileDto>>() {
+                    })
+                    .block();
+            List<FileDto> result = postService.saveUploadedFiles(uploadedFiles);
+            return new SuccessDto(true, result);
+        }catch (IllegalArgumentException exception){
+            response = new SuccessDto(false, "No Any File");
+        }catch (Exception exception){
+            response = new SuccessDto(false, "Unexpected Server Error");
+        }
+        return response;
     }
 
     /**
      * 파일 삭제 API
      * */
     @DeleteMapping("/upload/{id}")
-    public SuccessDto deleteFile(@PathVariable String id){
-
-        Boolean externalResult  = api.mutate()
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .build()
-                .delete()
-                .uri(uriBuilder -> uriBuilder.path("/{fileName}").build(id))
-                .retrieve()
-                .bodyToMono(Boolean.class)
-                .block();
+    public SuccessDto deleteFile(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
+                                 @PathVariable String id){
         SuccessDto response;
-        response = externalResult
-                ? new SuccessDto(true, postService.deleteFile(id))
-                : new SuccessDto(false);
-
+        try {
+            Long memberPk = validateUser(accessToken);
+            if(!postService.checkWriter(memberPk, id)) throw new IllegalArgumentException("No Permission");
+            Boolean externalResult = api.mutate()
+                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .build()
+                    .delete()
+                    .uri(uriBuilder -> uriBuilder.path("/{fileName}").build(id))
+                    .retrieve()
+                    .bodyToMono(Boolean.class)
+                    .block();
+            response = externalResult
+                    ? new SuccessDto(true, postService.deleteFile(id))
+                    : new SuccessDto(false);
+        }catch (NullPointerException | IllegalArgumentException exception){
+            response = new SuccessDto(false, exception.getMessage());
+        }catch (Exception exception){
+            response = new SuccessDto(false, "Unexpected Server Error");
+        }
         return response;
     }
 
@@ -391,10 +404,12 @@ public class PostController {
         return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
     }
 
-    private Long validateUser(String accessToken){
-        String memberPk = jwtService.validateToken(accessToken) ? jwtService.getUserPk(accessToken) : "";
+    private Long validateUser(String accessToken) throws NullPointerException, IllegalArgumentException{
+        String memberPk = jwtService.validateToken(accessToken) ? jwtService.getUserPk(accessToken) : null;
+        if (memberPk == null) throw new NullPointerException("No User Data");
         User user = userService.readUser(Long.valueOf(memberPk));
-        return user != null ? Long.parseLong(memberPk) : null;
+        if (Long.parseLong(memberPk) != user.getId()) throw new IllegalArgumentException("No Permissions");
+        return Long.parseLong(memberPk);
     }
 
     /**

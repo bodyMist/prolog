@@ -71,13 +71,15 @@ public class PostService {
 
     /**
     * 레이아웃 리스트 조회 API
-    * 매개변수 : moldId(레이아웃 틀 pk)
+    * 매개변수 : userId(회원 pk), moldId(레이아웃 틀 pk)
     * 반환 : MoldWithLayoutsDto (레이아웃 틀과 하위 레이아웃들을 포함한 레이아웃 틀)
     * */
-    public MoldWithLayoutsDto viewLayoutsByMold(Long moldId){
-        Mold mold = moldRepository.findById(moldId).get();
+    public MoldWithLayoutsDto viewLayoutsByMold(Long userId, Long moldId) throws NullPointerException, IllegalAccessException{
+        Optional<Mold> mold = moldRepository.findById(moldId);
+        if(mold.isEmpty()) throw new NullPointerException("No Mold Data");
+        if (!mold.get().getUser().getId().equals(userId)) throw new IllegalAccessException("No Permissions");
         List<LayoutDto> layoutDtos = layoutRepository.findLayoutDtoByMold_Id(moldId);
-        return new MoldWithLayoutsDto(mold, layoutDtos);
+        return new MoldWithLayoutsDto(mold.get(), layoutDtos);
     }
 
     /**
@@ -109,7 +111,6 @@ public class PostService {
         });
         postRepository.saveAllAndFlush(postList);
         layoutRepository.saveAllAndFlush(layoutList);
-
         moldRepository.delete(mold.get());
         return true;
     }
@@ -226,9 +227,10 @@ public class PostService {
     * QueryDSL : 게시글을 기준으로 카테고리, 회원, 레이아웃 틀, 조회수 데이터를 조회
     * Spring JPA : 댓글, 좋아요 , 첨부파일(리스트), 태그(리스트), 레이아웃(리스트)는 별도 쿼리로 조회하여 전달
     * */
-    public PostDetailDto viewPostDetailById(Long userId, Long postId){
+    public PostDetailDto viewPostDetailById(Long userId, Long postId) throws NullPointerException{
         log.info("게시글 상세조회 API");
         PostDetailDto postDetailDto = postRepository.findPostById(postId);
+        if (postDetailDto == null) throw new NullPointerException("No Post Data");
         boolean exist;
         int likeCount = likeRepository.countByPost_Id(postId);
 
@@ -417,7 +419,7 @@ public class PostService {
     /**
      * 파일 업로드 API
      * 업로드 후 정보를 토대로 DB에 저장
-     * 매개변수 : List<FileDto>, memberPk
+     * 매개변수 : List<FileDto>
      * 반환 : List<String> URL List
      * */
     public List<FileDto> saveUploadedFiles(List<FileDto> files){
@@ -435,6 +437,15 @@ public class PostService {
         Optional<Attachment> attachment = attachmentRepository.findByName(fileName);
         attachment.ifPresent(attachmentRepository::delete);
         return attachment.isPresent() ? attachment.get().getName() : "";
+    }
+    /**
+     * 파일 삭제 API
+     * 매개변수 : userId(회원 pk), fileName(파일명)
+     * 반환 : boolean
+     * */
+    public boolean checkWriter(Long userId, String fileName){
+        Long fileWriter = postRepository.checkWriterWithAttachment(fileName);
+        return fileWriter.equals(userId);
     }
 
     /**
