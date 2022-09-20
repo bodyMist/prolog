@@ -339,10 +339,20 @@ public class PostController {
      * 좋아요 한 글 목록 조회 API
      * */
     @GetMapping("{account}/likes")
-    public SuccessDto readLikedPosts(@PathVariable String account, @RequestParam int last){
-        List<PostPreviewDto> likedPosts = postService.getLikePostList(account, last);
-        List<PostPreview> post = changeResponseType(likedPosts);
-        return new SuccessDto(true, post);
+    public SuccessDto readLikedPosts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
+                                     @PathVariable String account, @RequestParam int last){
+        Long memberPk = validateUser(accessToken);
+        SuccessDto response;
+        try {
+            List<PostPreviewDto> likedPosts = postService.getLikePostList(memberPk, account, last);
+            List<PostPreview> post = changeResponseType(likedPosts);
+            response = new SuccessDto(true, post);
+        }catch (IllegalArgumentException argumentException){
+            response = new SuccessDto(false, "No User Data");
+        }catch (NullPointerException nullException){
+            response = new SuccessDto(false, nullException.getMessage());
+        }
+        return response;
     }
 
     /**

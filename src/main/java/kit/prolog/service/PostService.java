@@ -97,8 +97,8 @@ public class PostService {
      * */
     public boolean deleteMold(Long moldId, Long memberId) throws NullPointerException, IllegalArgumentException{
         Optional<Mold> mold = moldRepository.findById(moldId);
-        if(mold.isEmpty())  throw new NullPointerException("해당하는 레이아웃 틀이 없습니다");
-        if(!mold.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("해당 회원의 권한이 아닙니다");
+        if(mold.isEmpty())  throw new NullPointerException("No Appropriate Data");
+        if(!mold.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("No Permissions");
         List<Post> postList = postRepository.findByMold_Id(moldId);
         List<Layout> layoutList = layoutRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
@@ -361,8 +361,8 @@ public class PostService {
     * */
     public boolean deletePost(Long postId, Long memberId) throws NullPointerException{
         Optional<Post> post = postRepository.findById(postId);
-        if(post.isEmpty())  throw new NullPointerException("There is no Post");
-        if (post.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("There is no Right");
+        if(post.isEmpty())  throw new NullPointerException("No Post Data");
+        if (post.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("No Permissions");
 
         // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 내용 -> 게시글
         likeRepository.deleteAllByPost_Id(postId);
@@ -449,12 +449,15 @@ public class PostService {
 
     /**
      * 좋아요 한 글 목록 조회 API
-     * 매개변수 : userId(사용자 pk), cursor(페이지 번호)
+     * 매개변수 : userId(사용자 pk), account(계정명), cursor(페이지 번호)
      * 반환 : List<PostPreviewDto>
      * */
-    public List<PostPreviewDto> getLikePostList(String account, int cursor){
+    public List<PostPreviewDto> getLikePostList(Long userId, String account, int cursor){
         log.info("좋아요 한 게시글 목록 조회");
-        return postRepository.findLikePostByUserId(account, cursor);
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) throw new NullPointerException("No User Data");
+        if (!user.get().getAccount().equals(account)) throw new IllegalArgumentException("No Permission");
+        return postRepository.findLikePostByAccount(account, cursor);
     }
 
     /**
