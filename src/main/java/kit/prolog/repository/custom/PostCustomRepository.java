@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 public interface PostCustomRepository {
-    int PAGE_SIZE = 9;
+    int PAGE_SIZE = 15;
     PostDetailDto findPostById(Long id);
     List<LayoutDto> selectDetailLayout(Long postId);
     List<PostPreviewDto> findPostByCategoryName(String account, String categoryName, int cursor);
@@ -17,4 +17,5 @@ public interface PostCustomRepository {
     List<PostPreviewDto> findHottestPosts(int cursor);
     List<PostPreviewDto> findRecentPosts(int cursor);
     List<PostPreviewDto> searchPosts(String keyword, int cursor);
+    Long checkWriterWithAttachment(String fileName);
 }

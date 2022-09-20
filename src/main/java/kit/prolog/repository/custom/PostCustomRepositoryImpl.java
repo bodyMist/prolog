@@ -37,6 +37,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     private final QContext context = QContext.context1;
     private final QPostTag postTag = QPostTag.postTag;
     private final QTag tag = QTag.tag;
+    private final QAttachment attachment = QAttachment.attachment;
 
     @Override
     public PostDetailDto findPostById(Long postId) {
@@ -232,6 +233,16 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         });
 
         return previewDtos;
+    }
+
+    @Override
+    public Long checkWriterWithAttachment(String fileName) {
+        return query.select(user.id)
+                .from(post)
+                .innerJoin(user).on(user.id.eq(post.user.id))
+                .innerJoin(attachment).on(post.id.eq(attachment.post.id))
+                .where(attachment.name.eq(fileName))
+                .fetchOne();
     }
 
     private JPQLQuery<Long> selectLikes(Long postId){
