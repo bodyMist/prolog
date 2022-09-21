@@ -26,9 +26,8 @@ public class Attachment {
     private Post post;
 
     // 게시글 작성 api
-    public Attachment(AttachmentDto dto, Post post) {
-        this.id = dto.getId();
-        this.url = dto.getUrl();
+    public Attachment(String id, Post post) {
+        this.id = Long.parseLong(id);
         this.post = post;
     }
     public Attachment(FileDto file){

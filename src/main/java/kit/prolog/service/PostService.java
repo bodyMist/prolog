@@ -194,11 +194,14 @@ public class PostService {
                     postTagRepository.save(postTag);
                 });
             }
-            if(param.containsKey("attachments")){
-                List<AttachmentDto> attachmentList = (List<AttachmentDto>) param.get("attachments");
-                attachmentList.forEach(attachmentDto -> {
-                    Attachment attachment = new Attachment(attachmentDto, savedPost);
-                    attachmentRepository.save(attachment);
+            if(param.containsKey("attachment")){
+                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
+                attachmentDtos.forEach(attachment -> {
+                    Optional<Attachment> optional = attachmentRepository.findById(attachment.getId());
+                    if(optional.isPresent()) {
+                        optional.get().setPost(savedPost);
+                        attachmentRepository.save(optional.get());
+                    }
                 });
             }
         }
@@ -342,12 +345,14 @@ public class PostService {
                     postTagRepository.save(postTag);
                 });
             }
-            if(param.containsKey("attachments")){
-                attachmentRepository.deleteAllByPost_Id(postId);
-                List<AttachmentDto> attachmentList = (List<AttachmentDto>) param.get("attachments");
-                attachmentList.forEach(attachmentDto -> {
-                    Attachment attachment = new Attachment(attachmentDto, savedPost);
-                    attachmentRepository.save(attachment);
+            if(param.containsKey("attachment")){
+                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
+                attachmentDtos.forEach(attachment -> {
+                    Optional<Attachment> optional = attachmentRepository.findById(attachment.getId());
+                    if(optional.isPresent()) {
+                        optional.get().setPost(savedPost);
+                        attachmentRepository.save(optional.get());
+                    }
                 });
             }
         }
@@ -422,10 +427,10 @@ public class PostService {
      * 매개변수 : List<FileDto>
      * 반환 : List<String> URL List
      * */
-    public List<FileDto> saveUploadedFiles(List<FileDto> files){
+    public List<AttachmentDto> saveUploadedFiles(List<FileDto> files){
         List<Attachment> uploadedFiles = files.stream().map(Attachment::new).collect(Collectors.toList());
         List<Attachment> attachments = attachmentRepository.saveAll(uploadedFiles);
-        return attachments.stream().map(FileDto::new).collect(Collectors.toList());
+        return attachments.stream().map(AttachmentDto::new).collect(Collectors.toList());
     }
 
     /**

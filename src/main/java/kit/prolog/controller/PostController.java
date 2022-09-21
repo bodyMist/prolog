@@ -128,8 +128,8 @@ public class PostController {
             if (json.get("tag") != null) {
                 ((List<String>) json.get("tag")).forEach(tags::add);
             }
-            List<AttachmentDto> attachments = json.get("attachments") == null
-                    ? null : ((List<LinkedHashMap>) json.get("attachments"))
+            List<AttachmentDto> attachments = json.get("attachment") == null
+                    ? null : ((List<LinkedHashMap>) json.get("attachment"))
                     .stream().map(AttachmentDto::new)
                     .collect(Collectors.toList());
 
@@ -137,7 +137,7 @@ public class PostController {
             if (moldId != null)
                 params.put("moldId", moldId);
             if (attachments != null)
-                params.put("attachments", attachments);
+                params.put("attachment", attachments);
             if (!tags.isEmpty())
                 params.put("tags", tags);
 
@@ -280,7 +280,7 @@ public class PostController {
                     .bodyToMono(new ParameterizedTypeReference<List<FileDto>>() {
                     })
                     .block();
-            List<FileDto> result = postService.saveUploadedFiles(uploadedFiles);
+            List<AttachmentDto> result = postService.saveUploadedFiles(uploadedFiles);
             return new SuccessDto(true, result);
         }catch (IllegalArgumentException exception){
             response = new SuccessDto(false, "No Any File");
