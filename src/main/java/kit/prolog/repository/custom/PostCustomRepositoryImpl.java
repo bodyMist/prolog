@@ -236,12 +236,20 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
     }
 
     @Override
-    public Long checkWriterWithAttachment(String fileName) {
+    public Long checkPostWriter(Long postId) {
         return query.select(user.id)
                 .from(post)
                 .innerJoin(user).on(user.id.eq(post.user.id))
-                .innerJoin(attachment).on(post.id.eq(attachment.post.id))
-                .where(attachment.name.eq(fileName))
+                .where(post.id.eq(postId))
+                .fetchOne();
+    }
+
+    @Override
+    public Long checkMoldWriter(Long moldId) {
+        return query.select(user.id)
+                .from(mold)
+                .innerJoin(user).on(user.id.eq(mold.user.id))
+                .where(mold.id.eq(moldId))
                 .fetchOne();
     }
 

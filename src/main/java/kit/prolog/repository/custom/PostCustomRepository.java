@@ -17,5 +17,6 @@ public interface PostCustomRepository {
     List<PostPreviewDto> findHottestPosts(int cursor);
     List<PostPreviewDto> findRecentPosts(int cursor);
     List<PostPreviewDto> searchPosts(String keyword, int cursor);
-    Long checkWriterWithAttachment(String fileName);
+    Long checkPostWriter(Long postId);
+    Long checkMoldWriter(Long moldId);
 }

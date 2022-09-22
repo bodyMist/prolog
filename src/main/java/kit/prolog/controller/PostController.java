@@ -299,7 +299,6 @@ public class PostController {
         SuccessDto response;
         try {
             Long memberPk = validateUser(accessToken);
-            if(!postService.checkWriter(memberPk, id)) throw new IllegalArgumentException("No Permission");
             Boolean externalResult = api.mutate()
                     .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .build()

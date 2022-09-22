@@ -43,11 +43,6 @@ public class PostService {
      * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
      * 매개변수 : userId(사용자 pk), List<LayoutDto> (레이아웃 데이터), arg(레이아웃틀 이름/가변 매개)
      * 반환 : List<LayoutDto> pk를 포함한 저장된 결과 반환
-     *
-     * !!Warning!!
-     * 레이아웃 content는 이후 게시글 작성 API에서 이루어짐
-     * update문은 spring jpa save로 사용.
-     * 컨테이너에 저장된 bean의 주소값과 자바에서의 객체 주소값이 다를 수 있으므로 주의.
      * */
     public MoldWithLayoutsDto saveLayouts(Long userId, List<LayoutDto> layoutData, String moldName){
         Mold savedMold = null;
@@ -75,9 +70,10 @@ public class PostService {
     * 반환 : MoldWithLayoutsDto (레이아웃 틀과 하위 레이아웃들을 포함한 레이아웃 틀)
     * */
     public MoldWithLayoutsDto viewLayoutsByMold(Long userId, Long moldId) throws NullPointerException, IllegalAccessException{
+        if (checkMoldPermissions(userId, moldId)) throw new IllegalAccessException("No Permissions");
+
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty()) throw new NullPointerException("No Mold Data");
-        if (!mold.get().getUser().getId().equals(userId)) throw new IllegalAccessException("No Permissions");
         List<LayoutDto> layoutDtos = layoutRepository.findLayoutDtoByMold_Id(moldId);
         return new MoldWithLayoutsDto(mold.get(), layoutDtos);
     }
@@ -93,14 +89,15 @@ public class PostService {
 
     /**
      * 레이아웃 틀 삭제 API
-     * 매개변수 : moldId(레이아웃 틀 pk), memberId(회원 pk)
+     * 매개변수 : moldId(레이아웃 틀 pk), userId(회원 pk)
      * 반환 : boolean
      * 에러처리 : 해당 회원의 mold가 아닐 경우
      * */
-    public boolean deleteMold(Long moldId, Long memberId) throws NullPointerException, IllegalArgumentException{
+    public void deleteMold(Long moldId, Long userId) throws NullPointerException, IllegalArgumentException{
+        if (checkMoldPermissions(userId, moldId)) throw new IllegalArgumentException("No Permissions");
+
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty())  throw new NullPointerException("No Appropriate Data");
-        if(!mold.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("No Permissions");
         List<Post> postList = postRepository.findByMold_Id(moldId);
         List<Layout> layoutList = layoutRepository.findByMold_Id(moldId);
         postList.forEach(post -> {
@@ -112,7 +109,6 @@ public class PostService {
         postRepository.saveAllAndFlush(postList);
         layoutRepository.saveAllAndFlush(layoutList);
         moldRepository.delete(mold.get());
-        return true;
     }
 
     /**
@@ -232,6 +228,8 @@ public class PostService {
     * */
     public PostDetailDto viewPostDetailById(Long userId, Long postId) throws NullPointerException{
         log.info("게시글 상세조회 API");
+        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
+
         PostDetailDto postDetailDto = postRepository.findPostById(postId);
         if (postDetailDto == null) throw new NullPointerException("No Post Data");
         boolean exist;
@@ -281,7 +279,9 @@ public class PostService {
      * */
     public Long updatePost(Long postId, Long userId, String title,
                               List<LayoutDto> layoutDtos, Long categoryId,
-                              HashMap<String, Object> param){
+                              HashMap<String, Object> param) throws IllegalArgumentException{
+
+        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
         Optional<Mold> mold;
         Optional<Category> category = categoryRepository.findById(categoryId);
 
@@ -362,14 +362,14 @@ public class PostService {
 
     /**
     * 게시글 삭제 API
-    * 매개변수 : postId(게시글 pk), memberId(회원 pk)
+    * 매개변수 : postId(게시글 pk), userId(회원 pk)
     * 반환 : boolean
     * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
-    public boolean deletePost(Long postId, Long memberId) throws NullPointerException{
+    public boolean deletePost(Long postId, Long userId) throws NullPointerException{
+        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
         Optional<Post> post = postRepository.findById(postId);
         if(post.isEmpty())  throw new NullPointerException("No Post Data");
-        if (post.get().getUser().getId().equals(memberId)) throw new IllegalArgumentException("No Permissions");
 
         // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 내용 -> 게시글
         likeRepository.deleteAllByPost_Id(postId);
@@ -443,15 +443,6 @@ public class PostService {
         attachment.ifPresent(attachmentRepository::delete);
         return attachment.isPresent() ? attachment.get().getName() : "";
     }
-    /**
-     * 파일 삭제 API
-     * 매개변수 : userId(회원 pk), fileName(파일명)
-     * 반환 : boolean
-     * */
-    public boolean checkWriter(Long userId, String fileName){
-        Long fileWriter = postRepository.checkWriterWithAttachment(fileName);
-        return fileWriter.equals(userId);
-    }
 
     /**
      * 내가 쓴 글 목록 조회 API
@@ -504,5 +495,16 @@ public class PostService {
      * */
     public List<PostPreviewDto> searchPosts(String keyword, int cursor){
         return postRepository.searchPosts(keyword, cursor);
+    }
+
+    /**
+     * 권한 검사
+     * 작성자와 요청자의 pk 비교
+     * */
+    private boolean checkPostPermissions(Long userId, Long postId){
+        return postRepository.checkPostWriter(postId).equals(userId);
+    }
+    private boolean checkMoldPermissions(Long userId, Long moldId){
+        return postRepository.checkMoldWriter(moldId).equals(userId);
     }
 }
