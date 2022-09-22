@@ -15,6 +15,7 @@ import kit.prolog.dto.PostPreviewDto;
 import kit.prolog.repository.jpa.LayoutRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
+import org.springframework.util.Assert;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -155,6 +156,59 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
         );
         return previewDtos;
     }
+
+    @Override
+    public List<PostPreviewDto> findMyPostByUserId(Long userId, int cursor) {
+        List<PostPreviewDto> previewDtos = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image, like.count())
+        )
+                .from(post)
+                .innerJoin(user).on(post.user.eq(user))
+                .leftJoin(like).on(post.eq(like.post))
+                .where(user.id.eq(userId).and(lowerThanCursor(cursor)))
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .limit(PAGE_SIZE)
+                .fetch();
+
+        getPostsHits(previewDtos);
+
+        previewDtos.forEach(post -> {
+                    List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
+                    post.addLayoutDto(layoutContext);
+                }
+        );
+        return previewDtos;
+    }
+
+    @Override
+    public List<PostPreviewDto> findLikePostByAccount(Long userId, int cursor) {
+        List<PostPreviewDto> previewDtos = query.select(
+                Projections.constructor(PostPreviewDto.class,
+                        post.id, post.title, post.time,
+                        user.name, user.image, like.count())
+        )
+                .from(post)
+                .innerJoin(user).on(post.user.eq(user))
+                .innerJoin(like).on(post.eq(like.post).and(like.user.eq(user)))
+                .where(user.id.eq(userId).and(lowerThanCursor(cursor)))
+                .groupBy(post)
+                .orderBy(post.id.desc())
+                .limit(PAGE_SIZE)
+                .fetch();
+
+        getPostsHits(previewDtos);
+
+        previewDtos.forEach(post -> {
+                    List<LayoutDto> layoutContext = selectMainContext(post.getPostDto().getId()).fetch();
+                    post.addLayoutDto(layoutContext);
+                }
+        );
+        return previewDtos;
+    }
+
 
     @Override
     public List<PostPreviewDto> findHottestPosts(int page) {

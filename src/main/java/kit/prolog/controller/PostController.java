@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostController {
     private static final Long NO_USER = 0L;
+    private static final String SERVER_ERROR = "Unexpected Server Error";
     private final PostService postService;
     private final UserService userService;
     private final JwtService jwtService;
@@ -146,7 +147,7 @@ public class PostController {
         }catch (IllegalArgumentException | NullPointerException exception) {
             response = new SuccessDto(false, exception.getMessage());
         }catch (Exception e){
-            response = new SuccessDto(false, "Unexpected Server Error");
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }
@@ -226,7 +227,7 @@ public class PostController {
         }catch (NullPointerException | IllegalArgumentException exception){
             response = new SuccessDto(false, exception.getMessage());
         }catch (Exception e){
-            response = new SuccessDto(false, "Unexpected Server Error");
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }
@@ -246,7 +247,7 @@ public class PostController {
         }catch (NullPointerException | IllegalArgumentException e){
             response = new SuccessDto(false, e.getMessage());
         } catch (Exception e){
-            response = new SuccessDto(false, "Unexpected Server Error");
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }
@@ -285,7 +286,7 @@ public class PostController {
         }catch (IllegalArgumentException exception){
             response = new SuccessDto(false, "No Any File");
         }catch (Exception exception){
-            response = new SuccessDto(false, "Unexpected Server Error");
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }
@@ -313,7 +314,7 @@ public class PostController {
         }catch (NullPointerException | IllegalArgumentException exception){
             response = new SuccessDto(false, exception.getMessage());
         }catch (Exception exception){
-            response = new SuccessDto(false, "Unexpected Server Error");
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }
@@ -332,25 +333,25 @@ public class PostController {
         }catch (IllegalArgumentException argumentException){
             response = new SuccessDto(false, "No User Data");
         }catch (Exception e){
-            response = new SuccessDto(false, e.getMessage());
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }
 
     /**
-     * 내가 쓴 글 목록 조회 API
+     * (구)내가 쓴 글 목록 조회 API
      * */
-    @GetMapping("/{account}/")
+/*    @GetMapping("/{account}/")
     public SuccessDto readMyPosts(@PathVariable String account, @RequestParam int last){
         List<PostPreviewDto> myPosts = postService.getMyPostList(account, last);
         List<PostPreview> post = changeResponseType(myPosts);
         return new SuccessDto(true, post);
-    }
+    }*/
 
     /**
-     * 좋아요 한 글 목록 조회 API
+     * (구)좋아요 한 글 목록 조회 API
      * */
-    @GetMapping("{account}/likes")
+/*    @GetMapping("{account}/likes")
     public SuccessDto readLikedPosts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                      @PathVariable String account, @RequestParam int last){
         Long memberPk = validateUser(accessToken);
@@ -363,6 +364,46 @@ public class PostController {
             response = new SuccessDto(false, "No User Data");
         }catch (NullPointerException nullException){
             response = new SuccessDto(false, nullException.getMessage());
+        }
+        return response;
+    }*/
+
+    /**
+     * 내가 쓴 글 목록 조회 API
+     * */
+    @GetMapping("/my-info/boards")
+    public SuccessDto readMyPosts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
+                                  @RequestParam int last){
+        SuccessDto response;
+        try {
+            Long memberPk = validateUser(accessToken);
+            List<PostPreviewDto> myPosts = postService.getMyPostList(memberPk, last);
+            List<PostPreview> post = changeResponseType(myPosts);
+            response = new SuccessDto(true, post);
+        }catch (IllegalArgumentException exception){
+            response = new SuccessDto(false, exception.getMessage());
+        }catch (Exception e){
+            response = new SuccessDto(false, SERVER_ERROR);
+        }
+        return response;
+    }
+
+    /**
+     * 좋아요 한 글 목록 조회 API
+     * */
+    @GetMapping("/my-info/likes")
+    public SuccessDto readLikedPosts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
+                                     @RequestParam int last){
+        SuccessDto response;
+        try {
+            Long memberPk = validateUser(accessToken);
+            List<PostPreviewDto> likedPosts = postService.getLikePostList(memberPk, last);
+            List<PostPreview> post = changeResponseType(likedPosts);
+            response = new SuccessDto(true, post);
+        }catch (NullPointerException | IllegalArgumentException exception) {
+            response = new SuccessDto(false, exception.getMessage());
+        }catch (Exception e){
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }

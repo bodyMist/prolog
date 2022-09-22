@@ -453,6 +453,10 @@ public class PostService {
         log.info("내가 쓴 게시글 목록 조회");
         return postRepository.findMyPostByUserId(account, cursor);
     }
+    public List<PostPreviewDto> getMyPostList(Long userId, int cursor){
+        log.info("내가 쓴 게시글 목록 조회");
+        return postRepository.findMyPostByUserId(userId, cursor);
+    }
 
     /**
      * 좋아요 한 글 목록 조회 API
@@ -465,6 +469,12 @@ public class PostService {
         if (user.isEmpty()) throw new NullPointerException("No User Data");
         if (!user.get().getAccount().equals(account)) throw new IllegalArgumentException("No Permission");
         return postRepository.findLikePostByAccount(account, cursor);
+    }
+    public List<PostPreviewDto> getLikePostList(Long userId, int cursor){
+        log.info("좋아요 한 게시글 목록 조회");
+        Optional<User> user = userRepository.findById(userId);
+        if (user.isEmpty()) throw new NullPointerException("No User Data");
+        return postRepository.findLikePostByAccount(userId, cursor);
     }
 
     /**
