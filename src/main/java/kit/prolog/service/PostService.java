@@ -70,7 +70,7 @@ public class PostService {
     * 반환 : MoldWithLayoutsDto (레이아웃 틀과 하위 레이아웃들을 포함한 레이아웃 틀)
     * */
     public MoldWithLayoutsDto viewLayoutsByMold(Long userId, Long moldId) throws NullPointerException, IllegalAccessException{
-        if (checkMoldPermissions(userId, moldId)) throw new IllegalAccessException("No Permissions");
+        if (!checkMoldPermissions(userId, moldId)) throw new IllegalAccessException("No Permissions");
 
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty()) throw new NullPointerException("No Mold Data");
@@ -94,7 +94,7 @@ public class PostService {
      * 에러처리 : 해당 회원의 mold가 아닐 경우
      * */
     public void deleteMold(Long moldId, Long userId) throws NullPointerException, IllegalArgumentException{
-        if (checkMoldPermissions(userId, moldId)) throw new IllegalArgumentException("No Permissions");
+        if (!checkMoldPermissions(userId, moldId)) throw new IllegalArgumentException("No Permissions");
 
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty())  throw new NullPointerException("No Appropriate Data");
