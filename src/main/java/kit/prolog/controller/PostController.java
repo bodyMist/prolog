@@ -175,12 +175,14 @@ public class PostController {
         PostDetailDto post;
         Long memberPk = null;
         try {
-            if(!accessToken.isEmpty())  memberPk = validateUser(accessToken);
+            if(accessToken != null && accessToken.isEmpty())  memberPk = validateUser(accessToken);
             post = postService.viewPostDetailById(Objects.requireNonNullElse(memberPk, NO_USER), id);
             PostDetail postDetail = new PostDetail(post);
             response = new SuccessDto(true, postDetail);
         }catch (NullPointerException | IllegalArgumentException exception){
             response = new SuccessDto(false, exception.getMessage());
+        }catch (Exception e){
+            response = new SuccessDto(false, SERVER_ERROR);
         }
         return response;
     }

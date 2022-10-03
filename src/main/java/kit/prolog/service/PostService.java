@@ -228,7 +228,6 @@ public class PostService {
     * */
     public PostDetailDto viewPostDetailById(Long userId, Long postId) throws NullPointerException{
         log.info("게시글 상세조회 API");
-        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
 
         PostDetailDto postDetailDto = postRepository.findPostById(postId);
         if (postDetailDto == null) throw new NullPointerException("No Post Data");
