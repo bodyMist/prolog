@@ -223,7 +223,7 @@ public class PostCustomRepositoryImpl implements PostCustomRepository {
                 .leftJoin(like).on(post.eq(like.post))
                 .where(like.time.after(LocalDateTime.now().minusDays(7)).or(like.time.isNull()))
                 .groupBy(post)
-                .orderBy(likeCount.desc())
+                .orderBy(likeCount.desc(), post.id.desc())
                 .offset(page)
                 .limit(PAGE_SIZE)
                 .fetch();
