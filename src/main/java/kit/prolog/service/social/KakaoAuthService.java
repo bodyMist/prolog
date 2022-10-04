@@ -58,12 +58,10 @@ public class KakaoAuthService {
                 while ((line = br.readLine()) != null) {
                     result += line;
                 }
-                System.out.println("response body : " + result);
 
                 //Gson 라이브러리에 포함된 클래스로 JSON파싱 객체 생성
                 JSONObject jObject = new JSONObject(result);
                 accessToken = jObject.get("access_token").toString();
-                System.out.println("access_token : " + accessToken);
 
                 br.close();
                 bw.close();
@@ -91,10 +89,8 @@ public class KakaoAuthService {
                 while((line=br.readLine())!=null){
                     res += line;
                 }
-                System.out.println("res = " + res);
                 JSONObject jObject = new JSONObject(res);
                 id = jObject.get("id").toString();
-                System.out.println("id : " + id);
                 br.close();
                 return id;
             }

@@ -59,12 +59,10 @@ public class GithubAuthService {
                 while ((line = br.readLine()) != null) {
                     result += line;
                 }
-                System.out.println("response body : " + result);
 
                 //Gson 라이브러리에 포함된 클래스로 JSON파싱 객체 생성
                 JSONObject jObject = new JSONObject(result);
                 accessToken = jObject.get("access_token").toString();
-                System.out.println("access_token : " + accessToken);
 
                 br.close();
                 return accessToken;
@@ -95,11 +93,9 @@ public class GithubAuthService {
                 while ((line = br.readLine()) != null) {
                     result += line;
                 }
-                System.out.println("response body : " + result);
 
                 JSONObject jObject = new JSONObject(result);
                 int socialKey = jObject.getInt("id");
-                System.out.println("socialKey " + socialKey);
                 return String.valueOf(socialKey);
             }
         }catch(IOException e){

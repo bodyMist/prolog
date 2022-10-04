@@ -1,5 +1,6 @@
 package kit.prolog.controller;
 
+import kit.prolog.config.PasswordConfig;
 import kit.prolog.domain.User;
 import kit.prolog.domain.redis.JwtAuthToken;
 import kit.prolog.dto.*;
@@ -16,6 +17,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.NoSuchAlgorithmException;
+
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -27,13 +30,30 @@ public class UserController {
     private final KakaoAuthService kakaoAuthService;
     private final GithubAuthService githubAuthService;
     private final JwtService jwtService;
+    private final PasswordConfig passwordConfig;
 
     @PostMapping("/signup/email")
     public SuccessDto createUserByEmail(@RequestBody UserEmailInfoDto userEmailInfoDto){
+        String password = "";
+        // password validation
+        if(!passwordConfig.passwordValidataion(userEmailInfoDto.getPassword())){
+            return new SuccessDto(false, "password invalid error");
+        }
+        // email validation
+        if(!passwordConfig.emailValidataion(userEmailInfoDto.getEmail())){
+            return new SuccessDto(false, "email invalid error");
+        }
+        // password hashing
+        try{
+            password = passwordConfig.hashing(passwordConfig.getSalt() + userEmailInfoDto.getPassword());
+        }catch (NoSuchAlgorithmException e){
+            return new SuccessDto(false, "signup fail");
+        }
+
         User user = new User();
         user.setName(userEmailInfoDto.getName());
         user.setAccount(userEmailInfoDto.getAccount());
-        user.setPassword(userEmailInfoDto.getPassword());
+        user.setPassword(password);
         user.setEmail(userEmailInfoDto.getEmail());
         user.setAlarm(userEmailInfoDto.isAlarm());
         user.setImage(userEmailInfoDto.getImage());
@@ -43,10 +63,9 @@ public class UserController {
         user.setSocialKey("");
 
         if(userService.createUserByEmail(user)){
-            // 프로필 사진 이미지 저장 추가부분
-            return new SuccessDto(true, null);
+            return new SuccessDto(true, "signup success");
         }else{
-            return new SuccessDto(false, null);
+            return new SuccessDto(false, "signup fail");
         }
     }
 
@@ -54,11 +73,27 @@ public class UserController {
     public ResponseEntity<SuccessDto> createUserBySocial(
             @PathVariable("social") String socialType,
             @RequestBody UserSocialInfoDto userSocialInfoDto){
-        System.out.println(userSocialInfoDto.getSocial_key());
+        String password = "";
+        // password validation
+        if(!passwordConfig.passwordValidataion(userSocialInfoDto.getPassword())){
+            return ResponseEntity.ok().body(new SuccessDto(false, "invalid password error"));
+        }
+
+        // email validation
+        if(!passwordConfig.emailValidataion(userSocialInfoDto.getEmail())){
+            return ResponseEntity.ok().body(new SuccessDto(false, "email invalid error"));
+        }
+
+        try{
+            password = passwordConfig.hashing(passwordConfig.getSalt() + userSocialInfoDto.getPassword());
+        }catch (NoSuchAlgorithmException e){
+            return ResponseEntity.ok().body(new SuccessDto(false, "signup fail"));
+        }
+
         User user = new User();
         user.setName(userSocialInfoDto.getName());
         user.setAccount(userSocialInfoDto.getAccount());
-        user.setPassword(userSocialInfoDto.getPassword());
+        user.setPassword(password);
         user.setEmail(userSocialInfoDto.getEmail());
         user.setAlarm(false);
         user.setImage("");
@@ -85,7 +120,7 @@ public class UserController {
             headers.set("userId", String.valueOf(userId));
             headers.set("accessToken", accessToken);
             headers.set("refreshToken", refreshToken);
-            return ResponseEntity.ok().headers(headers).body(new SuccessDto(true, "login success"));
+            return ResponseEntity.ok().headers(headers).body(new SuccessDto(true, "signup success"));
         }else{
             return ResponseEntity.ok().body(new SuccessDto(false, "signup fail"));
         }
@@ -98,16 +133,15 @@ public class UserController {
             String userId = jwtService.getUserPk(accessToken);
             User user = userService.readUser(Long.parseLong(userId));
             if(user.getId() != 0){
-                return new ResponseEntity<SuccessDto>(
-                        new SuccessDto(true, new UserEmailInfoDto(
-                        user.getName(),
-                        user.getAccount(),
-                        user.getPassword(),
-                        user.getEmail(),
-                        user.getAlarm(),
-                        user.getImage(),
-                        user.getNickname(),
-                        user.getIntroduce())),HttpStatus.OK);
+                UserEmailInfoDto userEmailInfoDto = new UserEmailInfoDto();
+                userEmailInfoDto.setName(user.getName());
+                userEmailInfoDto.setAccount(user.getAccount());
+                userEmailInfoDto.setEmail(user.getEmail());
+                userEmailInfoDto.setAlarm(user.getAlarm());
+                userEmailInfoDto.setImage(user.getImage());
+                userEmailInfoDto.setNickname(user.getNickname());
+                userEmailInfoDto.setIntroduce(user.getIntroduce());
+                return new ResponseEntity<SuccessDto>(new SuccessDto(true, userEmailInfoDto),HttpStatus.OK);
             }else{
                 return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user read error"), HttpStatus.OK);
             }
@@ -128,15 +162,15 @@ public class UserController {
             User user = userService.readUser(Long.parseLong(userId));
             if(user.getId() != 0){
                 userService.deleteUser(Long.parseLong(userId));
-                UserEmailInfoDto userEmailInfoDto = new UserEmailInfoDto(
-                        user.getName(),
-                        user.getAccount(),
-                        user.getPassword(),
-                        user.getEmail(),
-                        user.getAlarm(),
-                        user.getImage(),
-                        user.getNickname(),
-                        user.getIntroduce());
+                UserEmailInfoDto userEmailInfoDto = new UserEmailInfoDto();
+                userEmailInfoDto.setName(user.getName());
+                userEmailInfoDto.setAccount(user.getAccount());
+                userEmailInfoDto.setPassword(user.getPassword());
+                userEmailInfoDto.setEmail(user.getEmail());
+                userEmailInfoDto.setAlarm(user.getAlarm());
+                userEmailInfoDto.setImage(user.getImage());
+                userEmailInfoDto.setNickname(user.getNickname());
+                userEmailInfoDto.setIntroduce(user.getIntroduce());
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, userEmailInfoDto), HttpStatus.OK);
             }else{
                 return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user delete error"), HttpStatus.OK);
@@ -154,6 +188,18 @@ public class UserController {
             @RequestBody UserEmailInfoDto userEmailInfoDto){
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
+
+            // password validation
+            if(!passwordConfig.passwordValidataion(userEmailInfoDto.getPassword())){
+                return ResponseEntity.ok().body(new SuccessDto(false, "invalid password error"));
+            }
+            // password hashing
+            try{
+                userEmailInfoDto.setPassword(passwordConfig.hashing(passwordConfig.getSalt() + userEmailInfoDto.getPassword()));
+            }catch (NoSuchAlgorithmException e){
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "update error"), HttpStatus.OK);
+            }
+
             if(userService.updateUser(Long.parseLong(userId), userEmailInfoDto)){
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, "update success"), HttpStatus.OK);
             }else{
@@ -171,6 +217,18 @@ public class UserController {
             @RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
             @RequestBody UserPwChangeDto userPwChangeDto){
         if(jwtService.validateToken(accessToken)){
+
+            // password validation
+            if(!passwordConfig.passwordValidataion(userPwChangeDto.getPassword())){
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "password invalid error"), HttpStatus.OK);
+            }
+            // password hashing
+            try{
+                userPwChangeDto.setPassword(passwordConfig.hashing(passwordConfig.getSalt() + userPwChangeDto.getPassword()));
+            }catch (NoSuchAlgorithmException e){
+                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "update error"), HttpStatus.OK);
+            }
+
             if(userService.changePassword(userPwChangeDto.getEmail(), userPwChangeDto.getAccount(), userPwChangeDto.getPassword())){
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, "password update success"), HttpStatus.OK);
             }else {
@@ -184,6 +242,12 @@ public class UserController {
 
     @PostMapping("/login")
     public ResponseEntity<SuccessDto> login(@RequestBody UserLoginDto userLoginDto){
+        try{
+            userLoginDto.setPassword(passwordConfig.hashing(passwordConfig.getSalt() + userLoginDto.getPassword()));
+        }catch (NoSuchAlgorithmException e){
+            return new ResponseEntity<SuccessDto>(new SuccessDto(false, "login fail"), HttpStatus.OK);
+        }
+
         User user = userService.login(userLoginDto.getAccount(), userLoginDto.getPassword());
         if(user != null){
             HttpHeaders headers = new HttpHeaders();
@@ -206,7 +270,6 @@ public class UserController {
     //https://github.com/login/oauth/authorize?client_id=0006efe23ef0c6ecb6c0&redirect_uri=http://localhost:8080/login/github
     @PostMapping("/login/{social}")
     public ResponseEntity<SuccessDto> loginBySocial(@PathVariable("social") String socialType, @RequestBody UserCodeDto userCodeDto) {
-        System.out.println(userCodeDto.getCode());
         String socialAccessToken = "";
         String socialKey = "";
         Integer sns = 0;
@@ -217,12 +280,10 @@ public class UserController {
         }else if(socialType.equals("github")) {
             socialAccessToken = githubAuthService.getGithubAccessToken(userCodeDto.getCode()); // 인가코드 받기
             socialKey = githubAuthService.getGithubUserKey(socialAccessToken); // accessToken 받기
-            System.out.println("socialKey " + socialKey);
             sns = 2;
         }else{
             return new ResponseEntity<SuccessDto>(new SuccessDto(false, "social login url error"), HttpStatus.OK);
         }
-        System.out.println("socialKey " + socialKey);
         User user = userService.searchSocialKey(sns, socialKey);
 
         if(user != null){ // 로그인 유저 식별 id 확인 후 로그인 또는 회원가입 진행
