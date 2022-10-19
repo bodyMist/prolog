@@ -1,12 +1,13 @@
 package kit.prolog.domain;
 
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import javax.persistence.*;
 
+@Data
 @Entity(name = "CONTEXTS")
-@Setter
 @NoArgsConstructor
 public class Context{
     @Id
