@@ -9,7 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Configuration
-@PropertySource("classpath:static/api.properties")
+@PropertySource("classpath:static/file-server.properties")
 public class WebClientConfig {
     @Value("${file.server.ip}")
     private String FILE_SERVER_IP;
