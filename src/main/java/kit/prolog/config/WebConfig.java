@@ -16,6 +16,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler(connectPath).addResourceLocations(resourcePath);
+        registry.addResourceHandler("/**").addResourceLocations("file:///Users/Tofu/Desktop/");
     }
 }
