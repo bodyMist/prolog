@@ -193,7 +193,7 @@ public class PostService {
             if(param.containsKey("attachment")){
                 List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
                 attachmentDtos.forEach(attachment -> {
-                    Optional<Attachment> optional = attachmentRepository.findById(attachment.getId());
+                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
                     if(optional.isPresent()) {
                         optional.get().setPost(savedPost);
                         attachmentRepository.save(optional.get());
@@ -347,7 +347,7 @@ public class PostService {
             if(param.containsKey("attachment")){
                 List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
                 attachmentDtos.forEach(attachment -> {
-                    Optional<Attachment> optional = attachmentRepository.findById(attachment.getId());
+                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
                     if(optional.isPresent()) {
                         optional.get().setPost(savedPost);
                         attachmentRepository.save(optional.get());

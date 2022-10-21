@@ -21,7 +21,7 @@ public class AttachmentDto {
     }
 
     public AttachmentDto(LinkedHashMap<String, String> json) {
-        this.id = Long.parseLong(json.get("id"));
+        this.name = json.get("name");
     }
     public AttachmentDto(Attachment attachment) {
         this.id = attachment.getId();

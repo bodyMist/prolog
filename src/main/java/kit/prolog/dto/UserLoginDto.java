@@ -1,14 +1,9 @@
 package kit.prolog.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
+@Data
+@NoArgsConstructor
 public class UserLoginDto {
     private String account;
     private String password;
