@@ -1,66 +1,109 @@
 package kit.prolog.repository;
 
-import kit.prolog.domain.Like;
-import kit.prolog.domain.Post;
-import kit.prolog.domain.User;
-import kit.prolog.repository.jpa.LikeRepository;
-import kit.prolog.repository.jpa.MoldRepository;
-import kit.prolog.repository.jpa.PostRepository;
+
+import kit.prolog.config.EmailConfig;
+import kit.prolog.config.QuerydslConfig;
+import kit.prolog.domain.*;
+import kit.prolog.repository.jpa.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.jdbc.Sql;
 
-import java.util.List;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest
-@Transactional
+@DataJpaTest
+@Import({QuerydslConfig.class, EmailConfig.class})
+@ActiveProfiles("test")
+@Sql(scripts = {"classpath:test.sql"})
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 public class PostRepositoryTest {
     @Autowired private PostRepository postRepository;
-    @Autowired private LikeRepository likeRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private CategoryRepository categoryRepository;
     @Autowired private MoldRepository moldRepository;
+    @Autowired private LayoutRepository layoutRepository;
+    @Autowired private ContextRepository contextRepository;
 
-    @Test
-    void 카테고리별_게시글_조회(){
-        String account = "sky834459";
-        String categoryName = "개발용";
-        int cursor = 0;
-        postRepository.findPostByCategoryName(account, categoryName, cursor)
-                .forEach(System.out::println);
-
+    @BeforeEach
+    public void setUp(){
+        User user = new User();
+        user.setAccount("asdf111");
+        user.setPassword("asdf12!");
+        user.setEmail("tkdrms0301@naver.com");
+        user.setSns(0);
+        user.setName("안상근");
+        user.setImage("");
+        user.setNickname("An");
+        user.setIntroduce("hello world!");
+        user.setAlarm(true);
+        userRepository.save(user);
     }
 
     @Test
-    void 게시글_좋아요_취소(){
-        Long userId = 1L, postId = 7L;
-        Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
-        if(like.isPresent()){
-            likeRepository.delete(like.get());
-            System.out.println("좋아요 취소");
-        }else{
-            // 예외처리 주의
-            likeRepository.save(new Like(new User(userId), new Post(postId)));
-            System.out.println("좋아요 등록");
-        }
+    @DisplayName("틀 없이 게시글 저장")
+    public void savePostWithNoMold(){
+        // given
+        String userEmail = "tkdrms0301@naver.com";
+        User user = userRepository.findOneByEmail(userEmail);
+        Optional<Category> category = categoryRepository.findById(1L);
+        Post post = new Post("test-title", LocalDateTime.now(), user, category.get());
+        Layout layout = layoutRepository.getById(1L);
+        Context context = new Context(true, post, layout);
+
+        // when
+        Post savedPost = postRepository.save(post);
+        Layout updatedLayout = layoutRepository.save(layout);
+        Context savedContext = contextRepository.save(context);
+
+        // then
+        assertThat(savedPost).isNotNull();
+        assertThat(savedPost.getTitle()).isEqualTo(post.getTitle());
+        assertThat(savedPost.getUser().getId()).isEqualTo(user.getId());
+
+        assertThat(updatedLayout.getCoordinateX()).isEqualTo(layout.getCoordinateX());
+
+        assertThat(savedPost.getId()).isEqualTo(savedContext.getPost().getId());
     }
 
     @Test
-    void 게시글_레이아웃틀_비우기(){
-        //given
-        Long moldId = 1L;
-        List<Post> posts = postRepository.findByMold_Id(moldId);
-        //when
-        posts.forEach(post -> {
-            post.setMold(null);
-            postRepository.saveAndFlush(post);
-        });
-        posts.forEach(post -> System.out.println(post.getMold()));
+    @DisplayName("틀 사용 게시글 저장")
+    public void savePostWithMold(){
+        // given
+        User user = userRepository.findOneById(1L);
+        Optional<Category> category = categoryRepository.findById(1L);
+        Mold mold = moldRepository.getById(1L);
+        Post post = new Post("test-title", LocalDateTime.now(), user, category.get());
+        post.setMold(mold);
+        Layout layout = layoutRepository.getById(1L);
+        layout.setExplanation("테스트용가리");
+        layout.setWidth(100.0);
+        layout.setHeight(100.0);
+        layout.setCoordinateX(100.0);
+        layout.setCoordinateY(100.0);
+        Context context = new Context(true, post, layout);
 
-        assertThat(posts)
-                .filteredOn(post -> post.getMold() == null)
-                .hasSize(posts.size());
+        // when
+        Post savedPost = postRepository.save(post);
+        Layout updatedLayout = layoutRepository.save(layout);
+        Context savedContext = contextRepository.save(context);
+
+        // then
+        assertThat(savedPost).isNotNull();
+        assertThat(savedPost.getMold()).isNotNull();
+        assertThat(savedPost.getTitle()).isEqualTo(post.getTitle());
+        assertThat(savedPost.getUser().getId()).isEqualTo(user.getId());
+
+        assertThat(updatedLayout.getExplanation()).isEqualTo("테스트용가리");
+
+        assertThat(savedPost.getId()).isEqualTo(savedContext.getPost().getId());
     }
 }
