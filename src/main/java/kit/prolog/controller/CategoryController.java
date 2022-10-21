@@ -57,9 +57,9 @@ public class CategoryController {
         return new ResponseEntity(new SuccessDto(true), HttpStatus.OK);
     }
 
-    @GetMapping("/users/{id}/categories")
-    public SuccessDto getCategories(@PathVariable("id") Long userId) {
-        List<CategoryInfoDto> categoryInfos = categoryService.findCategoryInfos(userId);
+    @GetMapping("/users/{account}/categories")
+    public SuccessDto getCategories(@PathVariable("account") String userAccount) {
+        List<CategoryInfoDto> categoryInfos = categoryService.findCategoryInfos(userAccount);
         return new SuccessDto(true, categoryInfos);
     }
 
