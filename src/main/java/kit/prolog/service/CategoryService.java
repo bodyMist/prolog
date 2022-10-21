@@ -72,7 +72,7 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    public List<CategoryInfoDto> findCategoryInfos(Long userId) {
-        return categoryRepository.findInfoByUserId(userId);
+    public List<CategoryInfoDto> findCategoryInfos(String userAccount) {
+        return categoryRepository.findInfoByUserAccount(userAccount);
     }
 }

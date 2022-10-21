@@ -27,9 +27,9 @@ public class CategoryCustomRepositoryImpl implements CategoryCustomRepository {
     private final NumberPath<Long> countPath = Expressions.numberPath(Long.class, "count");
 
     @Override
-    public List<CategoryInfoDto> findInfoByUserId(Long userId) {
+    public List<CategoryInfoDto> findInfoByUserAccount(String userAccount) {
         List<CategoryInfoDto> lv1Categories = selectCategoryInfoDtoFromCategory()
-                .where(qCategory.user.id.eq(userId))
+                .where(qCategory.user.account.eq(userAccount))
                 .where(qCategory.upperCategory.isNull())
                 .fetch();
 
