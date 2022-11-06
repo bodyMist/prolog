@@ -14,13 +14,13 @@ spring:
     ansi:
       enabled: always
   datasource:
-    url: jdbc:mysql://localhost:3306/prolog?serverTimezone=Asia/Seoul
+    url: jdbc:mysql://mysql-container:3306/prolog?serverTimezone=Asia/Seoul
     username: root
-    password: tkd5957!@#
+    password: 8344
     driver-class-name: com.mysql.cj.jdbc.Driver
   redis:
     port: 6379
-    host: localhost
+    host: redis-container
   jpa:
     hibernate:
       ddl-auto: update
