@@ -1,5 +1,6 @@
 package kit.prolog.service;
 
+import kit.prolog.domain.Category;
 import kit.prolog.domain.User;
 import kit.prolog.dto.UserEmailInfoDto;
 import kit.prolog.repository.jpa.*;
@@ -31,7 +32,14 @@ public class UserService {
         newUser.setSns(0); // email 회원가입
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
         if(user == null){
-            userRepository.save(newUser);
+            User savedUser = userRepository.save(newUser);
+
+            Category category = Category.builder()
+                    .name("전체")
+                    .user(savedUser)
+                    .upperCategory(null)
+                    .build();
+            categoryRepository.save(category);
             return true;
         }else{
             return false;
@@ -42,7 +50,14 @@ public class UserService {
     public boolean createUserBySocial(User newUser){
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
         if(user == null){
-            userRepository.save(newUser);
+            User savedUser = userRepository.save(newUser);
+
+            Category category = Category.builder()
+                    .name("전체")
+                    .user(savedUser)
+                    .upperCategory(null)
+                    .build();
+            categoryRepository.save(category);
             return true;
         }else{
             return false;
