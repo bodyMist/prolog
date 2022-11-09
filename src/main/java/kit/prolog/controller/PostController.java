@@ -35,7 +35,7 @@ public class PostController {
     private final UserService userService;
     private final JwtService jwtService;
     private final WebClient api;
-
+    // TODO : 2022.11.08. Validation - 김태훈
     /**
      * 레이아웃 작성 API
      * */
@@ -175,8 +175,9 @@ public class PostController {
         PostDetailDto post;
         Long memberPk = null;
         try {
-            if(accessToken != null && accessToken.isEmpty())  memberPk = validateUser(accessToken);
-            post = postService.viewPostDetailById(Objects.requireNonNullElse(memberPk, NO_USER), id);
+            if(accessToken != null && !accessToken.isEmpty())  memberPk = validateUser(accessToken);
+            memberPk = memberPk == null ? NO_USER : memberPk;
+            post = postService.viewPostDetailById(memberPk, id);
             PostDetail postDetail = new PostDetail(post);
             response = new SuccessDto(true, postDetail);
         }catch (NullPointerException | IllegalArgumentException exception){
@@ -265,6 +266,7 @@ public class PostController {
 
     /**
      * 파일 업로드 API
+     * TODO : 2022.11.08. 업로드 파일 타입 제한 & 파일 실행 권한 제거 - 김태훈
      * */
     @PostMapping("/upload")
     public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files){
