@@ -121,7 +121,7 @@ public class PostService {
      * */
     public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
-                          HashMap<String, Object> param) throws NullPointerException{
+                          HashMap<String, Object> param) throws NullPointerException, IllegalArgumentException{
         log.info("게시글 작성 API");
         Optional<Mold> mold;
 
@@ -135,6 +135,18 @@ public class PostService {
             post.setMold(mold.get());
         }
         Post savedPost = postRepository.save(post);
+
+        int mainLayoutCounter = 0;
+        final int ADDITION = 1;
+        final int NONE = 0;
+
+        for (LayoutDto layoutDto : layoutDtos) {
+            mainLayoutCounter += layoutDto.getLeader() ? ADDITION : NONE;
+            if(mainLayoutCounter > ADDITION) throw new IllegalArgumentException("Too Many Main Layout");
+        }
+        if(mainLayoutCounter == NONE){
+            layoutDtos.get(NONE).setLeader(true);
+        }
 
         layoutDtos.forEach(layoutDto -> {
             layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {

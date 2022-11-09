@@ -59,6 +59,7 @@ public class LayoutDto {
         this.codes = json.get("codes") == null
                 ? null : ((List<String>) json.get("codes"))
                 .stream().map(Objects::toString).collect(Collectors.toList());
+        this.leader = Boolean.parseBoolean(json.get("leader").toString());
     }
 
     // PostPreviewDto 하위 DTO
