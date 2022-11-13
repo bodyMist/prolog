@@ -416,6 +416,7 @@ public class PostService {
             boolean result = false;
             if (like.isPresent()) {
                 likeRepository.delete(like.get());
+                result = true;
             } else {
                 Like myLike = new Like(new User(userId), new Post(postId));
                 likeRepository.save(myLike);
