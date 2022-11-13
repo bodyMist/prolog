@@ -5,6 +5,7 @@ import kit.prolog.dto.*;
 import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 * */
 @Transactional
 @Service
-@Slf4j
+@Log4j2
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
@@ -121,8 +122,7 @@ public class PostService {
      * */
     public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
-                          HashMap<String, Object> param) throws NullPointerException{
-        log.info("게시글 작성 API");
+                          HashMap<String, Object> param) throws NullPointerException, IllegalArgumentException{
         Optional<Mold> mold;
 
         Optional<User> user = userRepository.findById(userId);
@@ -135,6 +135,18 @@ public class PostService {
             post.setMold(mold.get());
         }
         Post savedPost = postRepository.save(post);
+
+        int mainLayoutCounter = 0;
+        final int ADDITION = 1;
+        final int NONE = 0;
+
+        for (LayoutDto layoutDto : layoutDtos) {
+            mainLayoutCounter += layoutDto.getLeader() ? ADDITION : NONE;
+            if(mainLayoutCounter > ADDITION) throw new IllegalArgumentException("Too Many Main Layout");
+        }
+        if(mainLayoutCounter == NONE){
+            layoutDtos.get(NONE).setLeader(true);
+        }
 
         layoutDtos.forEach(layoutDto -> {
             layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
@@ -211,7 +223,6 @@ public class PostService {
     * 반환 : List<PostPreviewDto>
     * */
     public List<PostPreviewDto> viewPostsByCategory(String account, String categoryName, int cursor){
-        log.info("특정 카테고리 게시글 조회 API");
         return postRepository.findPostByCategoryName(account, categoryName, cursor);
     }
 
@@ -227,13 +238,11 @@ public class PostService {
     * Spring JPA : 댓글, 좋아요 , 첨부파일(리스트), 태그(리스트), 레이아웃(리스트)는 별도 쿼리로 조회하여 전달
     * */
     public PostDetailDto viewPostDetailById(Long userId, Long postId) throws NullPointerException{
-        log.info("게시글 상세조회 API");
-
+        Hit savedHit = hitRepository.save(new Hit(LocalDateTime.now(), new Post(postId)));
         PostDetailDto postDetailDto = postRepository.findPostById(postId);
         if (postDetailDto == null) throw new NullPointerException("No Post Data");
         boolean exist;
         int likeCount = likeRepository.countByPost_Id(postId);
-
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "time"));
 
         List<AttachmentDto> attachmentList = attachmentRepository.findByPost_Id(postId);
@@ -407,11 +416,10 @@ public class PostService {
             boolean result = false;
             if (like.isPresent()) {
                 likeRepository.delete(like.get());
-                log.info("좋아요 취소 Service 실행");
+                result = true;
             } else {
                 Like myLike = new Like(new User(userId), new Post(postId));
                 likeRepository.save(myLike);
-                log.info("좋아요 등록 Service 실행");
                 result = true;
             }
             return result;
@@ -449,11 +457,9 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getMyPostList(String account, int cursor){
-        log.info("내가 쓴 게시글 목록 조회");
         return postRepository.findMyPostByUserId(account, cursor);
     }
     public List<PostPreviewDto> getMyPostList(Long userId, int cursor){
-        log.info("내가 쓴 게시글 목록 조회");
         return postRepository.findMyPostByUserId(userId, cursor);
     }
 
@@ -463,14 +469,12 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getLikePostList(Long userId, String account, int cursor){
-        log.info("좋아요 한 게시글 목록 조회");
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) throw new NullPointerException("No User Data");
         if (!user.get().getAccount().equals(account)) throw new IllegalArgumentException("No Permission");
         return postRepository.findLikePostByAccount(account, cursor);
     }
     public List<PostPreviewDto> getLikePostList(Long userId, int cursor){
-        log.info("좋아요 한 게시글 목록 조회");
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) throw new NullPointerException("No User Data");
         return postRepository.findLikePostByAccount(userId, cursor);
@@ -483,7 +487,6 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getHottestPostList(int cursor){
-        log.info("전체 게시글 목록 조회");
         return postRepository.findHottestPosts(cursor);
     }
 
@@ -493,7 +496,6 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getRecentPostList(int cursor){
-        log.info("최근 게시글 목록 조회");
         return postRepository.findRecentPosts(cursor);
     }
 
