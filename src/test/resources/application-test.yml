@@ -1,17 +1,7 @@
 spring:
   jpa:
-    database: h2
     hibernate:
-      ddl-auto: create-drop
-    show-sql: true
+      ddl-auto: create
   sql:
     init:
       mode: never
-  h2:
-    console:
-      enabled: true
-  datasource:
-    driver-class-name: org.h2.Driver
-    url: jdbc:h2:tcp://localhost/~/test
-    username: sa
-    password:

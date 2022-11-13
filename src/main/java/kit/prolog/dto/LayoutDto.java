@@ -1,7 +1,10 @@
 package kit.prolog.dto;
 
 import kit.prolog.domain.Layout;
-import lombok.*;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -12,7 +15,10 @@ import java.util.stream.Collectors;
 /*
  * PostDetailDto를 위한 부분 DTO
  * */
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
+@ToString
 public class LayoutDto {
     private Long id;
     private int dtype;
@@ -20,9 +26,9 @@ public class LayoutDto {
     private double coordinateY;
     private double width;
     private double height;
-    private String explanation ="";
-    private String content ="";
-    private Boolean leader = false;
+    private String explanation;
+    private String content;
+    private boolean leader;
 
     private List<String> url = new ArrayList<>();
     private List<String> codes;
@@ -53,8 +59,6 @@ public class LayoutDto {
         this.codes = json.get("codes") == null
                 ? null : ((List<String>) json.get("codes"))
                 .stream().map(Objects::toString).collect(Collectors.toList());
-        this.leader = json.get("leader") == null
-                ? null : Boolean.parseBoolean(json.get("leader").toString());
     }
 
     // PostPreviewDto 하위 DTO

@@ -9,7 +9,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -19,12 +18,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Log4j2
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class PostController {
@@ -34,7 +35,7 @@ public class PostController {
     private final UserService userService;
     private final JwtService jwtService;
     private final WebClient api;
-    // TODO : 2022.11.08. Validation - 김태훈
+
     /**
      * 레이아웃 작성 API
      * */
@@ -174,9 +175,8 @@ public class PostController {
         PostDetailDto post;
         Long memberPk = null;
         try {
-            if(accessToken != null && !accessToken.isEmpty())  memberPk = validateUser(accessToken);
-            memberPk = memberPk == null ? NO_USER : memberPk;
-            post = postService.viewPostDetailById(memberPk, id);
+            if(accessToken != null && accessToken.isEmpty())  memberPk = validateUser(accessToken);
+            post = postService.viewPostDetailById(Objects.requireNonNullElse(memberPk, NO_USER), id);
             PostDetail postDetail = new PostDetail(post);
             response = new SuccessDto(true, postDetail);
         }catch (NullPointerException | IllegalArgumentException exception){
@@ -265,7 +265,6 @@ public class PostController {
 
     /**
      * 파일 업로드 API
-     * TODO : 2022.11.08. 업로드 파일 타입 제한 & 파일 실행 권한 제거 - 김태훈
      * */
     @PostMapping("/upload")
     public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files){
