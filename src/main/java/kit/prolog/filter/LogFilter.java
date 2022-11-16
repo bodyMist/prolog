@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.List;
 import java.util.Objects;
 
 @Log4j2
@@ -19,16 +20,20 @@ public class LogFilter implements Filter {
         String requestIp = ClientIpUtil.getClientIp(readableRequest);
         log.info("요청 IP: " + requestIp);
         log.info("요청 URL: " + readableRequest.getRequestURI());
+
         String requestMethod = readableRequest.getMethod();
         if(Objects.equals(requestMethod, "POST")){
-            String json = readBodyData(readableRequest);
-            log.info("요청 정보: {}" + json);
+            String bodyType = readableRequest.getContentType();
+            if(!bodyType.contains("form-data")){
+                String json = readBodyData(readableRequest);
+                log.info("요청 정보: " + json);
+            }
         }else if(Objects.equals(requestMethod, "GET") || Objects.equals(requestMethod, "DELETE")){
-            log.info("요청 정보: {}" + readableRequest.getQueryString());
+            log.info("요청 정보: " + readableRequest.getQueryString());
         }else if(Objects.equals(requestMethod, "PUT")){
             String json = readBodyData(readableRequest);
-            log.info("요청 정보: {}" + json);
-            log.info("요청 정보: {}" + readableRequest.getQueryString());
+            log.info("요청 정보: " + json);
+            log.info("요청 정보: " + readableRequest.getQueryString());
         }
         chain.doFilter(readableRequest,response);
     }
