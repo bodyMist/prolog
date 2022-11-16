@@ -39,6 +39,9 @@ public class PostService {
     private final HitRepository hitRepository;
     private final ContextRepository contextRepository;
 
+    private final int POST_WRITE = 1;
+    private final int POST_UPDATE = 2;
+
     /**
      * 레이아웃 작성 API
      * 게시글에 포함되는 레이아웃의 틀과 하위 레이아웃들을 저장
@@ -123,96 +126,23 @@ public class PostService {
     public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
                           HashMap<String, Object> param) throws NullPointerException, IllegalArgumentException{
-        Optional<Mold> mold;
 
         Optional<User> user = userRepository.findById(userId);
+        Optional<Mold> mold;
         Optional<Category> category = categoryRepository.findById(categoryId);
         if(user.isEmpty() || category.isEmpty()) throw new NullPointerException("No Required Data");
         Post post = new Post(title, LocalDateTime.now(),user.get(), category.get());
+
         if (param.containsKey("moldId")){
             Long moldId = Long.parseLong(param.get("moldId").toString());
             mold = moldRepository.findById(moldId);
             post.setMold(mold.get());
         }
+
         Post savedPost = postRepository.save(post);
-
-        int mainLayoutCounter = 0;
-        final int ADDITION = 1;
-        final int NONE = 0;
-
-        for (LayoutDto layoutDto : layoutDtos) {
-            mainLayoutCounter += layoutDto.getLeader() ? ADDITION : NONE;
-            if(mainLayoutCounter > ADDITION) throw new IllegalArgumentException("Too Many Main Layout");
-        }
-        if(mainLayoutCounter == NONE){
-            layoutDtos.get(NONE).setLeader(true);
-        }
-
-        layoutDtos.forEach(layoutDto -> {
-            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
-                layout.setExplanation(layoutDto.getExplanation());
-                layout.setCoordinateX(layoutDto.getCoordinateX());
-                layout.setCoordinateY(layoutDto.getCoordinateY());
-                layout.setWidth(layoutDto.getWidth());
-                layout.setHeight(layoutDto.getHeight());
-
-                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
-
-                List<Context> contextList = new ArrayList<>();
-                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
-                switch (layoutType){
-                    case CONTEXT:
-                    case MATHEMATICS:
-                        context.setContext(layoutDto.getContent());
-                        break;
-                    case IMAGE:
-                        layoutDto.getUrl().forEach(url -> {
-                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
-                        });
-                        break;
-                    case CODES:
-                        List<String> codes = layoutDto.getCodes();
-                        context.setCode(codes.get(0));
-                        context.setCodeExplanation(codes.get(1));
-                        context.setCodeType(codes.get(2));
-                        break;
-                    case HYPERLINK:
-                    case VIDEOS:
-                    case DOCUMENTS:
-                        context.setUrl(layoutDto.getContent());
-                        break;
-                }
-                layoutRepository.save(layout);
-                if(contextList.isEmpty()){
-                    contextRepository.save(context);
-                }else{
-                    contextList.forEach(contextRepository::save);
-                }
-            });
-        });
-        if (!param.isEmpty()){
-            if(param.containsKey("tags")){
-                List<String> tagList = (List<String>) param.get("tags");
-                tagList.forEach(tag -> {
-                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
-                    if(!optionalTag.isPresent()) {
-                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
-                    }
-                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
-                    postTagRepository.save(postTag);
-                });
-            }
-            if(param.containsKey("attachment")){
-                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
-                attachmentDtos.forEach(attachment -> {
-                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
-                    if(optional.isPresent()) {
-                        optional.get().setPost(savedPost);
-                        attachmentRepository.save(optional.get());
-                    }
-                });
-            }
-        }
+        setMainLayout(layoutDtos);
+        writeContexts(layoutDtos, savedPost);
+        saveOption(param, savedPost, POST_WRITE);
 
         return savedPost.getId();
     }
@@ -304,66 +234,9 @@ public class PostService {
         }
         Post savedPost = postRepository.save(post);
 
-        layoutDtos.forEach(layoutDto -> {
-            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
-                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
-
-                List<Context> contextList = new ArrayList<>();
-                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
-                switch (layoutType){
-                    case CONTEXT:
-                    case MATHEMATICS:
-                        context.setContext(layoutDto.getContent());
-                        break;
-                    case IMAGE:
-                        layoutDto.getUrl().forEach(url -> {
-                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
-                        });
-                        break;
-                    case CODES:
-                        List<String> codes = layoutDto.getCodes();
-                        context.setCode(codes.get(0));
-                        context.setCodeExplanation(codes.get(1));
-                        context.setCodeType(codes.get(2));
-                        break;
-                    case HYPERLINK:
-                    case VIDEOS:
-                    case DOCUMENTS:
-                        context.setUrl(layoutDto.getContent());
-                        break;
-                }
-
-                if(contextList.isEmpty()){
-                    contextRepository.save(context);
-                }else{
-                    contextRepository.saveAll(contextList);
-                }
-            });
-        });
-        if (!param.isEmpty()){
-            if(param.containsKey("tags")){
-                List<String> tagList = (List<String>) param.get("tags");
-                postTagRepository.deleteAllByPost_Id(postId);
-                tagList.forEach(tag -> {
-                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
-                    if(!optionalTag.isPresent()) {
-                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
-                    }
-                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
-                    postTagRepository.save(postTag);
-                });
-            }
-            if(param.containsKey("attachment")){
-                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
-                attachmentDtos.forEach(attachment -> {
-                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
-                    if(optional.isPresent()) {
-                        optional.get().setPost(savedPost);
-                        attachmentRepository.save(optional.get());
-                    }
-                });
-            }
-        }
+        setMainLayout(layoutDtos);
+        writeContexts(layoutDtos, savedPost);
+        saveOption(param, savedPost, POST_UPDATE);
 
         return savedPost.getId();
     }
@@ -517,5 +390,102 @@ public class PostService {
     }
     private boolean checkMoldPermissions(Long userId, Long moldId){
         return postRepository.checkMoldWriter(moldId).equals(userId);
+    }
+
+    /**
+     * 게시글 작성&수정
+     * Layout 리스트에서 main 설정이 없다면 첫번째 Layout으로 임의 설정
+     * */
+    private void setMainLayout(List<LayoutDto> layoutDtos){
+        int mainLayoutCounter = 0;
+        final int ADDITION = 1;
+        final int NONE = 0;
+
+        for (LayoutDto layoutDto : layoutDtos) {
+            mainLayoutCounter += layoutDto.getLeader() ? ADDITION : NONE;
+            if(mainLayoutCounter > ADDITION) throw new IllegalArgumentException("Too Many Main Layout");
+        }
+        if(mainLayoutCounter == NONE){
+            layoutDtos.get(NONE).setLeader(true);
+        }
+    }
+    /**
+     * 게시글 작성 & 수정
+     * Layout과 Context 저장
+     * */
+    private void writeContexts(List<LayoutDto> layoutDtos, Post savedPost){
+        layoutDtos.forEach(layoutDto -> {
+            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                layout.setExplanation(layoutDto.getExplanation());
+                layout.setCoordinateX(layoutDto.getCoordinateX());
+                layout.setCoordinateY(layoutDto.getCoordinateY());
+                layout.setWidth(layoutDto.getWidth());
+                layout.setHeight(layoutDto.getHeight());
+
+                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
+
+                List<Context> contextList = new ArrayList<>();
+                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
+                switch (layoutType){
+                    case CONTEXT:
+                    case MATHEMATICS:
+                        context.setContext(layoutDto.getContent());
+                        break;
+                    case IMAGE:
+                        layoutDto.getUrl().forEach(url -> {
+                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
+                        });
+                        break;
+                    case CODES:
+                        List<String> codes = layoutDto.getCodes();
+                        context.setCode(codes.get(0));
+                        context.setCodeExplanation(codes.get(1));
+                        context.setCodeType(codes.get(2));
+                        break;
+                    case HYPERLINK:
+                    case VIDEOS:
+                    case DOCUMENTS:
+                        context.setUrl(layoutDto.getContent());
+                        break;
+                }
+                layoutRepository.save(layout);
+                if(contextList.isEmpty()){
+                    contextRepository.save(context);
+                }else{
+                    contextList.forEach(contextRepository::save);
+                }
+            });
+        });
+    }
+
+    /**
+     * 게시글 작성&수정
+     * 태그와 첨부파일 저장
+     * */
+    private void saveOption(HashMap<String, Object> param, Post savedPost, final int methodType){
+        if (!param.isEmpty()){
+            if(param.containsKey("tags")){
+                List<String> tagList = (List<String>) param.get("tags");
+                if(methodType == POST_UPDATE)   postTagRepository.deleteAllByPost_Id(savedPost.getId());
+                tagList.forEach(tag -> {
+                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
+                    if(!optionalTag.isPresent()) {
+                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
+                    }
+                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
+                    postTagRepository.save(postTag);
+                });
+            }
+            if(param.containsKey("attachment")){
+                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
+                attachmentDtos.forEach(attachment -> {
+                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
+                    if(optional.isPresent()) {
+                        optional.get().setPost(savedPost);
+                        attachmentRepository.save(optional.get());
+                    }
+                });
+            }
+        }
     }
 }
