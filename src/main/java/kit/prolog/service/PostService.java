@@ -446,6 +446,11 @@ public class PostService {
                     case VIDEOS:
                     case DOCUMENTS:
                         context.setUrl(layoutDto.getContent());
+                        Optional<Attachment> optional = attachmentRepository.findByUrl(layoutDto.getContent());
+                        optional.ifPresent(attachment -> {
+                            attachment.setPost(savedPost);
+                            attachmentRepository.save(attachment);
+                        });
                         break;
                 }
                 layoutRepository.save(layout);
