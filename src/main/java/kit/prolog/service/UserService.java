@@ -1,5 +1,6 @@
 package kit.prolog.service;
 
+import kit.prolog.domain.Attachment;
 import kit.prolog.domain.Category;
 import kit.prolog.domain.User;
 import kit.prolog.dto.UserEmailInfoDto;
@@ -8,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Transactional
 @Service
@@ -76,6 +79,11 @@ public class UserService {
         // user 존재하면 user 반환
         // 비어있는 user 반환
         return user;
+    }
+    public Long findUserImage(String url){
+        Optional<Attachment> image = attachmentRepository.findByUrl(url);
+        if (image.isPresent())  return image.get().getId();
+        else return 0L;
     }
 
     // 회원 정보 수정
