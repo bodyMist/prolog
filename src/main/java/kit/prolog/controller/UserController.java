@@ -132,6 +132,7 @@ public class UserController {
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
             User user = userService.readUser(Long.parseLong(userId));
+            Long imageId = userService.findUserImage(user.getImage());
             if(user.getId() != 0){
                 UserEmailInfoDto userEmailInfoDto = new UserEmailInfoDto();
                 userEmailInfoDto.setName(user.getName());
@@ -141,6 +142,7 @@ public class UserController {
                 userEmailInfoDto.setImage(user.getImage());
                 userEmailInfoDto.setNickname(user.getNickname());
                 userEmailInfoDto.setIntroduce(user.getIntroduce());
+                userEmailInfoDto.setImageId(imageId == 0L ? null : imageId);
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, userEmailInfoDto),HttpStatus.OK);
             }else{
                 return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user read error"), HttpStatus.OK);

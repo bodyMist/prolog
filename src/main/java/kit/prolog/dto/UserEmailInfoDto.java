@@ -12,6 +12,7 @@ public class UserEmailInfoDto {
     private String password;
     private String email;
     private boolean alarm;
+    private Long imageId;
     private String image;
     private String nickname;
     private String introduce;
