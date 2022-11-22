@@ -24,7 +24,7 @@ public class LogFilter implements Filter {
         String requestMethod = readableRequest.getMethod();
         if(Objects.equals(requestMethod, "POST")){
             String bodyType = readableRequest.getContentType();
-            if(!bodyType.contains("form-data")){
+            if(bodyType != null && !bodyType.contains("form-data")){
                 String json = readBodyData(readableRequest);
                 log.info("요청 정보: " + json);
             }
