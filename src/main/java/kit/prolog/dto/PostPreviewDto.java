@@ -16,13 +16,13 @@ public class PostPreviewDto {
     private LayoutDto layoutDto;
     public PostPreviewDto(Long postId, String title, LocalDateTime time, String name,
                           String image, Long likes) {
-        this.postDto = new PostDto(postId, title, time.toLocalDate());
+        this.postDto = new PostDto(postId, title, time);
         this.likes = likes;
         this.userDto = new UserDto(name, image);
     }
     public PostPreviewDto(Long postId, String title, LocalDateTime time,
                           String name, String image){
-        this.postDto = new PostDto(postId, title, time.toLocalDate());
+        this.postDto = new PostDto(postId, title, time);
         this.userDto = new UserDto(name, image);
     }
 

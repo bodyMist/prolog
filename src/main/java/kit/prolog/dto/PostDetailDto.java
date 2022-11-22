@@ -27,7 +27,7 @@ public class PostDetailDto {
     public PostDetailDto(String userName, String userImage, Long postId, String postTitle,
                          LocalDateTime postTime, Long moldId, Long categoryId, String categoryName, Long hits) {
         this.userDto = new UserDto(userName, userImage);
-        this.postDto = new PostDto(postId, postTitle, LocalDate.from(postTime));
+        this.postDto = new PostDto(postId, postTitle, postTime);
         this.categoryDto = new CategoryDto(categoryId, categoryName);
         this.moldId = moldId;
         this.hits = hits;
