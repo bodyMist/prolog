@@ -297,9 +297,9 @@ public class PostController {
     /**
      * 파일 삭제 API
      * */
-    @DeleteMapping("/upload/{id}")
+    @DeleteMapping("/upload/{filename}")
     public SuccessDto deleteFile(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                 @PathVariable String id){
+                                 @PathVariable String filename){
         SuccessDto response;
         try {
             Long memberPk = validateUser(accessToken);
@@ -307,12 +307,12 @@ public class PostController {
                     .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .build()
                     .delete()
-                    .uri(uriBuilder -> uriBuilder.path("/{fileName}").build(id))
+                    .uri(uriBuilder -> uriBuilder.path("/{fileName}").build(filename))
                     .retrieve()
                     .bodyToMono(Boolean.class)
                     .block();
             response = externalResult
-                    ? new SuccessDto(true, postService.deleteFile(id))
+                    ? new SuccessDto(true, postService.deleteFile(filename))
                     : new SuccessDto(false);
         }catch (NullPointerException | IllegalArgumentException exception){
             response = new SuccessDto(false, exception.getMessage());
@@ -497,7 +497,7 @@ public class PostController {
         PostPreview(PostPreviewDto dto){
             this.id = dto.getPostDto().getId();
             this.title = dto.getPostDto().getTitle();
-            this.written = dto.getPostDto().getTime();
+            this.written = dto.getPostDto().getTime().toLocalDate();
             this.member = dto.getUserDto().getName();
             this.memberImage = dto.getUserDto().getImage();
             this.likes = dto.getLikes().intValue();
