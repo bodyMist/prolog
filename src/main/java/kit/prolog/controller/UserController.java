@@ -139,10 +139,17 @@ public class UserController {
                 userEmailInfoDto.setAccount(user.getAccount());
                 userEmailInfoDto.setEmail(user.getEmail());
                 userEmailInfoDto.setAlarm(user.getAlarm());
-                userEmailInfoDto.setImage(user.getImage());
                 userEmailInfoDto.setNickname(user.getNickname());
                 userEmailInfoDto.setIntroduce(user.getIntroduce());
-                userEmailInfoDto.setImageId(imageId == 0L ? null : imageId);
+
+                if (imageId.equals(0L)) {
+                    userEmailInfoDto.setImageId(null);
+                    userEmailInfoDto.setImage(null);
+                }else{
+                    userEmailInfoDto.setImageId(imageId);
+                    userEmailInfoDto.setImage(user.getImage());
+                }
+
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, userEmailInfoDto),HttpStatus.OK);
             }else{
                 return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user read error"), HttpStatus.OK);
