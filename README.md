@@ -1,44 +1,55 @@
 # prolog - backend
+개발자 블로그 개발 프로젝트
 
-## Development Tools
-* IntelliJ
-* Postman
-* GitHub
-* Mysql Workbench
-
-## Software Used
-### framework & Library
+## 사용 기술
 * SpringBoot 2.6.7
-* Java 11 openjdk
-* Spring Data JPA
-* Spring Web
-* Lombok
-* MySql Driver
-
-### Build Tool
-* Gradle
-### Database
+* SpringDataJPA
+* SpringSecurity
+* JWT
+* QueryDsl
 * MySQL
+* Redis
+* H2DB (for only test)
 
-## Convention
-### naming
-* Camel Case
-* Constant : Underscore(_), Capital
-### indent
-* 4 spaces
-### line break
-* 쉼표(,) 이후에 줄 나누기
-* 줄 나눌 때 연산자 앞에서 나누기
-* 앞 줄과 같은 레벨의 새로운 줄은 들여쓰기를 일치시키기
-### comment (주석)
-* 짧은 단문은 해당 코드의 우측 편 1TAB
-* 메서드의 중요 로직 또는 추가 설명이 필요한 경우는 해당 코드의 상단에서 블럭주석으로 작성
-* 클래스 및 메서드에 대한 문서화 주석은 선언문 위에서 작성
-### Bracket
-* 중괄호는 내려쓰지 말기
-### Declaration
-* 한 줄에 하나 또는 동일 타입 다수 선언
-* 한 줄에 여러 타입 선언 X
-* 스페이스로 들여쓰기 맞추기 X
+### 기술 채택 이유
+* Spring : 
+* JWT : 사용자 인증 및 권한 부여를 위한 용도
+* QueryDsl : SpringDataJPA만으로는 복잡한 쿼리를 표현하거나 동적 쿼리를 구성할 수 없기 때문
+* MySql : 회원 정보와 게시글, 레이아웃 등 데이터 무결성과 정합성이 중요한 비즈니스 로직을 다루기 때문
+* Redis : JWT 토큰을 저장하고 expire 속성의 자동 만료 기능과 회원 기능에 대해 빠른 응답을 기대하여 사용
+* H2DB : 테스트코드를 실행용 및 MySql의 사용은 기존 데이터나 스키마에 영향이 갈 수 있으므로 선택
 
-> 참고 : https://velog.io/@kwj1270/JAVA-%EC%BD%94%EB%93%9C-%EC%BB%A8%EB%B2%A4%EC%85%98#%EB%B8%94%EB%A1%9Dblock-%EC%A3%BC%EC%84%9D
+## 주요 기능
+1. 회원 관리 (CRUD)
+2. 게시글 관리 (CRUD)
+3. 레이아웃 관리 (CRUD)
+4. 레이아웃 틀 관리 (CRD)
+5. 파일 업로드/삭제
+6. 게시글 목록 조회 (전체/최근/내 글/좋아요한 글)
+7. 게시글 검색
+8. 카테고리 관리
+9. 통계 기능
+
+## DB 구조
+![Prolog_DB](https://user-images.githubusercontent.com/77658870/204887305-00d62724-1a73-458e-afea-fbcc21fd4b56.png)
+
+## ISSUE
+1. 상위 댓글 삭제 시나리오에서 대댓글 처리 방법
+    * 기존 DB 설계상으로는 상위 댓글 삭제 시 FK 참조 에러가 발생
+    * 상위 댓글 삭제를 위해 하위 대댓글을 모두 삭제하는 것은 기능면에서도, cost 면에서도 나쁘다고 판단
+    * DB 설계를 수정 (Comment Table block column 추가)
+    * 시나리오 변경 (상위 댓글 삭제 시 해당 댓글의 block column을 수정하고 front에서 필터링하여 출력)
+2. 사용자 인증 및 권한 부여
+    * User pk 를 
+3. Logging
+3. branch 관리
+5. 테스트코드 Error
+    * Redis를 이용하는 JWT와 소셜Email 인증 Repository의 bean 생성 실패로 인한 @DataJpaTest annotation 이용 불가
+    * 두 Repository 클래스가 JpaRepository를 상속받고 @Repository annotation을 이용 중이며 클래스는 @Entity가 아닌 @RedisHash가 적용
+    * DataJpaTest는 JPA 관련 테스트 설정을 로드하기 때문에 Bean Creation Error가 발생
+    * 해당 두 클래스 EmailAuthTokenRedisRepository와 JwtAuthTokenRepository의 상속을 CrudRepository로 변경 및 @Repository annotation 삭제
+    * 이후 DataJpaTest가 정상 작동
+    
+    
+    
+    
