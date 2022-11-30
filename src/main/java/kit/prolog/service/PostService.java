@@ -6,10 +6,10 @@ import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -73,8 +73,8 @@ public class PostService {
     * 매개변수 : userId(회원 pk), moldId(레이아웃 틀 pk)
     * 반환 : MoldWithLayoutsDto (레이아웃 틀과 하위 레이아웃들을 포함한 레이아웃 틀)
     * */
-    public MoldWithLayoutsDto viewLayoutsByMold(Long userId, Long moldId) throws NullPointerException, IllegalAccessException{
-        if (!checkMoldPermissions(userId, moldId)) throw new IllegalAccessException("No Permissions");
+    public MoldWithLayoutsDto viewLayoutsByMold(Long userId, Long moldId) throws NullPointerException, AccessDeniedException{
+        if (!checkMoldPermissions(userId, moldId)) throw new AccessDeniedException("No Permissions");
 
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty()) throw new NullPointerException("No Mold Data");
@@ -97,8 +97,8 @@ public class PostService {
      * 반환 : boolean
      * 에러처리 : 해당 회원의 mold가 아닐 경우
      * */
-    public void deleteMold(Long moldId, Long userId) throws NullPointerException, IllegalArgumentException{
-        if (!checkMoldPermissions(userId, moldId)) throw new IllegalArgumentException("No Permissions");
+    public void deleteMold(Long moldId, Long userId) throws NullPointerException, AccessDeniedException{
+        if (!checkMoldPermissions(userId, moldId)) throw new AccessDeniedException("No Permissions");
 
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty())  throw new NullPointerException("No Appropriate Data");
@@ -217,9 +217,9 @@ public class PostService {
      * */
     public Long updatePost(Long postId, Long userId, String title,
                               List<LayoutDto> layoutDtos, Long categoryId,
-                              HashMap<String, Object> param) throws IllegalArgumentException{
+                              HashMap<String, Object> param) throws AccessDeniedException{
 
-        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
+        if (!checkPostPermissions(userId, postId)) throw new AccessDeniedException("No Permissions");
         Optional<Mold> mold;
         Optional<Category> category = categoryRepository.findById(categoryId);
 
@@ -247,23 +247,18 @@ public class PostService {
     * 반환 : boolean
     * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
-    public boolean deletePost(Long postId, Long userId) throws NullPointerException{
-        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
+    public void deletePost(Long postId, Long userId) throws AccessDeniedException, NullPointerException{
+        if (!checkPostPermissions(userId, postId)) throw new AccessDeniedException("No Permissions");
         Optional<Post> post = postRepository.findById(postId);
         if(post.isEmpty())  throw new NullPointerException("No Post Data");
 
-        // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 내용 -> 게시글
         likeRepository.deleteAllByPost_Id(postId);
         commentRepository.deleteAllByPost_Id(postId);
         hitRepository.deleteAllByPost_Id(postId);
-        // 파일서버에 삭제 요청 필요
         attachmentRepository.deleteAllByPost_Id(postId);
         postTagRepository.deleteAllByPost_Id(postId);
-
         contextRepository.deleteAllByPost_Id(postId);
-
         postRepository.deleteById(postId);
-        return true;
     }
 
     /**
@@ -283,22 +278,16 @@ public class PostService {
     * 반환 : boolean
     * 발생 가능 에러 : DataIntegrityViolationException(잘못된 데이터가 바인딩 되었을 때 발생)
     * */
-    public boolean likePost(Long userId, Long postId) throws Exception{
-        try {
-            Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
-            boolean result = false;
-            if (like.isPresent()) {
-                likeRepository.delete(like.get());
-                result = true;
-            } else {
-                Like myLike = new Like(new User(userId), new Post(postId));
-                likeRepository.save(myLike);
-                result = true;
-            }
-            return result;
-        }catch (Exception e){
-            throw new Exception("Unexpected Server Error");
+    public boolean likePost(Long userId, Long postId) throws NullPointerException{
+        if (postRepository.findById(postId).isEmpty()) throw new NullPointerException("No Such Post");
+        Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
+        if (like.isPresent()) {
+            likeRepository.delete(like.get());
+        } else {
+            Like myLike = new Like(new User(userId), new Post(postId));
+            likeRepository.save(myLike);
         }
+        return true;
     }
 
     /**
@@ -348,8 +337,6 @@ public class PostService {
         return postRepository.findLikePostByAccount(account, cursor);
     }
     public List<PostPreviewDto> getLikePostList(Long userId, int cursor){
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) throw new NullPointerException("No User Data");
         return postRepository.findLikePostByAccount(userId, cursor);
     }
 
