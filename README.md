@@ -35,21 +35,36 @@
 
 ## ISSUE
 1. 상위 댓글 삭제 시나리오에서 대댓글 처리 방법
-    * 기존 DB 설계상으로는 상위 댓글 삭제 시 FK 참조 에러가 발생
-    * 상위 댓글 삭제를 위해 하위 대댓글을 모두 삭제하는 것은 기능면에서도, cost 면에서도 나쁘다고 판단
-    * DB 설계를 수정 (Comment Table block column 추가)
-    * 시나리오 변경 (상위 댓글 삭제 시 해당 댓글의 block column을 수정하고 front에서 필터링하여 출력)
+      * 기존 DB 설계상으로는 상위 댓글 삭제 시 FK 참조 에러가 발생
+      * 상위 댓글 삭제를 위해 하위 대댓글을 모두 삭제하는 것은 기능면에서도, cost 면에서도 나쁘다고 판단
+      * DB 설계를 수정 (Comment Table block column 추가)
+      * 시나리오 변경 (상위 댓글 삭제 시 해당 댓글의 block column을 수정하고 front에서 필터링하여 출력)
 2. 사용자 인증 및 권한 부여
-    * User pk 를 
+      * 잘못된 API 설계로 인해 회원pk가 URL에 다수 노출
+      * 보안상 큰 문제이기 때문에 API 수정이 필요
+      * 이를 위해 JWT 도입 및 API 수정 (회원pk 삭제 후 JWT token을 header에 추가)
 3. Logging
-3. branch 관리
+      * FE팀과의 연동 과정에서 서버를 구동하면서 누가 어떤 요청을 보냈는지, 에러가 발생했을 때 요청 데이터는 올바르게 전송했는지 확인할 방법이 없다는 불편함을 느낌
+      * 본 프로젝트의 배포와 그 이후 관리를 위해서라도 로그 작성의 필요성을 절감했다
+      * 배포상태에서는 로그를 콘솔에 출력할 뿐만 아니라 파일로 저장할 필요가 있기 때문에 XML 설정 파일을 추가
+      * 최초 Logging은 Interceptor로 작성하려고 했으나 아래의 4번 ISSUE로 인해 Filter 방식으로 구현
+4. Logging 시 Request Body 접근 문제
+      * 요청 데이터도 함께 Log를 남기려 하였으나 Request Body는 InputStream이기 때문에 한 번 읽어들이면 데이터가 사라져버린다
+      * 결국 이후 Controller에서 @RequestBody를 매핑하지 못하여 에러가 발생하는 것을 확인
+      * 이를 해결하기 위해 Interceptor로 구현한 방식을 Filter로 변경
+      * Filter에서 Request를 인자로 Custom Http Wrapper 객체를 생성하고 데이터를 여러번 참조 가능하도록 byte[]타입으로 버퍼에 복사
+      * 이후 Wrapper 객체를 doFilter()의 Request 파라미터로 이용하여 DispatcherServlet에 전달
 5. 테스트코드 Error
-    * Redis를 이용하는 JWT와 소셜Email 인증 Repository의 bean 생성 실패로 인한 @DataJpaTest annotation 이용 불가
-    * 두 Repository 클래스가 JpaRepository를 상속받고 @Repository annotation을 이용 중이며 클래스는 @Entity가 아닌 @RedisHash가 적용
-    * DataJpaTest는 JPA 관련 테스트 설정을 로드하기 때문에 Bean Creation Error가 발생
-    * 해당 두 클래스 EmailAuthTokenRedisRepository와 JwtAuthTokenRepository의 상속을 CrudRepository로 변경 및 @Repository annotation 삭제
-    * 이후 DataJpaTest가 정상 작동
-    
-    
-    
-    
+      * Redis를 이용하는 JWT와 소셜Email 인증 Repository의 bean 생성 실패로 인한 @DataJpaTest annotation 이용 불가
+      * 두 Repository 클래스가 JpaRepository를 상속받고 @Repository annotation을 이용 중이며 클래스는 @Entity가 아닌 @RedisHash가 적용
+      * DataJpaTest는 JPA 관련 테스트 설정을 로드하기 때문에 Bean Creation Error가 발생
+      * 해당 두 클래스 EmailAuthTokenRedisRepository와 JwtAuthTokenRepository의 상속을 CrudRepository로 변경 및 @Repository annotation 삭제
+      * 이후 DataJpaTest가 정상 작동
+6. branch 관리
+      * 기능 구현 및 연동 완료 이후 BE 코드를 유지보수 및 관리할 방법을 강구
+      * 개발 단계에서는 contributors 모두 main branch에 direct push를 했으나 1.0v release 부터는 기존의 방법이 위험도가 높다고 판단
+      * 0.1v의 테스트 배포를 시작하며 동시에 본 레포지토리에도 까다로운 branch 관리를 적용
+      * 다음과 같은 이유들로 Gitflow 전략을 채택
+            * release 이후, hotfix와 기능 추가에 대해 다른 팀원들의 이해를 돕기 위해 추적이 쉬워야한다
+            * BE팀은 각자가 분담하고 있는 파트가 확연하게 구분되어 있지만 Logging과 설정파일 같이 공용으로 사용하는 파일에 대해 주의와 독립적 환경을 보장하기 위함
+      * 무책임한 코드의 추가를 막기 위해 branch protection rule을 추가하여 contributor의 code review와 승인을 통해 merge를 허가
