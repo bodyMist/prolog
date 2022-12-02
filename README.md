@@ -3,17 +3,17 @@
 
 ## 목차
 1. [사용 기술](#사용-기술)   
-  1) [기술 채택 이유](#기술-채택-이유)   
+  1.1. [기술 채택 이유](#기술-채택-이유)   
 2. [주요 기능](#주요-기능)
 3. [DB 구조](#db-구조)
 4. [시스템 아키텍쳐](#시스템-아키텍쳐)
 5. [ISSUE](#issue)   
-  1) [댓글 삭제 시나리오](#상위-댓글-삭제-시나리오에서-대댓글-처리-방법)   
-  2) [Authentication](#사용자-인증-및-권한-부여)   
-  3) [로깅](#logging)   
-  4) [Request Body](#logging-시-request-body-접근-문제)   
-  5) [DataJpaTest](#테스트코드-error)   
-  6) [브랜치 관리](#repository-branch-관리)   
+  5.1. [댓글 삭제 시나리오](#상위-댓글-삭제-시나리오에서-대댓글-처리-방법)   
+  5.2. [Authentication](#사용자-인증-및-권한-부여)   
+  5.3. [로깅](#logging)   
+  5.4. [Request Body](#logging-시-request-body-접근-문제)   
+  5.5. [DataJpaTest](#테스트코드-error)   
+  5.6. [브랜치 관리](#repository-branch-관리)   
 
 ## 사용 기술
 * SpringBoot 2.6.7
