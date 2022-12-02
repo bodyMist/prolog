@@ -3,16 +3,17 @@
 
 ## 목차
 1. [사용 기술](#사용-기술)   
-  1-1. [기술 채택 이유](#기술-채택-이유)   
-2. [주요 기능](#주요-기능)   
-3. [DB 구조](#db-구조)   
-4. [ISSUE](#issue)   
-  4-1. [댓글 삭제 시나리오](#상위-댓글-삭제-시나리오에서-대댓글-처리-방법)   
-  4-2. [Authentication](#사용자-인증-및-권한-부여)   
-  4-3. [로깅](#logging)   
-  4-4. [Request Body](#logging-시-request-body-접근-문제)   
-  4-5. [DataJpaTest](#테스트코드-error)   
-  4-6. [브랜치 관리](#repository-branch-관리)   
+  1) [기술 채택 이유](#기술-채택-이유)   
+2. [주요 기능](#주요-기능)
+3. [DB 구조](#db-구조)
+4. [시스템 아키텍쳐](#시스템-아키텍쳐)
+5. [ISSUE](#issue)   
+  1) [댓글 삭제 시나리오](#상위-댓글-삭제-시나리오에서-대댓글-처리-방법)   
+  2) [Authentication](#사용자-인증-및-권한-부여)   
+  3) [로깅](#logging)   
+  4) [Request Body](#logging-시-request-body-접근-문제)   
+  5) [DataJpaTest](#테스트코드-error)   
+  6) [브랜치 관리](#repository-branch-관리)   
 
 ## 사용 기술
 * SpringBoot 2.6.7
@@ -45,7 +46,9 @@
    
 ## DB 구조
 ![Prolog_DB](https://user-images.githubusercontent.com/77658870/204887305-00d62724-1a73-458e-afea-fbcc21fd4b56.png)
-
+## 시스템 아키텍쳐
+![시스템 아키텍쳐](https://user-images.githubusercontent.com/77658870/205274883-9e02ae84-61ea-4667-ba70-50357bc95d2c.png)
+   
 ## ISSUE
 ### 상위 댓글 삭제 시나리오에서 대댓글 처리 방법
   * 기존 DB 설계상으로는 상위 댓글 삭제 시 FK 참조 에러가 발생
@@ -67,12 +70,19 @@
   * 이를 해결하기 위해 구현을 Interceptor -> Filter로 변경
   * Filter에서 Request를 인자로 Custom Http Wrapper 객체를 생성하고 데이터를 여러번 참조 가능하도록 byte[]타입으로 버퍼에 복사
   * 이후 Wrapper 객체를 doFilter()의 Request 파라미터로 이용하여 DispatcherServlet에 전달
+   
+[LogFilter 추가 commit history](https://github.com/bodyMist/prolog/commit/2b5168003b197b3a0861c29f66d6595a09566bf2)
+   
 ### 테스트코드 Error
   * Redis를 이용하는 JWT와 소셜Email 인증 Repository의 bean 생성 실패로 인한 @DataJpaTest annotation 이용 불가
   * 두 Repository 클래스가 JpaRepository를 상속받고 @Repository annotation을 이용 중이며 클래스는 @Entity가 아닌 @RedisHash가 적용
   * DataJpaTest는 JPA 관련 테스트 설정을 로드하기 때문에 Bean Creation Error가 발생
   * 해당 두 클래스 EmailAuthTokenRedisRepository와 JwtAuthTokenRepository의 상속을 CrudRepository로 변경 및 @Repository annotation 삭제
   * 이후 DataJpaTest 단위테스트의 정상 작동을 확인
+   
+[수정 이력](https://github.com/bodyMist/prolog/commit/2b21084db07aac49638a8c796644de132cfcc56c)  
+[테스트코드 작성](https://github.com/bodyMist/prolog/commit/ad7182d61a1d82571c223429cc9d6eb32728244c)
+
 ### Repository branch 관리
   * 기능 구현 및 연동 완료 이후 BE 코드를 유지보수 및 관리할 방법을 강구
   * 개발 단계에서는 contributors 모두 main branch에 direct push를 했으나 1.0v release 부터는 기존의 방법이 위험도가 높다고 판단
