@@ -1,6 +1,13 @@
 # prolog - backend
 개발자 블로그 개발 프로젝트
 
+## 목차
+1. [사용 기술](#사용-기술)   
+1-1. [기술 채택 이유](#기술-채택-이유)   
+2. [주요 기능](#주요-기능)   
+3. [DB 구조](#db-구조)   
+4. [ISSUE](#issue)   
+
 ## 사용 기술
 * SpringBoot 2.6.7
 * SpringDataJPA
@@ -16,20 +23,20 @@
 * JWT : 사용자 인증 및 권한 부여를 위한 용도
 * QueryDsl : SpringDataJPA만으로는 복잡한 쿼리를 표현하거나 동적 쿼리를 구성할 수 없기 때문
 * MySql : 회원 정보와 게시글, 레이아웃 등 데이터 무결성과 정합성이 중요한 비즈니스 로직을 다루기 때문
-* Redis : JWT 토큰을 저장하고 expire 속성의 자동 만료 기능과 회원 기능에 대해 빠른 응답을 기대하여 사용
-* H2DB : 테스트코드를 실행용 및 MySql의 사용은 기존 데이터나 스키마에 영향이 갈 수 있으므로 선택
+* Redis : JWT 토큰을 저장하고 expire 속성을 이용한 자동 만료와 회원 기능에 대해 빠른 응답을 기대하여 사용
+* H2DB : 테스트코드를 실행용 + MySql의 사용은 기존 데이터나 스키마에 영향이 갈 수 있으므로 선택
 
 ## 주요 기능
 1. 회원 관리 (CRUD)
 2. 게시글 관리 (CRUD)
 3. 레이아웃 관리 (CRUD)
-4. 레이아웃 틀 관리 (CRD)
+4. 레이아웃 틀 관리
 5. 파일 업로드/삭제
 6. 게시글 목록 조회 (전체/최근/내 글/좋아요한 글)
 7. 게시글 검색
 8. 카테고리 관리
 9. 통계 기능
-
+   
 ## DB 구조
 ![Prolog_DB](https://user-images.githubusercontent.com/77658870/204887305-00d62724-1a73-458e-afea-fbcc21fd4b56.png)
 
@@ -51,7 +58,7 @@
 4. Logging 시 Request Body 접근 문제
       * 요청 데이터도 함께 Log를 남기려 하였으나 Request Body는 InputStream이기 때문에 한 번 읽어들이면 데이터가 사라져버린다
       * 결국 이후 Controller에서 @RequestBody를 매핑하지 못하여 에러가 발생하는 것을 확인
-      * 이를 해결하기 위해 Interceptor로 구현한 방식을 Filter로 변경
+      * 이를 해결하기 위해 구현을 Interceptor -> Filter로 변경
       * Filter에서 Request를 인자로 Custom Http Wrapper 객체를 생성하고 데이터를 여러번 참조 가능하도록 byte[]타입으로 버퍼에 복사
       * 이후 Wrapper 객체를 doFilter()의 Request 파라미터로 이용하여 DispatcherServlet에 전달
 5. 테스트코드 Error
@@ -59,12 +66,12 @@
       * 두 Repository 클래스가 JpaRepository를 상속받고 @Repository annotation을 이용 중이며 클래스는 @Entity가 아닌 @RedisHash가 적용
       * DataJpaTest는 JPA 관련 테스트 설정을 로드하기 때문에 Bean Creation Error가 발생
       * 해당 두 클래스 EmailAuthTokenRedisRepository와 JwtAuthTokenRepository의 상속을 CrudRepository로 변경 및 @Repository annotation 삭제
-      * 이후 DataJpaTest가 정상 작동
-6. branch 관리
+      * 이후 DataJpaTest 단위테스트의 정상 작동을 확인
+6. Repository branch 관리
       * 기능 구현 및 연동 완료 이후 BE 코드를 유지보수 및 관리할 방법을 강구
       * 개발 단계에서는 contributors 모두 main branch에 direct push를 했으나 1.0v release 부터는 기존의 방법이 위험도가 높다고 판단
       * 0.1v의 테스트 배포를 시작하며 동시에 본 레포지토리에도 까다로운 branch 관리를 적용
       * 다음과 같은 이유들로 Gitflow 전략을 채택
-            * release 이후, hotfix와 기능 추가에 대해 다른 팀원들의 이해를 돕기 위해 추적이 쉬워야한다
-            * BE팀은 각자가 분담하고 있는 파트가 확연하게 구분되어 있지만 Logging과 설정파일 같이 공용으로 사용하는 파일에 대해 주의와 독립적 환경을 보장하기 위함
-      * 무책임한 코드의 추가를 막기 위해 branch protection rule을 추가하여 contributor의 code review와 승인을 통해 merge를 허가
+          * release 이후, hotfix와 기능 추가에 대해 다른 팀원들의 이해를 돕기 위해 추적이 쉬워야한다
+          * BE팀은 각자가 분담하고 있는 파트가 확연하게 구분되어 있지만 Logging과 설정파일 같이 공용으로 사용하는 파일에 대해 주의와 독립적 환경을 보장하기 위함
+      * 무분별한 코드의 추가를 막기 위해 branch protection rule을 추가하여 contributor의 code review와 승인을 통해 merge를 허가
