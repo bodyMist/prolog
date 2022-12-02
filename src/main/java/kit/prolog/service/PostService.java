@@ -5,10 +5,11 @@ import kit.prolog.dto.*;
 import kit.prolog.enums.LayoutType;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +23,7 @@ import java.util.stream.Collectors;
 * */
 @Transactional
 @Service
-@Slf4j
+@Log4j2
 @RequiredArgsConstructor
 public class PostService {
     private final PostRepository postRepository;
@@ -37,6 +38,9 @@ public class PostService {
     private final CommentRepository commentRepository;
     private final HitRepository hitRepository;
     private final ContextRepository contextRepository;
+
+    private final int POST_WRITE = 1;
+    private final int POST_UPDATE = 2;
 
     /**
      * 레이아웃 작성 API
@@ -69,8 +73,8 @@ public class PostService {
     * 매개변수 : userId(회원 pk), moldId(레이아웃 틀 pk)
     * 반환 : MoldWithLayoutsDto (레이아웃 틀과 하위 레이아웃들을 포함한 레이아웃 틀)
     * */
-    public MoldWithLayoutsDto viewLayoutsByMold(Long userId, Long moldId) throws NullPointerException, IllegalAccessException{
-        if (!checkMoldPermissions(userId, moldId)) throw new IllegalAccessException("No Permissions");
+    public MoldWithLayoutsDto viewLayoutsByMold(Long userId, Long moldId) throws NullPointerException, AccessDeniedException{
+        if (!checkMoldPermissions(userId, moldId)) throw new AccessDeniedException("No Permissions");
 
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty()) throw new NullPointerException("No Mold Data");
@@ -93,8 +97,8 @@ public class PostService {
      * 반환 : boolean
      * 에러처리 : 해당 회원의 mold가 아닐 경우
      * */
-    public void deleteMold(Long moldId, Long userId) throws NullPointerException, IllegalArgumentException{
-        if (!checkMoldPermissions(userId, moldId)) throw new IllegalArgumentException("No Permissions");
+    public void deleteMold(Long moldId, Long userId) throws NullPointerException, AccessDeniedException{
+        if (!checkMoldPermissions(userId, moldId)) throw new AccessDeniedException("No Permissions");
 
         Optional<Mold> mold = moldRepository.findById(moldId);
         if(mold.isEmpty())  throw new NullPointerException("No Appropriate Data");
@@ -121,86 +125,24 @@ public class PostService {
      * */
     public Long writePost(Long userId, String title,
                           List<LayoutDto> layoutDtos, Long categoryId,
-                          HashMap<String, Object> param) throws NullPointerException{
-        log.info("게시글 작성 API");
-        Optional<Mold> mold;
+                          HashMap<String, Object> param) throws NullPointerException, IllegalArgumentException{
 
         Optional<User> user = userRepository.findById(userId);
+        Optional<Mold> mold;
         Optional<Category> category = categoryRepository.findById(categoryId);
         if(user.isEmpty() || category.isEmpty()) throw new NullPointerException("No Required Data");
         Post post = new Post(title, LocalDateTime.now(),user.get(), category.get());
+
         if (param.containsKey("moldId")){
             Long moldId = Long.parseLong(param.get("moldId").toString());
             mold = moldRepository.findById(moldId);
             post.setMold(mold.get());
         }
+
         Post savedPost = postRepository.save(post);
-
-        layoutDtos.forEach(layoutDto -> {
-            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
-                layout.setExplanation(layoutDto.getExplanation());
-                layout.setCoordinateX(layoutDto.getCoordinateX());
-                layout.setCoordinateY(layoutDto.getCoordinateY());
-                layout.setWidth(layoutDto.getWidth());
-                layout.setHeight(layoutDto.getHeight());
-
-                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
-
-                List<Context> contextList = new ArrayList<>();
-                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
-                switch (layoutType){
-                    case CONTEXT:
-                    case MATHEMATICS:
-                        context.setContext(layoutDto.getContent());
-                        break;
-                    case IMAGE:
-                        layoutDto.getUrl().forEach(url -> {
-                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
-                        });
-                        break;
-                    case CODES:
-                        List<String> codes = layoutDto.getCodes();
-                        context.setCode(codes.get(0));
-                        context.setCodeExplanation(codes.get(1));
-                        context.setCodeType(codes.get(2));
-                        break;
-                    case HYPERLINK:
-                    case VIDEOS:
-                    case DOCUMENTS:
-                        context.setUrl(layoutDto.getContent());
-                        break;
-                }
-                layoutRepository.save(layout);
-                if(contextList.isEmpty()){
-                    contextRepository.save(context);
-                }else{
-                    contextList.forEach(contextRepository::save);
-                }
-            });
-        });
-        if (!param.isEmpty()){
-            if(param.containsKey("tags")){
-                List<String> tagList = (List<String>) param.get("tags");
-                tagList.forEach(tag -> {
-                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
-                    if(!optionalTag.isPresent()) {
-                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
-                    }
-                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
-                    postTagRepository.save(postTag);
-                });
-            }
-            if(param.containsKey("attachment")){
-                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
-                attachmentDtos.forEach(attachment -> {
-                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
-                    if(optional.isPresent()) {
-                        optional.get().setPost(savedPost);
-                        attachmentRepository.save(optional.get());
-                    }
-                });
-            }
-        }
+        setMainLayout(layoutDtos);
+        writeContexts(layoutDtos, savedPost);
+        saveOption(param, savedPost, POST_WRITE);
 
         return savedPost.getId();
     }
@@ -211,7 +153,6 @@ public class PostService {
     * 반환 : List<PostPreviewDto>
     * */
     public List<PostPreviewDto> viewPostsByCategory(String account, String categoryName, int cursor){
-        log.info("특정 카테고리 게시글 조회 API");
         return postRepository.findPostByCategoryName(account, categoryName, cursor);
     }
 
@@ -227,13 +168,11 @@ public class PostService {
     * Spring JPA : 댓글, 좋아요 , 첨부파일(리스트), 태그(리스트), 레이아웃(리스트)는 별도 쿼리로 조회하여 전달
     * */
     public PostDetailDto viewPostDetailById(Long userId, Long postId) throws NullPointerException{
-        log.info("게시글 상세조회 API");
-
+        Hit savedHit = hitRepository.save(new Hit(LocalDateTime.now(), new Post(postId)));
         PostDetailDto postDetailDto = postRepository.findPostById(postId);
         if (postDetailDto == null) throw new NullPointerException("No Post Data");
         boolean exist;
         int likeCount = likeRepository.countByPost_Id(postId);
-
         Pageable pageable = PageRequest.of(0, 5, Sort.by(Sort.Direction.DESC, "time"));
 
         List<AttachmentDto> attachmentList = attachmentRepository.findByPost_Id(postId);
@@ -278,9 +217,9 @@ public class PostService {
      * */
     public Long updatePost(Long postId, Long userId, String title,
                               List<LayoutDto> layoutDtos, Long categoryId,
-                              HashMap<String, Object> param) throws IllegalArgumentException{
+                              HashMap<String, Object> param) throws AccessDeniedException{
 
-        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
+        if (!checkPostPermissions(userId, postId)) throw new AccessDeniedException("No Permissions");
         Optional<Mold> mold;
         Optional<Category> category = categoryRepository.findById(categoryId);
 
@@ -295,66 +234,9 @@ public class PostService {
         }
         Post savedPost = postRepository.save(post);
 
-        layoutDtos.forEach(layoutDto -> {
-            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
-                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
-
-                List<Context> contextList = new ArrayList<>();
-                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
-                switch (layoutType){
-                    case CONTEXT:
-                    case MATHEMATICS:
-                        context.setContext(layoutDto.getContent());
-                        break;
-                    case IMAGE:
-                        layoutDto.getUrl().forEach(url -> {
-                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
-                        });
-                        break;
-                    case CODES:
-                        List<String> codes = layoutDto.getCodes();
-                        context.setCode(codes.get(0));
-                        context.setCodeExplanation(codes.get(1));
-                        context.setCodeType(codes.get(2));
-                        break;
-                    case HYPERLINK:
-                    case VIDEOS:
-                    case DOCUMENTS:
-                        context.setUrl(layoutDto.getContent());
-                        break;
-                }
-
-                if(contextList.isEmpty()){
-                    contextRepository.save(context);
-                }else{
-                    contextRepository.saveAll(contextList);
-                }
-            });
-        });
-        if (!param.isEmpty()){
-            if(param.containsKey("tags")){
-                List<String> tagList = (List<String>) param.get("tags");
-                postTagRepository.deleteAllByPost_Id(postId);
-                tagList.forEach(tag -> {
-                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
-                    if(!optionalTag.isPresent()) {
-                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
-                    }
-                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
-                    postTagRepository.save(postTag);
-                });
-            }
-            if(param.containsKey("attachment")){
-                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
-                attachmentDtos.forEach(attachment -> {
-                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
-                    if(optional.isPresent()) {
-                        optional.get().setPost(savedPost);
-                        attachmentRepository.save(optional.get());
-                    }
-                });
-            }
-        }
+        setMainLayout(layoutDtos);
+        writeContexts(layoutDtos, savedPost);
+        saveOption(param, savedPost, POST_UPDATE);
 
         return savedPost.getId();
     }
@@ -365,23 +247,18 @@ public class PostService {
     * 반환 : boolean
     * 발생 가능 에러 : IllegalArg, SQL Error(?)
     * */
-    public boolean deletePost(Long postId, Long userId) throws NullPointerException{
-        if (!checkPostPermissions(userId, postId)) throw new IllegalArgumentException("No Permissions");
+    public void deletePost(Long postId, Long userId) throws AccessDeniedException, NullPointerException{
+        if (!checkPostPermissions(userId, postId)) throw new AccessDeniedException("No Permissions");
         Optional<Post> post = postRepository.findById(postId);
         if(post.isEmpty())  throw new NullPointerException("No Post Data");
 
-        // 좋아요 -> 댓글 -> 조회수 -> 첨부파일 -> postTag -> 내용 -> 게시글
         likeRepository.deleteAllByPost_Id(postId);
         commentRepository.deleteAllByPost_Id(postId);
         hitRepository.deleteAllByPost_Id(postId);
-        // 파일서버에 삭제 요청 필요
         attachmentRepository.deleteAllByPost_Id(postId);
         postTagRepository.deleteAllByPost_Id(postId);
-
         contextRepository.deleteAllByPost_Id(postId);
-
         postRepository.deleteById(postId);
-        return true;
     }
 
     /**
@@ -401,23 +278,16 @@ public class PostService {
     * 반환 : boolean
     * 발생 가능 에러 : DataIntegrityViolationException(잘못된 데이터가 바인딩 되었을 때 발생)
     * */
-    public boolean likePost(Long userId, Long postId) throws Exception{
-        try {
-            Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
-            boolean result = false;
-            if (like.isPresent()) {
-                likeRepository.delete(like.get());
-                log.info("좋아요 취소 Service 실행");
-            } else {
-                Like myLike = new Like(new User(userId), new Post(postId));
-                likeRepository.save(myLike);
-                log.info("좋아요 등록 Service 실행");
-                result = true;
-            }
-            return result;
-        }catch (Exception e){
-            throw new Exception("Unexpected Server Error");
+    public boolean likePost(Long userId, Long postId) throws NullPointerException{
+        if (postRepository.findById(postId).isEmpty()) throw new NullPointerException("No Such Post");
+        Optional<Like> like = likeRepository.findByUser_IdAndPost_Id(userId, postId);
+        if (like.isPresent()) {
+            likeRepository.delete(like.get());
+        } else {
+            Like myLike = new Like(new User(userId), new Post(postId));
+            likeRepository.save(myLike);
         }
+        return true;
     }
 
     /**
@@ -449,11 +319,9 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getMyPostList(String account, int cursor){
-        log.info("내가 쓴 게시글 목록 조회");
         return postRepository.findMyPostByUserId(account, cursor);
     }
     public List<PostPreviewDto> getMyPostList(Long userId, int cursor){
-        log.info("내가 쓴 게시글 목록 조회");
         return postRepository.findMyPostByUserId(userId, cursor);
     }
 
@@ -463,16 +331,12 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getLikePostList(Long userId, String account, int cursor){
-        log.info("좋아요 한 게시글 목록 조회");
         Optional<User> user = userRepository.findById(userId);
         if (user.isEmpty()) throw new NullPointerException("No User Data");
         if (!user.get().getAccount().equals(account)) throw new IllegalArgumentException("No Permission");
         return postRepository.findLikePostByAccount(account, cursor);
     }
     public List<PostPreviewDto> getLikePostList(Long userId, int cursor){
-        log.info("좋아요 한 게시글 목록 조회");
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) throw new NullPointerException("No User Data");
         return postRepository.findLikePostByAccount(userId, cursor);
     }
 
@@ -483,7 +347,6 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getHottestPostList(int cursor){
-        log.info("전체 게시글 목록 조회");
         return postRepository.findHottestPosts(cursor);
     }
 
@@ -493,7 +356,6 @@ public class PostService {
      * 반환 : List<PostPreviewDto>
      * */
     public List<PostPreviewDto> getRecentPostList(int cursor){
-        log.info("최근 게시글 목록 조회");
         return postRepository.findRecentPosts(cursor);
     }
 
@@ -515,5 +377,107 @@ public class PostService {
     }
     private boolean checkMoldPermissions(Long userId, Long moldId){
         return postRepository.checkMoldWriter(moldId).equals(userId);
+    }
+
+    /**
+     * 게시글 작성&수정
+     * Layout 리스트에서 main 설정이 없다면 첫번째 Layout으로 임의 설정
+     * */
+    private void setMainLayout(List<LayoutDto> layoutDtos){
+        int mainLayoutCounter = 0;
+        final int ADDITION = 1;
+        final int NONE = 0;
+
+        for (LayoutDto layoutDto : layoutDtos) {
+            mainLayoutCounter += layoutDto.getLeader() ? ADDITION : NONE;
+            if(mainLayoutCounter > ADDITION) throw new IllegalArgumentException("Too Many Main Layout");
+        }
+        if(mainLayoutCounter == NONE){
+            layoutDtos.get(NONE).setLeader(true);
+        }
+    }
+    /**
+     * 게시글 작성 & 수정
+     * Layout과 Context 저장
+     * */
+    private void writeContexts(List<LayoutDto> layoutDtos, Post savedPost){
+        layoutDtos.forEach(layoutDto -> {
+            layoutRepository.findLayoutById(layoutDto.getId()).ifPresent(layout -> {
+                layout.setExplanation(layoutDto.getExplanation());
+                layout.setCoordinateX(layoutDto.getCoordinateX());
+                layout.setCoordinateY(layoutDto.getCoordinateY());
+                layout.setWidth(layoutDto.getWidth());
+                layout.setHeight(layoutDto.getHeight());
+
+                LayoutType layoutType = LayoutType.values()[layout.getDtype()];
+
+                List<Context> contextList = new ArrayList<>();
+                Context context = new Context(layoutDto.getLeader(), savedPost, layout);
+                switch (layoutType){
+                    case CONTEXT:
+                    case MATHEMATICS:
+                        context.setContext(layoutDto.getContent());
+                        break;
+                    case IMAGE:
+                        layoutDto.getUrl().forEach(url -> {
+                            contextList.add(new Context(url, layoutDto.getLeader(), savedPost, layout));
+                        });
+                        break;
+                    case CODES:
+                        List<String> codes = layoutDto.getCodes();
+                        context.setCode(codes.get(0));
+                        context.setCodeExplanation(codes.get(1));
+                        context.setCodeType(codes.get(2));
+                        break;
+                    case HYPERLINK:
+                    case VIDEOS:
+                    case DOCUMENTS:
+                        context.setUrl(layoutDto.getContent());
+                        Optional<Attachment> optional = attachmentRepository.findByUrl(layoutDto.getContent());
+                        optional.ifPresent(attachment -> {
+                            attachment.setPost(savedPost);
+                            attachmentRepository.save(attachment);
+                        });
+                        break;
+                }
+                layoutRepository.save(layout);
+                if(contextList.isEmpty()){
+                    contextRepository.save(context);
+                }else{
+                    contextList.forEach(contextRepository::save);
+                }
+            });
+        });
+    }
+
+    /**
+     * 게시글 작성&수정
+     * 태그와 첨부파일 저장
+     * */
+    private void saveOption(HashMap<String, Object> param, Post savedPost, final int methodType){
+        if (!param.isEmpty()){
+            if(param.containsKey("tags")){
+                List<String> tagList = (List<String>) param.get("tags");
+                if(methodType == POST_UPDATE)   postTagRepository.deleteAllByPost_Id(savedPost.getId());
+                tagList.forEach(tag -> {
+                    Optional<Tag> optionalTag = tagRepository.findByName(tag);
+                    if(!optionalTag.isPresent()) {
+                        optionalTag = Optional.of(tagRepository.save(new Tag(tag)));
+                    }
+                    PostTag postTag = new PostTag(savedPost, optionalTag.get());
+                    postTagRepository.save(postTag);
+                });
+            }
+            if(param.containsKey("attachment")){
+                List<AttachmentDto> attachmentDtos = (List<AttachmentDto>) param.get("attachment");
+                attachmentDtos.forEach(attachment -> {
+                    Optional<Attachment> optional = attachmentRepository.findByName(attachment.getName());
+                    if(optional.isPresent()) {
+                        optional.get().setPost(savedPost);
+                        attachmentRepository.save(optional.get());
+                    }
+                });
+            }
+        }
     }
 }

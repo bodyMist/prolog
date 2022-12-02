@@ -26,11 +26,12 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
-        show_sql: true
+        show_sql: false
         format_sql: true
   servlet:
     multipart:
       max-file-size: 20MB
+      max-request-size: 20MB
   data:
     web:
       pageable:

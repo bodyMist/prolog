@@ -132,15 +132,24 @@ public class UserController {
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
             User user = userService.readUser(Long.parseLong(userId));
+            Long imageId = userService.findUserImage(user.getImage());
             if(user.getId() != 0){
                 UserEmailInfoDto userEmailInfoDto = new UserEmailInfoDto();
                 userEmailInfoDto.setName(user.getName());
                 userEmailInfoDto.setAccount(user.getAccount());
                 userEmailInfoDto.setEmail(user.getEmail());
                 userEmailInfoDto.setAlarm(user.getAlarm());
-                userEmailInfoDto.setImage(user.getImage());
                 userEmailInfoDto.setNickname(user.getNickname());
                 userEmailInfoDto.setIntroduce(user.getIntroduce());
+
+                if (imageId.equals(0L)) {
+                    userEmailInfoDto.setImageId(null);
+                    userEmailInfoDto.setImage(null);
+                }else{
+                    userEmailInfoDto.setImageId(imageId);
+                    userEmailInfoDto.setImage(user.getImage());
+                }
+
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, userEmailInfoDto),HttpStatus.OK);
             }else{
                 return new ResponseEntity<SuccessDto>(new SuccessDto(false, "user read error"), HttpStatus.OK);

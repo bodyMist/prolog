@@ -9,28 +9,26 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
-@Slf4j
+@Log4j2
 @RestController
 @RequiredArgsConstructor
 public class PostController {
     private static final Long NO_USER = 0L;
-    private static final String SERVER_ERROR = "Unexpected Server Error";
     private final PostService postService;
     private final UserService userService;
     private final JwtService jwtService;
@@ -38,127 +36,96 @@ public class PostController {
 
     /**
      * 레이아웃 작성 API
-     * */
+     */
     @PostMapping("/layout")
     public SuccessDto createLayout(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                   @RequestBody Map<String, Object> json){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            List<LayoutDto> layouts =
-                    ((List<LinkedHashMap>) json.get("layouts"))
-                            .stream().map(LayoutDto::new)
-                            .collect(Collectors.toList());
-            String moldName = json.get("moldName") == null ? "" : json.get("moldName").toString();
-            MoldWithLayoutsDto moldWithLayoutsDto = postService.saveLayouts(memberPk, layouts, moldName);
-            response = new SuccessDto(true, moldWithLayoutsDto);
-        }catch (IllegalArgumentException | NullPointerException exception){
-            response = new SuccessDto(false, exception.getMessage());
-        }
-        return response;
+                                   @RequestBody Map<String, Object> json) {
+        Long memberPk = validateUser(accessToken);
+        List<LayoutDto> layouts =
+                ((List<LinkedHashMap>) json.get("layouts"))
+                        .stream().map(LayoutDto::new)
+                        .collect(Collectors.toList());
+        String moldName = json.get("moldName") == null ? "" : json.get("moldName").toString();
+        MoldWithLayoutsDto moldWithLayoutsDto = postService.saveLayouts(memberPk, layouts, moldName);
+        return new SuccessDto(true, moldWithLayoutsDto);
     }
+
     /**
      * 레이아웃 리스트 조회 API
-     * */
+     */
     @GetMapping("/layouts/{id}")
     public SuccessDto readLayouts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                  @PathVariable Long id){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            MoldWithLayoutsDto layoutDtos = postService.viewLayoutsByMold(memberPk, id);
-            response = new SuccessDto(true, layoutDtos);
-        }catch (IllegalArgumentException | IllegalAccessException | NullPointerException exception){
-            response = new SuccessDto(false, exception.getMessage());
-        }
-        return response;
+                                  @PathVariable Long id) throws NullPointerException, AccessDeniedException {
+        Long memberPk = validateUser(accessToken);
+        MoldWithLayoutsDto layoutDtos = postService.viewLayoutsByMold(memberPk, id);
+        return new SuccessDto(true, layoutDtos);
     }
 
     /**
      * 레이아웃 틀 목록 조회 API
-     * */
+     */
     @GetMapping("/layouts")
-    public SuccessDto readLayoutMolds(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            List<MoldDto> myMolds = postService.viewMyMolds(memberPk);
-            response = new SuccessDto(true, myMolds);
-        }catch (IllegalArgumentException | NullPointerException exception){
-            response = new SuccessDto(false, exception.getMessage());
-        }
-        return response;
+    public SuccessDto readLayoutMolds(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken) {
+        Long memberPk = validateUser(accessToken);
+        List<MoldDto> myMolds = postService.viewMyMolds(memberPk);
+        return new SuccessDto(true, myMolds);
     }
 
     /**
      * 레이아웃 삭제 API
-     * */
+     */
     @DeleteMapping("/layouts/{id}")
     public SuccessDto deleteMold(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                 @PathVariable Long id){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            postService.deleteMold(id, memberPk);
-            response = new SuccessDto(true);
-        }catch (IllegalArgumentException | NullPointerException exception) {
-            response = new SuccessDto(false, exception.getMessage());
-        }
-        return response;
+                                 @PathVariable Long id) throws NullPointerException, AccessDeniedException {
+        Long memberPk = validateUser(accessToken);
+        postService.deleteMold(id, memberPk);
+        return new SuccessDto(true);
     }
 
     /**
      * 게시글 작성 API
-     * */
+     */
     @PostMapping("/board")
     public SuccessDto createPost(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                 @RequestBody Map<String, Object> json){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            // required
-            Long categoryId = Long.parseLong(json.get("category").toString());
-            String title = json.get("title").toString();
-            List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
-                    .stream().map(LayoutDto::new).collect(Collectors.toList());
+                                 @RequestBody Map<String, Object> json) throws NullPointerException, IllegalArgumentException {
+        Long memberPk = validateUser(accessToken);
+        // required
+        Long categoryId = Long.parseLong(json.get("category").toString());
+        String title = json.get("title").toString();
+        List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
+                .stream().map(LayoutDto::new).collect(Collectors.toList());
 
-            // optional
-            Long moldId = json.get("layoutID") == null
-                    ? null : Long.parseLong(json.get("layoutID").toString());
-            List<String> tags = new ArrayList<>();
-            if (json.get("tag") != null) {
-                ((List<String>) json.get("tag")).forEach(tags::add);
-            }
-            List<AttachmentDto> attachments = json.get("attachment") == null
-                    ? null : ((List<LinkedHashMap>) json.get("attachment"))
-                    .stream().map(AttachmentDto::new)
-                    .collect(Collectors.toList());
-
-            HashMap<String, Object> params = new HashMap<>();
-            if (moldId != null)
-                params.put("moldId", moldId);
-            if (attachments != null)
-                params.put("attachment", attachments);
-            if (!tags.isEmpty())
-                params.put("tags", tags);
-
-            Long writePost = postService.writePost(memberPk, title, layoutDtos, categoryId, params);
-            response = new SuccessDto(true, writePost);
-        }catch (IllegalArgumentException | NullPointerException exception) {
-            response = new SuccessDto(false, exception.getMessage());
-        }catch (Exception e){
-            response = new SuccessDto(false, SERVER_ERROR);
+        // optional
+        Long moldId = json.get("layoutID") == null
+                ? null : Long.parseLong(json.get("layoutID").toString());
+        List<String> tags = new ArrayList<>();
+        if (json.get("tag") != null) {
+            ((List<String>) json.get("tag")).forEach(tags::add);
         }
-        return response;
+        List<AttachmentDto> attachments = json.get("attachment") == null
+                ? null : ((List<LinkedHashMap>) json.get("attachment"))
+                .stream().map(AttachmentDto::new)
+                .collect(Collectors.toList());
+
+        HashMap<String, Object> params = new HashMap<>();
+        if (moldId != null)
+            params.put("moldId", moldId);
+        if (attachments != null)
+            params.put("attachment", attachments);
+        if (!tags.isEmpty())
+            params.put("tags", tags);
+
+        Long writePost = postService.writePost(memberPk, title, layoutDtos, categoryId, params);
+        return new SuccessDto(true, writePost);
     }
 
     /**
      * 특정 카테고리 게시글 조회 API
-     * */
+     */
     @GetMapping("/{user}/{category}")
     public SuccessDto readPostsInCategory(@PathVariable String user,
                                           @PathVariable String category,
-                                          @RequestParam int last){
+                                          @RequestParam int last) {
         List<PostPreviewDto> posts = postService.viewPostsByCategory(user, category, last);
         List<PostPreview> previewList = changeResponseType(posts);
         return new SuccessDto(true, previewList);
@@ -167,109 +134,85 @@ public class PostController {
     /**
      * 게시글 상세 조회 API
      * 로그인 상태일 때, 좋아요 exist 정보를 포함하여 조회
-     * */
+     */
     @GetMapping("/board/{id}")
     public SuccessDto readPost(@RequestHeader(value = "X-AUTH-TOKEN", required = false) String accessToken,
-                               @PathVariable Long id){
-        SuccessDto response;
+                               @PathVariable Long id) throws NullPointerException, AccessDeniedException {
         PostDetailDto post;
         Long memberPk = null;
-        try {
-            if(accessToken != null && accessToken.isEmpty())  memberPk = validateUser(accessToken);
-            post = postService.viewPostDetailById(Objects.requireNonNullElse(memberPk, NO_USER), id);
-            PostDetail postDetail = new PostDetail(post);
-            response = new SuccessDto(true, postDetail);
-        }catch (NullPointerException | IllegalArgumentException exception){
-            response = new SuccessDto(false, exception.getMessage());
-        }catch (Exception e){
-            response = new SuccessDto(false, SERVER_ERROR);
-        }
-        return response;
+        if (accessToken != null && !accessToken.isEmpty()) memberPk = validateUser(accessToken);
+        memberPk = memberPk == null ? NO_USER : memberPk;
+        post = postService.viewPostDetailById(memberPk, id);
+        PostDetail postDetail = new PostDetail(post);
+        return new SuccessDto(true, postDetail);
     }
 
     /**
      * 게시글 수정 API
-     * */
+     */
     @PutMapping("/board/{id}")
     public SuccessDto updatePost(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
                                  @PathVariable Long id,
-                                 @RequestBody Map<String, Object> json){
-        SuccessDto response;
-        try {
-            // required
-            Long memberPk = validateUser(accessToken);
-            Long categoryId = Long.parseLong(json.get("category").toString());
-            String title = json.get("title").toString();
-            List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
-                    .stream().map(LayoutDto::new).collect(Collectors.toList());
+                                 @RequestBody Map<String, Object> json) throws NullPointerException, AccessDeniedException {
+        // required
+        Long memberPk = validateUser(accessToken);
+        Long categoryId = Long.parseLong(json.get("category").toString());
+        String title = json.get("title").toString();
+        List<LayoutDto> layoutDtos = ((List<LinkedHashMap>) json.get("layouts"))
+                .stream().map(LayoutDto::new).collect(Collectors.toList());
 
-            // optional
-            Long moldId = json.get("moldId") == null
-                    ? null : Long.parseLong(json.get("moldId").toString());
-            List<String> tags = new ArrayList<>();
-            if (json.get("tag") != null) {
-                ((List<String>) json.get("tag")).forEach(tags::add);
-            }
-            List<AttachmentDto> attachments = json.get("attachments") == null
-                    ? null : ((List<LinkedHashMap>) json.get("attachments"))
-                    .stream().map(AttachmentDto::new)
-                    .collect(Collectors.toList());
-
-            HashMap<String, Object> params = new HashMap<>();
-            if (moldId != null)
-                params.put("moldId", moldId);
-            if (attachments != null)
-                params.put("attachments", attachments);
-            if (!tags.isEmpty())
-                params.put("tags", tags);
-
-
-            Long postId = postService.updatePost(id, memberPk, title, layoutDtos, categoryId, params);
-            response = new SuccessDto(true, postId);
-        }catch (NullPointerException | IllegalArgumentException exception){
-            response = new SuccessDto(false, exception.getMessage());
-        }catch (Exception e){
-            response = new SuccessDto(false, SERVER_ERROR);
+        // optional
+        Long moldId = json.get("moldId") == null
+                ? null : Long.parseLong(json.get("moldId").toString());
+        List<String> tags = new ArrayList<>();
+        if (json.get("tag") != null) {
+            ((List<String>) json.get("tag")).forEach(tags::add);
         }
-        return response;
+        List<AttachmentDto> attachments = json.get("attachments") == null
+                ? null : ((List<LinkedHashMap>) json.get("attachments"))
+                .stream().map(AttachmentDto::new)
+                .collect(Collectors.toList());
+
+        HashMap<String, Object> params = new HashMap<>();
+        if (moldId != null)
+            params.put("moldId", moldId);
+        if (attachments != null)
+            params.put("attachments", attachments);
+        if (!tags.isEmpty())
+            params.put("tags", tags);
+
+        Long postId = postService.updatePost(id, memberPk, title, layoutDtos, categoryId, params);
+        return new SuccessDto(true, postId);
     }
 
 
     /**
      * 게시글 삭제 API
-     * */
+     */
     @DeleteMapping("/board/{id}")
     public SuccessDto deletePost(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                 @PathVariable Long id){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            postService.deletePost(id, memberPk);
-            response = new SuccessDto(true);
-        }catch (NullPointerException | IllegalArgumentException e){
-            response = new SuccessDto(false, e.getMessage());
-        } catch (Exception e){
-            response = new SuccessDto(false, SERVER_ERROR);
-        }
-        return response;
+                                 @PathVariable Long id) throws AccessDeniedException, NullPointerException {
+        Long memberPk = validateUser(accessToken);
+        postService.deletePost(id, memberPk);
+        return new SuccessDto(true);
     }
 
     /**
      * 태그 조회 API
-     * */
+     */
     @GetMapping("/tags")
-    public SuccessDto getTags(@RequestParam String name){
+    public SuccessDto getTags(@RequestParam String name) {
         List<String> tags = postService.findTagByName(name);
         return new SuccessDto(true, tags);
     }
 
     /**
      * 파일 업로드 API
-     * */
+     * TODO : 2022.11.08. 업로드 파일 타입 제한 & 파일 실행 권한 제거 - 김태훈
+     */
     @PostMapping("/upload")
-    public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files){
+    public SuccessDto uploadFiles(@RequestPart(value = "file") List<MultipartFile> files) throws IllegalArgumentException {
         MultipartBodyBuilder bodyBuilder = new MultipartBodyBuilder();
-        SuccessDto response;
         try {
             files.forEach(f -> {
                 bodyBuilder.part("files", f.getResource());
@@ -285,59 +228,40 @@ public class PostController {
                     .block();
             List<AttachmentDto> result = postService.saveUploadedFiles(uploadedFiles);
             return new SuccessDto(true, result);
-        }catch (IllegalArgumentException exception){
-            response = new SuccessDto(false, "No Any File");
-        }catch (Exception exception){
-            response = new SuccessDto(false, SERVER_ERROR);
+        } catch (IllegalArgumentException exception) {
+            throw new IllegalArgumentException("No Any Files");
         }
-        return response;
     }
 
     /**
      * 파일 삭제 API
-     * */
-    @DeleteMapping("/upload/{id}")
+     */
+    @DeleteMapping("/upload/{filename}")
     public SuccessDto deleteFile(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                 @PathVariable String id){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            Boolean externalResult = api.mutate()
-                    .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .build()
-                    .delete()
-                    .uri(uriBuilder -> uriBuilder.path("/{fileName}").build(id))
-                    .retrieve()
-                    .bodyToMono(Boolean.class)
-                    .block();
-            response = externalResult
-                    ? new SuccessDto(true, postService.deleteFile(id))
-                    : new SuccessDto(false);
-        }catch (NullPointerException | IllegalArgumentException exception){
-            response = new SuccessDto(false, exception.getMessage());
-        }catch (Exception exception){
-            response = new SuccessDto(false, SERVER_ERROR);
-        }
-        return response;
+                                 @PathVariable String filename) throws AccessDeniedException {
+        Long memberPk = validateUser(accessToken);
+        Boolean externalResult = api.mutate()
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .build()
+                .delete()
+                .uri(uriBuilder -> uriBuilder.path("/{fileName}").build(filename))
+                .retrieve()
+                .bodyToMono(Boolean.class)
+                .block();
+        return externalResult
+                ? new SuccessDto(true, postService.deleteFile(filename))
+                : new SuccessDto(false, "File Server Error Occur");
     }
 
     /**
      * 게시글 좋아요/취소 API
-     * */
+     */
     @PostMapping("/board/{id}")
     public SuccessDto likePost(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                               @PathVariable Long id){
+                               @PathVariable Long id) throws AccessDeniedException, NullPointerException {
         Long memberPk = validateUser(accessToken);
-        SuccessDto response;
-        try{
-            boolean like = postService.likePost(memberPk, id);
-            response = new SuccessDto(like);
-        }catch (IllegalArgumentException argumentException){
-            response = new SuccessDto(false, "No User Data");
-        }catch (Exception e){
-            response = new SuccessDto(false, SERVER_ERROR);
-        }
-        return response;
+        boolean like = postService.likePost(memberPk, id);
+        return new SuccessDto(like);
     }
 
     /**
@@ -372,51 +296,35 @@ public class PostController {
 
     /**
      * 내가 쓴 글 목록 조회 API
-     * */
+     */
     @GetMapping("/my-info/boards")
     public SuccessDto readMyPosts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                  @RequestParam int last){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            List<PostPreviewDto> myPosts = postService.getMyPostList(memberPk, last);
-            List<PostPreview> post = changeResponseType(myPosts);
-            response = new SuccessDto(true, post);
-        }catch (IllegalArgumentException exception){
-            response = new SuccessDto(false, exception.getMessage());
-        }catch (Exception e){
-            response = new SuccessDto(false, SERVER_ERROR);
-        }
-        return response;
+                                  @RequestParam int last) throws AccessDeniedException{
+        Long memberPk = validateUser(accessToken);
+        List<PostPreviewDto> myPosts = postService.getMyPostList(memberPk, last);
+        List<PostPreview> post = changeResponseType(myPosts);
+        return new SuccessDto(true, post);
     }
 
     /**
      * 좋아요 한 글 목록 조회 API
-     * */
+     */
     @GetMapping("/my-info/likes")
     public SuccessDto readLikedPosts(@RequestHeader(value = "X-AUTH-TOKEN") String accessToken,
-                                     @RequestParam int last){
-        SuccessDto response;
-        try {
-            Long memberPk = validateUser(accessToken);
-            List<PostPreviewDto> likedPosts = postService.getLikePostList(memberPk, last);
-            List<PostPreview> post = changeResponseType(likedPosts);
-            response = new SuccessDto(true, post);
-        }catch (NullPointerException | IllegalArgumentException exception) {
-            response = new SuccessDto(false, exception.getMessage());
-        }catch (Exception e){
-            response = new SuccessDto(false, SERVER_ERROR);
-        }
-        return response;
+                                     @RequestParam int last) throws AccessDeniedException{
+        Long memberPk = validateUser(accessToken);
+        List<PostPreviewDto> likedPosts = postService.getLikePostList(memberPk, last);
+        List<PostPreview> post = changeResponseType(likedPosts);
+        return new SuccessDto(true, post);
     }
 
     /**
      * 전체 게시글 목록 조회 API
      * 최근 좋아요 많이 받은 게시글 리스트 조회
      * 메인화면
-     * */
+     */
     @GetMapping("/")
-    public SuccessDto readHottestPosts(@RequestParam int last){
+    public SuccessDto readHottestPosts(@RequestParam int last) {
         List<PostPreviewDto> hottestPosts = postService.getHottestPostList(last);
         List<PostPreview> post = changeResponseType(hottestPosts);
         return new SuccessDto(true, post);
@@ -424,9 +332,9 @@ public class PostController {
 
     /**
      * 최근 게시글 목록 조회 API
-     * */
+     */
     @GetMapping("/recent/")
-    public SuccessDto readRecentPosts(@RequestParam int last){
+    public SuccessDto readRecentPosts(@RequestParam int last) {
         List<PostPreviewDto> recentPostList = postService.getRecentPostList(last);
         List<PostPreview> post = changeResponseType(recentPostList);
         return new SuccessDto(true, post);
@@ -434,36 +342,37 @@ public class PostController {
 
     /**
      * 검색 기능 API
-     * */
+     */
     @GetMapping("/search")
-    public SuccessDto searchPosts(@RequestParam String keyword, @RequestParam int last){
+    public SuccessDto searchPosts(@RequestParam String keyword, @RequestParam int last) {
         List<PostPreviewDto> searchPosts = postService.searchPosts(keyword, last);
         List<PostPreview> post = changeResponseType(searchPosts);
         return new SuccessDto(true, post);
     }
 
-    private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput){
+    private List<PostPreview> changeResponseType(List<PostPreviewDto> serviceOutput) {
         return serviceOutput.stream().map(PostPreview::new).collect(Collectors.toList());
     }
 
-    private Long validateUser(String accessToken) throws NullPointerException, IllegalArgumentException{
+    private Long validateUser(String accessToken) throws AccessDeniedException {
         String memberPk = jwtService.validateToken(accessToken) ? jwtService.getUserPk(accessToken) : null;
-        if (memberPk == null) throw new NullPointerException("No User Data");
+        if (memberPk == null) throw new AccessDeniedException("No User Data");
         User user = userService.readUser(Long.valueOf(memberPk));
-        if (Long.parseLong(memberPk) != user.getId()) throw new IllegalArgumentException("No Permissions");
+        if (Long.parseLong(memberPk) != user.getId()) throw new AccessDeniedException("No Permissions");
         return Long.parseLong(memberPk);
     }
 
     /**
      * Inner Class For Response
-     * */
+     */
     @Data
     @AllArgsConstructor
-    class Image{
+    class Image {
         String url;
     }
+
     @Data
-    class MainLayout{
+    class MainLayout {
         private int type;
         private Double width;
         private Double height;
@@ -472,7 +381,7 @@ public class PostController {
         private List<String> codes;
         private String explanation;
 
-        MainLayout(LayoutDto dto){
+        MainLayout(LayoutDto dto) {
             this.type = dto.getDtype();
             this.width = dto.getWidth();
             this.height = dto.getHeight();
@@ -482,8 +391,9 @@ public class PostController {
             this.explanation = dto.getExplanation();
         }
     }
+
     @Data
-    class PostPreview{
+    class PostPreview {
         private Long id;
         private String title;
         private LocalDate written;
@@ -493,10 +403,10 @@ public class PostController {
         private Integer hits;
         private MainLayout mainLayout;
 
-        PostPreview(PostPreviewDto dto){
+        PostPreview(PostPreviewDto dto) {
             this.id = dto.getPostDto().getId();
             this.title = dto.getPostDto().getTitle();
-            this.written = dto.getPostDto().getTime();
+            this.written = dto.getPostDto().getTime().toLocalDate();
             this.member = dto.getUserDto().getName();
             this.memberImage = dto.getUserDto().getImage();
             this.likes = dto.getLikes().intValue();
@@ -506,7 +416,7 @@ public class PostController {
     }
 
     @Data
-    class PostDetail{
+    class PostDetail {
         private UserDto user;
         private PostDto post;
         private Long layoutId;  // moldId
@@ -518,7 +428,7 @@ public class PostController {
         private LikeDto likes;
         private List<CommentDto> comments;
 
-        PostDetail(PostDetailDto dto){
+        PostDetail(PostDetailDto dto) {
             this.user = dto.getUserDto();
             this.post = dto.getPostDto();
             this.layoutId = dto.getMoldId();
@@ -530,8 +440,9 @@ public class PostController {
             this.likes = dto.getLikeDto();
         }
     }
+
     @Getter
-    class LayoutDetail extends MainLayout{
+    class LayoutDetail extends MainLayout {
         private Long id;
         private double coordinateX;
         private double coordinateY;
