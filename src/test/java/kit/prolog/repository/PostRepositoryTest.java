@@ -99,53 +99,53 @@ public class PostRepositoryTest {
         assertThat(savedPost.getId()).isEqualTo(savedContext.getPost().getId());
     }
 
-    @Test
-    @DisplayName("레이아웃 작성")
-    public void writeLayout(){
-        // given
-        List<LayoutDto> layoutDtoList = new ArrayList<>();
-        LayoutDto one = new LayoutDto();
-        one.setDtype(1);
-        one.setCoordinateX(10.0);
-        one.setCoordinateY(20.0);
-        one.setWidth(15.0);
-        one.setHeight(25.0);
-        layoutDtoList.add(one);
-        List<Layout> layouts = layoutDtoList.stream().map(Layout::new).collect(Collectors.toList());
-
-        // when
-        List<Layout> savedLayouts = layoutRepository.saveAll(layouts);
-
-        // then
-        assertThat(savedLayouts).isNotEmpty();
-        assertThat(savedLayouts.size()).isEqualTo(layouts.size());
-    }
-    @Test
-    @DisplayName("틀에 레이아웃 작성")
-    public void writeLayoutwithMold(){
-        // given
-        User user = userRepository.findOneById(1L);
-        Mold mold = new Mold("moldName", user);
-        List<LayoutDto> layoutDtoList = new ArrayList<>();
-        LayoutDto one = new LayoutDto();
-        one.setDtype(1);
-        one.setCoordinateX(10.0);
-        one.setCoordinateY(20.0);
-        one.setWidth(15.0);
-        one.setHeight(25.0);
-        layoutDtoList.add(one);
-        List<Layout> layouts = layoutDtoList.stream().map(Layout::new).collect(Collectors.toList());
-
-        // when
-        Mold savedMold = moldRepository.save(mold);
-        layouts.forEach(layout -> layout.setMold(savedMold));
-        List<Layout> savedLayouts = layoutRepository.saveAll(layouts);
-
-        // then
-        assertThat(savedLayouts).isNotEmpty();
-        assertThat(savedLayouts.size()).isEqualTo(layouts.size());
-        assertThat(savedLayouts.stream().allMatch(layout -> layout.getMold().equals(savedMold))).isTrue();
-    }
+//    @Test
+//    @DisplayName("레이아웃 작성")
+//    public void writeLayout(){
+//        // given
+//        List<LayoutDto> layoutDtoList = new ArrayList<>();
+//        LayoutDto one = new LayoutDto();
+//        one.setDtype(1);
+//        one.setCoordinateX(10.0);
+//        one.setCoordinateY(20.0);
+//        one.setWidth(15.0);
+//        one.setHeight(25.0);
+//        layoutDtoList.add(one);
+//        List<Layout> layouts = layoutDtoList.stream().map(Layout::new).collect(Collectors.toList());
+//
+//        // when
+//        List<Layout> savedLayouts = layoutRepository.saveAll(layouts);
+//
+//        // then
+//        assertThat(savedLayouts).isNotEmpty();
+//        assertThat(savedLayouts.size()).isEqualTo(layouts.size());
+//    }
+//    @Test
+//    @DisplayName("틀에 레이아웃 작성")
+//    public void writeLayoutwithMold(){
+//        // given
+//        User user = userRepository.findOneById(1L);
+//        Mold mold = new Mold("moldName", user);
+//        List<LayoutDto> layoutDtoList = new ArrayList<>();
+//        LayoutDto one = new LayoutDto();
+//        one.setDtype(1);
+//        one.setCoordinateX(10.0);
+//        one.setCoordinateY(20.0);
+//        one.setWidth(15.0);
+//        one.setHeight(25.0);
+//        layoutDtoList.add(one);
+//        List<Layout> layouts = layoutDtoList.stream().map(Layout::new).collect(Collectors.toList());
+//
+//        // when
+//        Mold savedMold = moldRepository.save(mold);
+//        layouts.forEach(layout -> layout.setMold(savedMold));
+//        List<Layout> savedLayouts = layoutRepository.saveAll(layouts);
+//
+//        // then
+//        assertThat(savedLayouts).isNotEmpty();
+//        assertThat(savedLayouts.size()).isEqualTo(layouts.size());
+//        assertThat(savedLayouts.stream().allMatch(layout -> layout.getMold().equals(savedMold))).isTrue();
+//    }
 
     @Test
     @DisplayName("레이아웃 리스트 조회")
