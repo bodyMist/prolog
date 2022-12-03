@@ -18,7 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
-
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -197,18 +196,6 @@ public class UserController {
             @RequestBody UserEmailInfoDto userEmailInfoDto){
         if(jwtService.validateToken(accessToken)){
             String userId = jwtService.getUserPk(accessToken);
-
-            // password validation
-            if(!passwordConfig.passwordValidataion(userEmailInfoDto.getPassword())){
-                return ResponseEntity.ok().body(new SuccessDto(false, "invalid password error"));
-            }
-            // password hashing
-            try{
-                userEmailInfoDto.setPassword(passwordConfig.hashing(passwordConfig.getSalt() + userEmailInfoDto.getPassword()));
-            }catch (NoSuchAlgorithmException e){
-                return new ResponseEntity<SuccessDto>(new SuccessDto(false, "update error"), HttpStatus.OK);
-            }
-
             if(userService.updateUser(Long.parseLong(userId), userEmailInfoDto)){
                 return new ResponseEntity<SuccessDto>(new SuccessDto(true, "update success"), HttpStatus.OK);
             }else{
