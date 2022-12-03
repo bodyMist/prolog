@@ -5,7 +5,6 @@ import kit.prolog.domain.Category;
 import kit.prolog.domain.User;
 import kit.prolog.dto.UserEmailInfoDto;
 import kit.prolog.repository.jpa.*;
-import kit.prolog.service.social.CryptoUserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;

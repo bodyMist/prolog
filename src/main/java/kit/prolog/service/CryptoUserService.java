@@ -1,4 +1,4 @@
-package kit.prolog.service.social;
+package kit.prolog.service;
 
 import java.util.ArrayList;
 import java.util.List;
