@@ -71,20 +71,16 @@ public class AesConfig {
         }
 
         String sAesKey = aesKey.get(0).substring(0, 32);
-        byte[] bAesKey = Base64.getDecoder().decode(sAesKey.getBytes(StandardCharsets.UTF_8));
-
         String sVi = aesKey.get(1).substring(0, 16);
-        byte[] bVi = Base64.getDecoder().decode(sVi.getBytes(StandardCharsets.UTF_8));
-
         try {
 
             Cipher cipher = Cipher.getInstance(ALGORITHM);
-            SecretKeySpec keySpec = new SecretKeySpec(bAesKey, "AES");
-            IvParameterSpec ivParamSpec = new IvParameterSpec(bVi);
+            SecretKeySpec keySpec = new SecretKeySpec(sAesKey.getBytes(), "AES");
+            IvParameterSpec ivParamSpec = new IvParameterSpec(sVi.getBytes());
             cipher.init(Cipher.DECRYPT_MODE, keySpec, ivParamSpec);
 
-            byte[] encrypted = cipher.doFinal(cipherText.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(encrypted);
+            byte[] encrypted = cipher.doFinal(Base64.getDecoder().decode(cipherText));
+            return new String(encrypted);
 
         } catch (NoSuchAlgorithmException e) {
             log.info("잘못된 암호화 알고리즘");

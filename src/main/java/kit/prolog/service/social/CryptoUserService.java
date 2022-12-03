@@ -1,5 +1,6 @@
 package kit.prolog.service.social;
 
+import java.util.ArrayList;
 import java.util.List;
 import kit.prolog.config.crypto.CryptoConfig;
 import kit.prolog.domain.User;
@@ -47,6 +48,29 @@ public class CryptoUserService {
         return user;
     }
 
+    public void rsaKeyCreate() {
+        cryptoConfig.rsaKeyCreate(); // rsaKey 생성 및 키 파일에 쓰기
+    }
+
+    public void aesKeyCreate() {
+        List<User> deUserList = findAll(); // 복호화된 기존 유저 정보
+        List<String> newAesKey = cryptoConfig.aesKeyCreate(); // 새로운 aesKey 생성 및 키 파일에 쓰기
+        List<User> enUserList = new ArrayList<>(); // 새로운 aesKey로 aes 암호화
+        for (User user : deUserList) {
+            enUserList.add(decrypt(newAesKey, user));
+        }
+    }
+
+    public List<User> findAll() {
+        List<String> decryptedAesKey = cryptoConfig.keyConfig();
+        List<User> decryptedUserList = new ArrayList<>();
+        List<User> userList = userRepository.findAll();
+        for (User user : userList) {
+            decryptedUserList.add(decrypt(decryptedAesKey, user));
+        }
+        return decryptedUserList;
+    }
+
     public User save(User newUser) {
         List<String> decryptedAesKey = cryptoConfig.keyConfig();
         User enUser = encrypt(decryptedAesKey, newUser);
@@ -86,18 +110,18 @@ public class CryptoUserService {
     }
 
     public User findOneByEmail(String email) {
-        List<String> decryptedAesKey = this.cryptoConfig.keyConfig();
-        String enEmail = this.cryptoConfig.encrypt(decryptedAesKey, email);
-        User user = this.userRepository.findOneByEmail(enEmail);
+        List<String> decryptedAesKey = cryptoConfig.keyConfig();
+        String enEmail = cryptoConfig.encrypt(decryptedAesKey, email);
+        User user = userRepository.findOneByEmail(enEmail);
         if (user != null)
             return decrypt(decryptedAesKey, user);
         return null;
     }
 
     public User findOneBySnsAndSocialKey(Integer socialType, String socialKey) {
-        List<String> decryptedAesKey = this.cryptoConfig.keyConfig();
-        String enSocialType = this.cryptoConfig.encrypt(decryptedAesKey, socialKey);
-        User user = this.userRepository.findOneBySnsAndSocialKey(socialType, enSocialType);
+        List<String> decryptedAesKey = cryptoConfig.keyConfig();
+        String enSocialKey = cryptoConfig.encrypt(decryptedAesKey, socialKey);
+        User user = userRepository.findOneBySnsAndSocialKey(socialType, enSocialKey);
         if (user != null)
             return decrypt(decryptedAesKey, user);
         return null;
