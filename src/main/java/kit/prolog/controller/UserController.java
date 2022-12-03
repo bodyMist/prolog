@@ -1,9 +1,6 @@
 package kit.prolog.controller;
 
 import kit.prolog.config.PasswordConfig;
-import kit.prolog.config.crypto.AesConfig;
-import kit.prolog.config.crypto.CryptoConfig;
-import kit.prolog.config.crypto.RsaConfig;
 import kit.prolog.domain.User;
 import kit.prolog.domain.redis.JwtAuthToken;
 import kit.prolog.dto.*;
@@ -21,8 +18,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
-
 @Slf4j
 @RestController
 @AllArgsConstructor
@@ -35,24 +30,6 @@ public class UserController {
     private final GithubAuthService githubAuthService;
     private final JwtService jwtService;
     private final PasswordConfig passwordConfig;
-    private final AesConfig aesConfig;
-    private final RsaConfig rsaConfig;
-    private final CryptoConfig cryptoConfig;
-    @PostMapping("/test")
-    public SuccessDto test(){
-        List<String> rsaKey = cryptoConfig.keyConfig();
-        System.out.println(rsaKey);
-        return new SuccessDto(false, "signup fail");
-    }
-
-    @PostMapping("/test2")
-    public SuccessDto test2(){
-        List<String> rsaKey = rsaConfig.keyRead();
-        String test = rsaConfig.encrypt(rsaKey, "aaaaaaaaaabbbbbbbbbbccccccccccdd");
-        System.out.println(test);
-        System.out.println(rsaConfig.decrypt(rsaKey, test));
-        return new SuccessDto(false, "signup fail");
-    }
 
     @PostMapping("/signup/email")
     public SuccessDto createUserByEmail(@RequestBody UserEmailInfoDto userEmailInfoDto){
