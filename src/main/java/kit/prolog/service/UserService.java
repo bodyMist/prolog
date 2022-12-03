@@ -6,18 +6,20 @@ import kit.prolog.domain.User;
 import kit.prolog.dto.UserEmailInfoDto;
 import kit.prolog.repository.jpa.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
+@Log4j2
 @Transactional
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class UserService {
-    private final UserRepository userRepository;
+    private final CryptoUserService userRepository;
 
     private final PostRepository postRepository;
     private final LikeRepository likeRepository;
@@ -32,7 +34,6 @@ public class UserService {
 
     // email 회원가입
     public boolean createUserByEmail(User newUser){
-        newUser.setSns(0); // email 회원가입
         User user = userRepository.findOneByAccountAndEmail(newUser.getAccount(), newUser.getEmail());
         if(user == null){
             User savedUser = userRepository.save(newUser);
@@ -44,9 +45,8 @@ public class UserService {
                     .build();
             categoryRepository.save(category);
             return true;
-        }else{
-            return false;
         }
+        return false;
     }
 
     // 소셜 회원가입
@@ -62,9 +62,8 @@ public class UserService {
                     .build();
             categoryRepository.save(category);
             return true;
-        }else{
-            return false;
         }
+        return false;
     }
 
     // 회원 정보 조회
@@ -74,7 +73,7 @@ public class UserService {
             user = userRepository.findOneById(memberPk);
             return user;
         }catch (NullPointerException e){
-            System.out.println("Error : no user");
+            log.info("Error : no user");
         }
         // user 존재하면 user 반환
         // 비어있는 user 반환
@@ -82,7 +81,7 @@ public class UserService {
     }
     public Long findUserImage(String url){
         Optional<Attachment> image = attachmentRepository.findByUrl(url);
-        if (image.isPresent())  return image.get().getId();
+        if (image.isPresent()) return image.get().getId();
         else return 0L;
     }
 
@@ -98,13 +97,11 @@ public class UserService {
                 user.setAlarm(modifiedUser.isAlarm());
                 userRepository.save(user);
                 return true;
-            }else{
-                return false;
             }
         }catch (NullPointerException e){
-            System.out.println("Error : no user");
-            return false;
+            log.info("Error : no user");
         }
+        return false;
     }
 
     // 회원 탈퇴
@@ -136,9 +133,9 @@ public class UserService {
             if(user != null)
                 userRepository.deleteById(memberPk);
         }catch (NullPointerException e){
-            System.out.println("Error : no user");
+            log.info("Error : no user");
         }catch (Exception e){
-            System.out.println(e.getMessage());
+            log.info("Error : exception error");
         }
         return user;
     }
@@ -153,7 +150,7 @@ public class UserService {
             else
                 return null;
         }catch (NullPointerException e){
-            System.out.println("Error : no user");
+            log.info("Error : no user");
             return null;
         }
     }
@@ -167,18 +164,15 @@ public class UserService {
     // 아이디 찾기
     public String searchAccount(String email){
         User user;
-        String account = "";
         try{
             user = userRepository.findOneByEmail(email);
             if(user != null){
                 return user.getAccount();
-            }else{
-                return null;
             }
         }catch (NullPointerException e){
-            System.out.println("Error : no user");
-            return account;
+            log.info("Error : no user");
         }
+        return null;
     }
 
     // 소셜 key 찾기
@@ -190,7 +184,7 @@ public class UserService {
                 return user;
             }
         }catch (NullPointerException e){
-            System.out.println("Error : no user");
+            log.info("Error : no user");
         }
         return user;
     }
@@ -204,11 +198,9 @@ public class UserService {
                 user.setPassword(password);
                 return true;
             }
-            else
-                return false;
         }catch (NullPointerException e){
-            System.out.println("Error : no user");
-            return false;
+            log.info("Error : no user");
         }
+        return false;
     }
 }
