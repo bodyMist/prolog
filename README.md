@@ -14,6 +14,7 @@
   5.4. [Request Body](#logging-시-request-body-접근-문제)   
   5.5. [DataJpaTest](#테스트코드-error)   
   5.6. [브랜치 관리](#repository-branch-관리)   
+  5.7. [에러처리](#전역-exception-handler-추가)
 
 ## 사용 기술
 * SpringBoot 2.6.7
@@ -91,3 +92,10 @@
     * release 이후, hotfix와 기능 추가에 대해 다른 팀원들의 이해를 돕기 위해 추적이 쉬워야한다
     * BE팀은 각자가 분담하고 있는 파트가 확연하게 구분되어 있지만 Logging과 설정파일 같이 공용으로 사용하는 파일에 대해 주의와 독립적 환경을 보장하기 위함
     * 무분별한 코드의 추가를 막기 위해 branch protection rule을 추가하여 contributor의 code review와 승인을 통해 merge를 허가
+    
+### 전역 Exception Handler 추가
+  * 개발 단계에서 객체 반환과 @RestController의 사용으로 인해 에러 발생시에도 200Http 으로 반환
+  * Controller Layer에서 반복적인 try-catch 사용으로 인해 가독성이 낮고 유지보수가 어렵다
+  * 코드 리팩토링의 필요성을 느끼고 @ControllerAdvice와 @ExceptionHandler를 사용
+  
+[에러 처리 방식 변경 코드](https://github.com/bodyMist/prolog/commit/50184b5ea3a3f0b0191092749a0dc69be97fb6b9#diff-6dbc9c40bd40dee5384a1f26cb24e26eee37eed6f01e9f44a751174fe9ca2849)
