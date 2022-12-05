@@ -14,17 +14,12 @@ import javax.servlet.Filter;
 @Configuration
 @EnableWebMvc
 public class WebConfig implements WebMvcConfigurer {
-    @Value("${external.static.url.outbound}")
-    private String connectPath;
-    @Value("${external.static.url.inbound}")
-    private String resourcePath;
-
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/**").addResourceLocations("file:///Users/Tofu/Desktop/");
+        registry.addResourceHandler("/**").addResourceLocations("file:///home/deeplearning_6/prolog-attachment/");
     }
     @Bean
-    public FilterRegistrationBean logFilter(){
+    public FilterRegistrationBean<Filter> logFilter(){
         FilterRegistrationBean<Filter> filterRegistrationBean = new FilterRegistrationBean<Filter>();
         filterRegistrationBean.setFilter(new LogFilter());
         filterRegistrationBean.setOrder(1);
