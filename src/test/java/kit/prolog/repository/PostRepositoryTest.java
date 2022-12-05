@@ -103,22 +103,21 @@ public class PostRepositoryTest {
     @DisplayName("레이아웃 작성")
     public void writeLayout(){
         // given
-        List<LayoutDto> layoutDtoList = new ArrayList<>();
-        LayoutDto one = new LayoutDto();
+        List<Layout> layoutList = new ArrayList<>();
+        Layout one = new Layout();
         one.setDtype(1);
         one.setCoordinateX(10.0);
         one.setCoordinateY(20.0);
         one.setWidth(15.0);
         one.setHeight(25.0);
-        layoutDtoList.add(one);
-        List<Layout> layouts = layoutDtoList.stream().map(Layout::new).collect(Collectors.toList());
+        layoutList.add(one);
 
         // when
-        List<Layout> savedLayouts = layoutRepository.saveAll(layouts);
+        List<Layout> savedLayouts = layoutRepository.saveAll(layoutList);
 
         // then
         assertThat(savedLayouts).isNotEmpty();
-        assertThat(savedLayouts.size()).isEqualTo(layouts.size());
+        assertThat(savedLayouts.size()).isEqualTo(layoutList.size());
     }
     @Test
     @DisplayName("틀에 레이아웃 작성")
@@ -126,24 +125,23 @@ public class PostRepositoryTest {
         // given
         User user = userRepository.findOneById(1L);
         Mold mold = new Mold("moldName", user);
-        List<LayoutDto> layoutDtoList = new ArrayList<>();
-        LayoutDto one = new LayoutDto();
+        List<Layout> layoutList = new ArrayList<>();
+        Layout one = new Layout();
         one.setDtype(1);
         one.setCoordinateX(10.0);
         one.setCoordinateY(20.0);
         one.setWidth(15.0);
         one.setHeight(25.0);
-        layoutDtoList.add(one);
-        List<Layout> layouts = layoutDtoList.stream().map(Layout::new).collect(Collectors.toList());
+        layoutList.add(one);
 
         // when
         Mold savedMold = moldRepository.save(mold);
-        layouts.forEach(layout -> layout.setMold(savedMold));
-        List<Layout> savedLayouts = layoutRepository.saveAll(layouts);
+        layoutList.forEach(layout -> layout.setMold(savedMold));
+        List<Layout> savedLayouts = layoutRepository.saveAll(layoutList);
 
         // then
         assertThat(savedLayouts).isNotEmpty();
-        assertThat(savedLayouts.size()).isEqualTo(layouts.size());
+        assertThat(savedLayouts.size()).isEqualTo(layoutList.size());
         assertThat(savedLayouts.stream().allMatch(layout -> layout.getMold().equals(savedMold))).isTrue();
     }
 
