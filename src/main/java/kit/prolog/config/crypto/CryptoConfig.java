@@ -56,6 +56,9 @@ public class CryptoConfig {
     public String decrypt(List<String> decryptedAesKey, String cipherText) {
         return aesConfig.decrypt(decryptedAesKey, cipherText);
     }
+    public String decrypt(String cipherText) {
+        return aesConfig.decrypt(this.keyConfig(), cipherText);
+    }
 
     public String hash(String seed) {
         MessageDigest md = null;
