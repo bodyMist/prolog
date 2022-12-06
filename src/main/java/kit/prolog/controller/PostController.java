@@ -1,5 +1,6 @@
 package kit.prolog.controller;
 
+import kit.prolog.config.crypto.CryptoConfig;
 import kit.prolog.domain.User;
 import kit.prolog.dto.*;
 import kit.prolog.service.JwtService;
@@ -31,6 +32,7 @@ public class PostController {
     private static final Long NO_USER = 0L;
     private final PostService postService;
     private final UserService userService;
+    private final CryptoConfig cryptoConfig;
     private final JwtService jwtService;
     private final WebClient api;
 
@@ -407,8 +409,8 @@ public class PostController {
             this.id = dto.getPostDto().getId();
             this.title = dto.getPostDto().getTitle();
             this.written = dto.getPostDto().getTime().toLocalDate();
-            this.member = dto.getUserDto().getName();
-            this.memberImage = dto.getUserDto().getImage();
+            this.member = cryptoConfig.decrypt(dto.getUserDto().getName());
+            this.memberImage = cryptoConfig.decrypt(dto.getUserDto().getImage());
             this.likes = dto.getLikes().intValue();
             this.hits = dto.getHits().intValue();
             this.mainLayout = new MainLayout(dto.getLayoutDto());
@@ -429,7 +431,7 @@ public class PostController {
         private List<CommentDto> comments;
 
         PostDetail(PostDetailDto dto) {
-            this.user = dto.getUserDto();
+            this.user = new UserDto(cryptoConfig.decrypt(dto.getUserDto().getName()), cryptoConfig.decrypt(dto.getUserDto().getImage()));
             this.post = dto.getPostDto();
             this.layoutId = dto.getMoldId();
             this.layouts = dto.getLayoutDto().stream().map(LayoutDetail::new).collect(Collectors.toList());
