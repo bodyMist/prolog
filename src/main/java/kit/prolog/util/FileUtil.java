@@ -1,15 +1,11 @@
 package kit.prolog.util;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -20,25 +16,18 @@ import org.springframework.stereotype.Component;
 @Log4j2
 @RequiredArgsConstructor
 public class FileUtil {
-    private BufferedReader br;
-    private FileReader fr;
-    private BufferedWriter bw;
-    private FileWriter fw;
 
     public List<String> fileRead(String path) {
         List<String> newLines = new ArrayList<>();
 
         try {
-            File file = new ClassPathResource(path).getFile();
-            this.fr = new FileReader(file);
-            this.br = new BufferedReader(this.fr);
-            String newLine = "";
+            ClassPathResource resource = new ClassPathResource(path);
+            InputStream inputStream = new BufferedInputStream(resource.getInputStream());
+            newLines = new BufferedReader(
+                    new InputStreamReader(inputStream, StandardCharsets.UTF_8))
+                    .lines().collect(Collectors.toList());
 
-            while((newLine = this.br.readLine()) != null) {
-                newLines.add(newLine);
-            }
-            br.close();
-            fr.close();
+            inputStream.close();
             return newLines;
         } catch (FileNotFoundException e) {
             log.info("파일 경로 에러");
@@ -53,15 +42,15 @@ public class FileUtil {
 
     public void fileWrite(List<String> lines, String path) {
         try {
-            File file = new ClassPathResource(path).getFile();
-            fw = new FileWriter(file);
-            bw = new BufferedWriter(this.fw);
+            ClassPathResource resource = new ClassPathResource(path);
+            OutputStream outputStream = new FileOutputStream(resource.getFile());
+
             for (String line : lines) {
-                bw.write(line);
-                bw.newLine();
+                line += "\r\n";
+                outputStream.write(line.getBytes(StandardCharsets.UTF_8));
             }
-            br.close();
-            fr.close();
+            outputStream.flush();
+            outputStream.close();
         } catch (IOException e) {
             log.info("파일 경로 에러");
         }
