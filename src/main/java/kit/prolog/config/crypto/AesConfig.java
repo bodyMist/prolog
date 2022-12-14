@@ -18,13 +18,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 @Component
 @Log4j2
 @RequiredArgsConstructor
 public class AesConfig {
-    private final String AES_KEY_PATH = "src/main/resources/key/aes.txt";
+    ClassPathResource resource = new ClassPathResource("key/aes.txt");
+    private final String AES_KEY_PATH = resource.getPath();
     private final String ALGORITHM = "AES/CBC/PKCS5Padding";
     private final FileUtil fileUtil;
 

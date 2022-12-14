@@ -9,9 +9,11 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -27,7 +29,7 @@ public class FileUtil {
         List<String> newLines = new ArrayList<>();
 
         try {
-            File file = new File(path);
+            File file = new ClassPathResource(path).getFile();
             this.fr = new FileReader(file);
             this.br = new BufferedReader(this.fr);
             String newLine = "";
@@ -51,7 +53,7 @@ public class FileUtil {
 
     public void fileWrite(List<String> lines, String path) {
         try {
-            File file = new File(path);
+            File file = new ClassPathResource(path).getFile();
             fw = new FileWriter(file);
             bw = new BufferedWriter(this.fw);
             for (String line : lines) {
