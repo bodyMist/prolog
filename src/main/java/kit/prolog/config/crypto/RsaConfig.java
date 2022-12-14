@@ -24,13 +24,15 @@ import javax.crypto.NoSuchPaddingException;
 import kit.prolog.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Component;
 
 @Component
 @Log4j2
 @RequiredArgsConstructor
 public class RsaConfig {
-    private final String RSA_KEY_PATH = "src/main/resources/key/rsa.txt";
+    ClassPathResource resource = new ClassPathResource("key/rsa.txt");
+    private final String RSA_KEY_PATH = resource.getPath();
     private final String ALGORITHM = "RSA";
     private final FileUtil fileUtil;
 
