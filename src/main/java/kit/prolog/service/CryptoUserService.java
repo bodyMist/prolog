@@ -22,7 +22,7 @@ public class CryptoUserService {
         user.setAccount(cryptoConfig.encrypt(decryptedAesKey, newUser.getAccount()));
         user.setAlarm(newUser.getAlarm());
         user.setEmail(cryptoConfig.encrypt(decryptedAesKey, newUser.getEmail()));
-        user.setImage(cryptoConfig.encrypt(decryptedAesKey, newUser.getImage()));
+        if(newUser.getImage() != null)    user.setImage(cryptoConfig.encrypt(decryptedAesKey, newUser.getImage()));
         user.setIntroduce(cryptoConfig.encrypt(decryptedAesKey, newUser.getIntroduce()));
         user.setName(cryptoConfig.encrypt(decryptedAesKey, newUser.getName()));
         user.setNickname(cryptoConfig.encrypt(decryptedAesKey, newUser.getNickname()));
